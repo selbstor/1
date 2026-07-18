@@ -2318,8 +2318,8 @@
         </svg>
       </div>
       <div class='order-confirmed-title'>Pedido Enviado!</div>
-      <div class='order-confirmed-text'>Seu pedido foi enviado para o WhatsApp da loja. Aguarde o retorno do vendedor para os próximos passos.</div>
-      <button onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>Voltar para a Loja</button>
+      <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.</div>
+      <button onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
     </div>
   </div>
 
@@ -2447,9 +2447,9 @@
         else if (field === 'PIX') cfg.pix = val.toUpperCase() === 'SIM';
         else if (field === 'CHAVE PIX') cfg.chavePix = val;
         else if (field === 'CIDADE PIX') cfg.cidadePix = val;
-        else if (field === 'CARTÃO (NA ENTREGA)' || field === 'CARTAO (NA ENTREGA)' || field === 'CARTÃO' || field === 'CARTAO') { cfg.cartao = val.toUpperCase() === 'SIM'; cfg.cartaoNome = (row[0] || '').replace(/[⚙️📋🎨🚚🏷️💳💡]/g, '').trim(); }
+        else if (field === 'CARTÃO (NA ENTREGA)' || field === 'CARTAO (NA ENTREGA)' || field === 'CARTÃO' || field === 'CARTAO' || field === 'CARTÃO DE CRÉDITO' || field === 'CARTAO DE CREDITO') { cfg.cartao = val.toUpperCase() === 'SIM'; cfg.cartaoNome = (row[0] || '').replace(/[⚙️📋🎨🚚🏷️💳💡]/g, '').trim(); }
         else if (field === 'DINHEIRO') cfg.dinheiro = val.toUpperCase() === 'SIM';
-        else if (field === 'TRANSFERÊNCIA' || field === 'TRANSFERENCIA') cfg.transferencia = val.toUpperCase() === 'SIM';
+        else if (field === 'TRANSFERÊNCIA' || field === 'TRANSFERENCIA' || field === 'CARTÃO DE DÉBITO' || field === 'CARTAO DE DEBITO') cfg.transferencia = val.toUpperCase() === 'SIM';
         else if (field === 'MENSAGEM TOPO' || field === 'BARRA TOPO') cfg.mensagemTopo = val;
         else if (field === 'COR BARRA TOPO' || field === 'COR MENSAGEM TOPO') cfg.corBarraTopo = val;
         else if (field.match(/^FAIXA (DE )?ENTREGA (\d)$/)) {
@@ -2788,10 +2788,17 @@
       // Payment methods for checkout
       const paySelect = document.getElementById('paymentMethod');
       paySelect.innerHTML = '<option value="">Selecione...</option>';
-      if (CONFIG.pix) paySelect.innerHTML += '<option value="Pix">Pix</option>';
-      if (CONFIG.cartao) paySelect.innerHTML += '<option value="' + (CONFIG.cartaoNome || 'Cartão') + '">' + (CONFIG.cartaoNome || 'Cartão') + '</option>';
-      if (CONFIG.dinheiro) paySelect.innerHTML += '<option value="Dinheiro">Dinheiro</option>';
-      if (CONFIG.transferencia) paySelect.innerHTML += '<option value="Transferência">Transferência</option>';
+      var formasPagamento = [];
+      if (CONFIG.pix) formasPagamento.push('Pix');
+      if (CONFIG.cartao) formasPagamento.push('Cartão de Crédito');
+      if (CONFIG.dinheiro) formasPagamento.push('Dinheiro');
+      if (CONFIG.transferencia) formasPagamento.push('Cartão de Débito');
+      // Ordem fixa definida pela loja
+      var ordemPagamento = ['Dinheiro', 'Pix', 'Cartão de Crédito', 'Cartão de Débito'];
+      formasPagamento.sort(function(a, b) { return ordemPagamento.indexOf(a) - ordemPagamento.indexOf(b); });
+      formasPagamento.forEach(function(nome) {
+        paySelect.innerHTML += '<option value="' + nome + '">' + nome + '</option>';
+      });
 
       // Clear field errors on input
       ['custName','custPhone','custEndereco','custBairro','custCidade','custCep','custComplemento'].forEach(function(id) {
@@ -3315,7 +3322,21 @@
     // Em navegadores in-app (Instagram, Facebook, TikTok...), que costumam bloquear esse
     // tipo de redirecionamento por segurança, nem tentamos o protocolo do app: copiamos a
     // mensagem do pedido e orientamos a pessoa a abrir no navegador externo.
-    function abrirWhatsApp(waWindow, telefone, mensagem) {
+    // Detecta se o navegador é o Brave (ele expõe navigator.brave.isBrave() como Promise).
+    // O Brave mostra uma tela própria de confirmação de segurança ao tentar abrir links
+    // de protocolo de app (whatsapp://, intent://...), então evitamos tentar isso nele.
+    async function detectarBrave() {
+      try {
+        if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+          return await navigator.brave.isBrave();
+        }
+      } catch (err) {
+        // se a checagem falhar por algum motivo, assume que não é Brave
+      }
+      return false;
+    }
+
+    async function abrirWhatsApp(waWindow, telefone, mensagem) {
       var textoCodificado = encodeURIComponent(mensagem);
       var urlWeb = 'https://wa.me/' + telefone + '?text=' + textoCodificado;
       var ehAndroid = detectarAndroid();
@@ -3329,6 +3350,19 @@
           if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
           else { window.location.href = urlWeb; }
         } catch (err) { /* segue mesmo assim, o aviso já orienta a pessoa */ }
+        return;
+      }
+
+      // Brave: tentar o protocolo whatsapp:// / intent:// dispara uma tela própria de
+      // confirmação de segurança do navegador. Para evitar isso, vamos direto pro link
+      // wa.me (o próprio WhatsApp cuida do redirecionamento pro app a partir daí).
+      if (await detectarBrave()) {
+        try {
+          if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
+          else { window.location.href = urlWeb; }
+        } catch (err) {
+          window.open(urlWeb, '_blank');
+        }
         return;
       }
 
@@ -3507,18 +3541,30 @@
       if (getDeliveryLabel()) msg += `${getDeliveryLabel()}: ${fee > 0 ? 'R$ ' + fp(fee) : 'Grátis'}\n`;
       msg += `*TOTAL: R$ ${fp(total)}*\n`;
 
-      // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
-      // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
-      abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
-
-      if (btnEnviar) btnEnviar.disabled = false;
-      if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido pelo WhatsApp';
-
+      // Mostra a confirmação ANTES de abrir o WhatsApp — em alguns celulares/navegadores
+      // a página pode navegar direto para o app ou para o wa.me logo em seguida, então é
+      // importante que o cliente já veja o aviso antes disso acontecer.
       closeCheckout();
       cart = [];
       currentCoupon = null;
       renderCart();
+      var orderConfirmedText = document.getElementById('orderConfirmedText');
+      if (orderConfirmedText) {
+        orderConfirmedText.innerHTML = `Seu pedido <strong>nº: #${numeroPedidoFinal}</strong> foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.`;
+      }
       document.getElementById('orderConfirmed').classList.add('open');
+
+      if (btnEnviar) btnEnviar.disabled = false;
+      if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido pelo WhatsApp';
+
+      // Dá um tempinho pro cliente realmente ver a mensagem "Pedido Enviado!" antes da
+      // tela trocar pro WhatsApp (o app costuma abrir muito rápido, sem esse atraso a
+      // confirmação mal aparece na tela).
+      await new Promise(function (resolve) { setTimeout(resolve, 3500); });
+
+      // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
+      // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
+      await abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
     }
 
     // ============================================
