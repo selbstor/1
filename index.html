@@ -405,7 +405,7 @@
     .cat-btn {
       padding: 12px 18px;
       font-size: 0.88rem;
-      font-weight: 500;
+      font-weight: 700;
       color: var(--text-muted);
       background: none;
       white-space: nowrap;
@@ -2594,13 +2594,31 @@
     // dentro do texto da mensagem do topo. Pode haver mais de um intervalo (ex: separados por "/").
     // Retorna true se a loja deve ser considerada ABERTA agora, ou se a mensagem não tem nenhum
     // horário reconhecível (nesse caso não restringe nada).
+    // Extrai apenas o trecho de horário da mensagem do topo, removendo o rótulo
+    // ("Horários de Funcionamento:") e a parte de "Pedido Mínimo", para usar na
+    // mensagem "FECHADO - <horário>" exibida quando a loja está fechada.
+    function extrairTextoHorario(mensagem) {
+      if (!mensagem) return '';
+      var texto = mensagem.replace(/pedido\s*m[ií]nimo[^0-9]*[\d.,]+/gi, '');
+      // Mantém o rótulo "Horários de Funcionamento", mas em caixa alta
+      texto = texto.replace(/hor[áa]rios?\s+de\s+funcionamento\s*:?/gi, function(m) { return m.toUpperCase(); });
+      texto = texto.replace(/[\r\n]+/g, ' ');
+      texto = texto.replace(/\s{2,}/g, ' '); // colapsa espaços duplos
+      texto = texto.replace(/^[\s\-]+|[\s\-]+$/g, ''); // remove hífens/espaços sobrando nas pontas
+      return texto.trim();
+    }
+
     function verificarHorarioFuncionamento(mensagem) {
       if (!mensagem) return true;
+
+      // Remove qualquer trecho de "Pedido Mínimo" da mensagem — só o horário de
+      // funcionamento deve ser considerado na checagem abaixo.
+      var mensagemHorario = mensagem.replace(/pedido\s*m[ií]nimo[^0-9]*[\d.,]+/gi, '');
 
       var regexHorario = /(\d{1,2}):(\d{2})\s*(?:às|as|à|-)\s*(\d{1,2}):(\d{2})/gi;
       var intervalos = [];
       var match;
-      while ((match = regexHorario.exec(mensagem)) !== null) {
+      while ((match = regexHorario.exec(mensagemHorario)) !== null) {
         var inicio = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
         var fim = parseInt(match[3], 10) * 60 + parseInt(match[4], 10);
         intervalos.push({ inicio: inicio, fim: fim });
@@ -2799,7 +2817,8 @@
 
       var topBar = document.getElementById('topBar');
       if (lojaFechadaPorHorario) {
-        topBar.textContent = 'ESTABELECIMENTO FECHADO';
+        var horarioTexto = extrairTextoHorario(CONFIG.mensagemTopo);
+        topBar.textContent = horarioTexto ? ('FECHADO - ' + horarioTexto) : 'FECHADO';
         topBar.style.background = CONFIG.corBarraTopo || '#B3261E';
         topBar.classList.add('show');
       } else if (CONFIG.mensagemTopo) {
@@ -2826,7 +2845,7 @@
     }
     function buildCategoryNav() {
       document.getElementById("catNav").innerHTML = getCategories().map(c =>
-        `<button class="cat-btn ${c === activeCategory ? 'active' : ''}" onclick="selectCategory('${c.replace(/'/g, "\\'")}')">${c}</button>`
+        `<button class="cat-btn ${c === activeCategory ? 'active' : ''}" onclick="selectCategory('${c.replace(/'/g, "\\'")}')">${c === "Todos" ? "TODOS" : c}</button>`
       ).join("");
       checkCatNavOverflow();
     }
@@ -3241,6 +3260,135 @@
     // ============================================
     // WHATSAPP SEND
     // ============================================
+    // ============================================
+    // ABERTURA DO WHATSAPP (tenta o app nativo antes do WhatsApp Web)
+    // ============================================
+    // Detecta se o site está sendo acessado de dentro de um navegador in-app
+    // (Instagram, Facebook, TikTok, Line, WeChat...), que costuma bloquear links
+    // que tentam abrir outros aplicativos por segurança.
+    function detectarNavegadorInApp() {
+      var ua = navigator.userAgent || '';
+      return /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\/|MicroMessenger/i.test(ua);
+    }
+
+    // Copia um texto para a área de transferência (usado no fallback do navegador in-app)
+    function copiarTextoParaClipboard(texto) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(texto);
+        } else {
+          var temp = document.createElement('textarea');
+          temp.value = texto;
+          temp.style.position = 'fixed';
+          temp.style.opacity = '0';
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+        }
+      } catch (err) { /* se falhar, só não copia — não é crítico */ }
+    }
+
+    // Mostra um aviso explicando como sair do navegador in-app para concluir pelo WhatsApp
+    function avisarNavegadorInApp() {
+      if (typeof showToast === 'function') {
+        showToast('Mensagem do pedido copiada! Toque em ⋮ e escolha "Abrir no navegador" para enviar pelo WhatsApp.', true);
+        // Esse aviso é mais longo que o normal, então damos mais tempo pra pessoa ler
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(function () {
+          var el = document.getElementById('toast');
+          if (el) { el.classList.remove('show'); el.style.zIndex = ''; }
+        }, 8000);
+      }
+    }
+
+    // Detecta se o dispositivo é Android (usamos um esquema de link diferente nele)
+    function detectarAndroid() {
+      return /Android/i.test(navigator.userAgent || '');
+    }
+
+    // Tenta abrir diretamente o aplicativo do WhatsApp (celular ou desktop, se instalado)
+    // usando o protocolo "whatsapp://". Se o app não assumir o controle da aba em pouco
+    // tempo (ou seja, se não estiver instalado), cai automaticamente no link tradicional
+    // (wa.me), que abre o WhatsApp Web no navegador.
+    //
+    // Em navegadores in-app (Instagram, Facebook, TikTok...), que costumam bloquear esse
+    // tipo de redirecionamento por segurança, nem tentamos o protocolo do app: copiamos a
+    // mensagem do pedido e orientamos a pessoa a abrir no navegador externo.
+    function abrirWhatsApp(waWindow, telefone, mensagem) {
+      var textoCodificado = encodeURIComponent(mensagem);
+      var urlWeb = 'https://wa.me/' + telefone + '?text=' + textoCodificado;
+      var ehAndroid = detectarAndroid();
+
+      // Navegador in-app (Instagram, Facebook, TikTok...): copia a mensagem e orienta a
+      // pessoa a abrir no navegador externo, em vez de tentar qualquer link de app.
+      if (detectarNavegadorInApp()) {
+        copiarTextoParaClipboard(mensagem);
+        avisarNavegadorInApp();
+        try {
+          if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
+          else { window.location.href = urlWeb; }
+        } catch (err) { /* segue mesmo assim, o aviso já orienta a pessoa */ }
+        return;
+      }
+
+      if (ehAndroid) {
+        // No Android navegamos direto na aba ATUAL (sem usar a aba em branco pré-aberta):
+        // uma aba criada via window.open() parece ficar marcada pelo Chrome como "aberta
+        // por script" durante toda a sua vida, o que impede o app do WhatsApp de abrir
+        // mesmo depois (inclusive em um clique genuíno dentro dela). O esquema "intent://"
+        // já tem um fallback embutido (S.browser_fallback_url) caso o app não esteja
+        // instalado, então nem precisamos do temporizador de segurança aqui.
+        var urlIntent = 'intent://send?phone=' + telefone + '&text=' + textoCodificado +
+          '#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=' + encodeURIComponent(urlWeb) + ';end';
+        try {
+          window.location.href = urlIntent;
+        } catch (err) {
+          window.location.href = urlWeb;
+        }
+        return;
+      }
+
+      // iOS e desktop: mantém a aba pré-aberta (evita bloqueio de pop-up) e tenta o
+      // protocolo "whatsapp://", com fallback por temporizador para o WhatsApp Web.
+      var urlApp = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
+      var win = (waWindow && !waWindow.closed) ? waWindow : window.open('', '_blank');
+      if (!win) { window.open(urlWeb, '_blank'); return; } // navegador bloqueou até a aba em branco
+
+      var appAssumiuControle = false;
+      function marcarAppAssumiuControle() { appAssumiuControle = true; }
+
+      // Se o app abrir por cima da aba, ela perde o foco/fica oculta — usamos isso
+      // como sinal de que o app assumiu e cancelamos o fallback para o WhatsApp Web
+      try {
+        win.addEventListener('blur', marcarAppAssumiuControle);
+        win.addEventListener('pagehide', marcarAppAssumiuControle);
+        if (win.document) {
+          win.document.addEventListener('visibilitychange', function () {
+            if (win.document.hidden) marcarAppAssumiuControle();
+          });
+        }
+      } catch (err) {
+        // Alguns navegadores podem bloquear o acesso ao document da aba; segue só com o timeout
+      }
+
+      try {
+        win.location.href = urlApp;
+      } catch (err) {
+        // Alguns navegadores lançam erro ao tentar navegar para um protocolo desconhecido
+      }
+
+      setTimeout(function () {
+        if (appAssumiuControle) return; // o app abriu, não precisa do fallback
+        try {
+          if (!win.closed) { win.location.href = urlWeb; }
+          else { window.open(urlWeb, '_blank'); }
+        } catch (err) {
+          window.open(urlWeb, '_blank');
+        }
+      }, 1200);
+    }
+
     async function sendWhatsApp() {
       const name = document.getElementById("custName").value.trim();
       const phone = document.getElementById("custPhone").value.trim();
@@ -3283,7 +3431,12 @@
       // Abre a aba do WhatsApp em branco JÁ AQUI, ainda dentro do clique do usuário.
       // Isso evita que o navegador bloqueie o pop-up depois do "await" mais abaixo.
       // A aba só será direcionada para o link do WhatsApp quando a mensagem estiver pronta.
-      var waWindow = window.open('', '_blank');
+      //
+      // EXCEÇÃO: no Android, uma aba criada via window.open() parece ficar marcada pelo
+      // Chrome como "aberta por script" durante toda a sua vida, o que impede o app do
+      // WhatsApp de abrir mesmo depois (mesmo em um clique genuíno dentro dela). Por isso,
+      // no Android navegamos direto na aba atual mais adiante, sem pré-abrir nada aqui.
+      var waWindow = detectarAndroid() ? null : window.open('', '_blank');
 
       // Trava o botão para evitar cliques duplicados enquanto aguarda o servidor
       var btnEnviar = document.getElementById('btnEnviarPedido');
@@ -3354,15 +3507,9 @@
       if (getDeliveryLabel()) msg += `${getDeliveryLabel()}: ${fee > 0 ? 'R$ ' + fp(fee) : 'Grátis'}\n`;
       msg += `*TOTAL: R$ ${fp(total)}*\n`;
 
-      var waUrl = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent(msg);
-
-      // Direciona a aba já aberta para o link do WhatsApp (evita bloqueio de pop-up)
-      try {
-        if (waWindow && !waWindow.closed) { waWindow.location.href = waUrl; }
-        else { window.open(waUrl, '_blank'); }
-      } catch (err) {
-        window.open(waUrl, '_blank'); // fallback caso algo impeça o redirecionamento da aba já aberta
-      }
+      // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
+      // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
+      abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
 
       if (btnEnviar) btnEnviar.disabled = false;
       if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido pelo WhatsApp';
