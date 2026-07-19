@@ -2247,13 +2247,13 @@
           </svg></button>
       </div>
       <div class="checkout-body">
+        <div class="form-group"><label>Opção de Entrega *</label>
+          <div class="radio-group" id="deliveryOptions"></div>
+        </div>
         <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='(11) 99999-9999' maxlength='16' oninput='maskPhone(this); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
             placeholder="Seu nome completo"></div>
-        <div class="form-group"><label>Opção de Entrega *</label>
-          <div class="radio-group" id="deliveryOptions"></div>
-        </div>
         <div id='addressGroup' style='display:none'>
   <div class='form-group'>
     <label>CEP *</label>
@@ -3463,9 +3463,9 @@
       var firstError = null;
       function markError(el) { el.classList.add('field-error'); if (!firstError) firstError = el; hasError = true; }
 
-      if (!name) markError(document.getElementById('custName'));
-      if (!phone) markError(document.getElementById('custPhone'));
       if (!del) { var dg = document.querySelector('.form-group:has(#deliveryOptions)') || document.getElementById('deliveryOptions').closest('.form-group'); if (dg) { dg.classList.add('delivery-error'); if (!firstError) firstError = dg; } hasError = true; }
+      if (!phone) markError(document.getElementById('custPhone'));
+      if (!name) markError(document.getElementById('custName'));
       if (!pay) markError(document.getElementById('paymentMethod'));
 
       if (hasError) {
