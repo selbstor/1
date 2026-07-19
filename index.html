@@ -3364,6 +3364,18 @@
       return false;
     }
 
+    // Mostra um aviso na tela pedindo pra pessoa confirmar/permitir quando o navegador
+    // perguntar se pode abrir o WhatsApp — usado no Brave e nos demais navegadores desktop.
+    function avisarConfirmacaoAbrirApp(mensagemTexto) {
+      if (typeof showToast !== 'function') return;
+      showToast(mensagemTexto, true);
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(function () {
+        var el = document.getElementById('toast');
+        if (el) { el.classList.remove('show'); el.style.zIndex = ''; }
+      }, 6000);
+    }
+
     async function abrirWhatsApp(waWindow, telefone, mensagem) {
       var textoCodificado = encodeURIComponent(mensagem);
       var urlWeb = 'https://wa.me/' + telefone + '?text=' + textoCodificado;
@@ -3383,8 +3395,12 @@
 
       // Brave: tentar o protocolo whatsapp:// / intent:// dispara uma tela própria de
       // confirmação de segurança do navegador. Para evitar isso, vamos direto pro link
-      // wa.me (o próprio WhatsApp cuida do redirecionamento pro app a partir daí).
+      // wa.me (o próprio WhatsApp cuida do redirecionamento pro app a partir daí). Como o
+      // próprio site do WhatsApp também vai disparar essa tela do Brave em seguida, avisamos
+      // a pessoa antes, pra ela não estranhar.
       if (await detectarBrave()) {
+        avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
+        await new Promise(function (resolve) { setTimeout(resolve, 1800); });
         try {
           if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
           else { window.location.href = urlWeb; }
@@ -3464,6 +3480,11 @@
       } catch (err) {
         // Alguns navegadores podem bloquear o acesso ao document da aba; segue só com o timeout
       }
+
+      // Alguns navegadores desktop mostram uma confirmação nativa antes de abrir o app;
+      // avisamos a pessoa com antecedência pra ela não estranhar.
+      avisarConfirmacaoAbrirApp('Seu navegador pode pedir uma confirmação para abrir o WhatsApp — é só permitir.');
+      await new Promise(function (resolve) { setTimeout(resolve, 1500); });
 
       try {
         win.location.href = urlApp;
