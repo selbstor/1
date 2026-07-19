@@ -3742,7 +3742,16 @@
       // Dá um tempinho pro cliente realmente ver a mensagem "Pedido Enviado!" antes da
       // tela trocar pro WhatsApp (o app costuma abrir muito rápido, sem esse atraso a
       // confirmação mal aparece na tela).
-      await new Promise(function (resolve) { setTimeout(resolve, 4000); });
+      //
+      // No Safari de verdade (app da Apple), esse tempo precisa ser bem mais curto: ele
+      // tenta abrir o app externo de forma silenciosa e simplesmente ignora a tentativa se
+      // tiver passado tempo demais desde o toque do usuário. Já Brave/Chrome/Edge no iOS
+      // mostram sua própria tela de confirmação (não dependem desse "gesto recente"), então
+      // podem usar o mesmo tempo do Android/Desktop sem problema.
+      var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
+        /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
+      var tempoEspera = ehSafariReal ? 500 : 4000;
+      await new Promise(function (resolve) { setTimeout(resolve, tempoEspera); });
 
       // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
       // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
