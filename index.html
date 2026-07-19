@@ -3727,11 +3727,6 @@
     document.addEventListener('focusout', function(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         setTimeout(function() {
-          var algumModalAberto = document.querySelector('.checkout-overlay.open') ||
-            document.querySelector('.modal-overlay.open') ||
-            document.querySelector('.cart-overlay.open') ||
-            document.querySelector('.order-confirmed-overlay.open');
-
           var checkoutBody = document.querySelector('.checkout-body');
           var cartItems = document.querySelector('.cart-items');
           if (checkoutBody) {
@@ -3743,17 +3738,13 @@
             cartItems.style.overflowY = 'auto';
           }
 
-          if (algumModalAberto) {
-            // Corrige um bug conhecido do teclado no iOS Safari (a página fica "deslocada"
-            // depois que o teclado fecha) — só faz sentido aplicar isso com um modal aberto.
-            window.scrollTo(0, 0);
-            document.body.style.overflow = 'hidden';
-          } else {
-            // Fora de qualquer modal, restaura a rolagem normal da página. Sem isso, a
-            // página principal podia ficar travada/desconfigurada (exigindo pinçar a tela
-            // com os dedos pra "destravar" a rolagem) mesmo depois de fechar o teclado.
-            document.body.style.overflow = '';
-          }
+          // Corrige um bug conhecido do teclado no iOS Safari (a página/formulário pode
+          // ficar "desajustado" visualmente depois que o teclado fecha) forçando um
+          // recálculo leve do layout — sem mexer na posição de rolagem nem travar o
+          // overflow do body, que era o que causava o desajuste no formulário de checkout.
+          requestAnimationFrame(function () {
+            window.dispatchEvent(new Event('resize'));
+          });
         }, 100);
       }
     });
