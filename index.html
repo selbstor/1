@@ -4031,8 +4031,17 @@
     // onde a barra de endereço/menu pode deixar parte do conteúdo (como o botão de enviar
     // pedido) escondida abaixo da área realmente visível.
     function ajustarAlturaViewportReal() {
-      var altura = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-      document.documentElement.style.setProperty('--vh-real', altura + 'px');
+      var alturaJanela = window.innerHeight;
+      var alturaVisivel = (window.visualViewport && window.visualViewport.height) || alturaJanela;
+
+      // Quando o teclado virtual abre, a altura visível encolhe bastante (o teclado "come"
+      // uma parte da tela). Se a gente reagisse a isso encolhendo o modal, os campos do
+      // formulário ficariam espremidos/escondidos. Por isso, só atualizamos a variável
+      // quando a diferença for pequena (mudança real de orientação/tela) — se a diferença
+      // for grande, é o teclado abrindo, e nesse caso ignoramos e mantemos o último valor.
+      if (alturaJanela - alturaVisivel > 150) return;
+
+      document.documentElement.style.setProperty('--vh-real', alturaVisivel + 'px');
     }
     ajustarAlturaViewportReal();
     window.addEventListener('resize', ajustarAlturaViewportReal);
