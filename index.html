@@ -2854,6 +2854,21 @@
       document.getElementById('catNavWrap').style.display = '';
       document.getElementById('mainContent').style.display = '';
       document.getElementById('siteFooter').style.display = '';
+
+      // Força o navegador a recalcular o layout logo depois de exibir esses containers.
+      // Corrige um bug conhecido do Safari (iOS/macOS): quando um elemento com
+      // "position: sticky" (o cabeçalho, no nosso caso) passa de escondido pra visível
+      // DEPOIS da primeira renderização da página, o Safari às vezes não recalcula a
+      // posição/zoom corretamente sozinho — só quando algo força um recálculo (como o
+      // usuário pinçando a tela pra ajustar o zoom). Disparamos esse recálculo aqui mesmo,
+      // sem precisar que a pessoa faça isso manualmente.
+      void document.body.offsetHeight; // força um reflow síncrono
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          window.scrollTo(0, 0);
+          window.dispatchEvent(new Event('resize'));
+        });
+      });
     }
 
     // ============================================
@@ -3712,6 +3727,11 @@
     document.addEventListener('focusout', function(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         setTimeout(function() {
+          var algumModalAberto = document.querySelector('.checkout-overlay.open') ||
+            document.querySelector('.modal-overlay.open') ||
+            document.querySelector('.cart-overlay.open') ||
+            document.querySelector('.order-confirmed-overlay.open');
+
           var checkoutBody = document.querySelector('.checkout-body');
           var cartItems = document.querySelector('.cart-items');
           if (checkoutBody) {
@@ -3722,8 +3742,18 @@
             cartItems.style.overflow = '';
             cartItems.style.overflowY = 'auto';
           }
-          window.scrollTo(0, 0);
-          document.body.style.overflow = 'hidden';
+
+          if (algumModalAberto) {
+            // Corrige um bug conhecido do teclado no iOS Safari (a página fica "deslocada"
+            // depois que o teclado fecha) — só faz sentido aplicar isso com um modal aberto.
+            window.scrollTo(0, 0);
+            document.body.style.overflow = 'hidden';
+          } else {
+            // Fora de qualquer modal, restaura a rolagem normal da página. Sem isso, a
+            // página principal podia ficar travada/desconfigurada (exigindo pinçar a tela
+            // com os dedos pra "destravar" a rolagem) mesmo depois de fechar o teclado.
+            document.body.style.overflow = '';
+          }
         }, 100);
       }
     });
