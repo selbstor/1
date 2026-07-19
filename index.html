@@ -2324,7 +2324,7 @@
 
   <div class='order-confirmed-overlay' id='orderConfirmed'>
     <div class='order-confirmed-box' style='position:relative'>
-      <button onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
+      <button id='orderConfirmedCloseX' onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
         <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
       </button>
       <div class='order-confirmed-icon'>
@@ -2334,7 +2334,7 @@
       </div>
       <div class='order-confirmed-title' id='orderConfirmedTitle'>Pedido Recebido!</div>
       <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.</div>
-      <button onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
+      <button id='orderConfirmedOk' onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
     </div>
   </div>
 
@@ -3490,13 +3490,33 @@
       if (ehBrave) {
         avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
         await new Promise(function (resolve) { setTimeout(resolve, 1800); });
+
+        // Assim que o WhatsApp assumir a tela (a aba perde o foco/fica oculta), fechamos
+        // essa aba automaticamente — ela não precisa continuar aberta depois disso.
+        try {
+          win.addEventListener('blur', function () { try { win.close(); } catch (e) {} });
+          win.addEventListener('pagehide', function () { try { win.close(); } catch (e) {} });
+          if (win.document) {
+            win.document.addEventListener('visibilitychange', function () {
+              if (win.document.hidden) { try { win.close(); } catch (e) {} }
+            });
+          }
+        } catch (err) {
+          // se não conseguir "ouvir" a aba, ela só fica aberta em segundo plano — sem problema
+        }
+
         try { win.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
         return;
       }
 
       var urlApp = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
       var appAssumiuControle = false;
-      function marcarAppAssumiuControle() { appAssumiuControle = true; }
+      function marcarAppAssumiuControle() {
+        appAssumiuControle = true;
+        // O WhatsApp assumiu a tela — fecha essa aba automaticamente, ela não precisa
+        // continuar aberta em segundo plano depois que o app abriu.
+        try { win.close(); } catch (e) {}
+      }
 
       // Se o app abrir por cima da aba, ela perde o foco/fica oculta — usamos isso
       // como sinal de que o app assumiu e cancelamos o fallback para o WhatsApp Web
@@ -3708,6 +3728,14 @@
       }
       document.getElementById('orderConfirmed').classList.add('open');
 
+      // Trava os botões de fechar (X e OK) enquanto o redirecionamento pro WhatsApp ainda
+      // não aconteceu — se o cliente fechar essa tela antes da hora, o redirecionamento
+      // pode não chegar a ocorrer. Só libera depois que o processo realmente for disparado.
+      var btnFecharX = document.getElementById('orderConfirmedCloseX');
+      var btnFecharOk = document.getElementById('orderConfirmedOk');
+      if (btnFecharX) { btnFecharX.disabled = true; btnFecharX.style.opacity = '0.3'; btnFecharX.style.cursor = 'not-allowed'; }
+      if (btnFecharOk) { btnFecharOk.disabled = true; btnFecharOk.style.opacity = '0.6'; btnFecharOk.style.cursor = 'not-allowed'; btnFecharOk.textContent = 'Aguarde...'; }
+
       if (btnEnviar) btnEnviar.disabled = false;
       if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido pelo WhatsApp';
 
@@ -3719,6 +3747,10 @@
       // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
       // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
       await abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
+
+      // Redirecionamento já disparado — libera os botões de fechar
+      if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
+      if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
     }
 
     // ============================================
