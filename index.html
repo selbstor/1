@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carregando... — LojaFácil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
@@ -1337,13 +1337,6 @@
       padding: 20px 28px 28px;
     }
 
-    .checkout-footer {
-      padding: 16px 28px calc(16px + env(safe-area-inset-bottom, 0px));
-      border-top: 1px solid var(--gray-200);
-      background: var(--white);
-      flex-shrink: 0;
-    }
-
     .form-group {
       margin-bottom: 16px;
     }
@@ -1957,7 +1950,8 @@
       .checkout-modal {
         max-width: 100vw !important;
         width: 100% !important;
-        height: 100% !important;
+        height: 100vh !important;
+        height: 100dvh !important;
         border-radius: 0 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1977,11 +1971,6 @@
         min-height: 0 !important;
       }
 
-      .checkout-footer {
-        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-        flex-shrink: 0 !important;
-      }
-
       .modal-overlay {
         padding: 0 !important;
         align-items: flex-start !important;
@@ -1990,11 +1979,10 @@
       .modal {
         max-width: 100vw !important;
         width: 100% !important;
-        max-height: 100% !important;
-        height: 100% !important;
+        max-height: 100vh !important;
+        height: 100vh !important;
         border-radius: 0 !important;
         overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
       }
 
       .modal-details {
@@ -2208,6 +2196,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Cart -->
   <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
   <aside class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
@@ -2244,13 +2234,13 @@
           </svg></button>
       </div>
       <div class="checkout-body">
-        <div class="form-group"><label>Opção de Entrega *</label>
-          <div class="radio-group" id="deliveryOptions"></div>
-        </div>
-        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='(11) 99999-9999' maxlength='16' oninput='maskPhone(this); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
+        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='16' oninput='maskPhone(this); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
             placeholder="Seu nome completo"></div>
+        <div class="form-group"><label>Opção de Entrega *</label>
+          <div class="radio-group" id="deliveryOptions"></div>
+        </div>
         <div id='addressGroup' style='display:none'>
   <div class='form-group'>
     <label>CEP *</label>
@@ -2292,8 +2282,6 @@
         <div class="form-group"><label>Observações</label><textarea id="custObs"
             placeholder=""></textarea></div>
         <div class="checkout-summary" id="checkoutSummary"></div>
-      </div>
-      <div class="checkout-footer">
         <button class="btn-whatsapp" id="btnEnviarPedido" onclick="sendWhatsApp()">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -2321,7 +2309,7 @@
 
   <div class='order-confirmed-overlay' id='orderConfirmed'>
     <div class='order-confirmed-box' style='position:relative'>
-      <button id='orderConfirmedCloseX' onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
+      <button onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
         <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
       </button>
       <div class='order-confirmed-icon'>
@@ -2329,9 +2317,9 @@
           <path stroke-linecap='round' stroke-linejoin='round' d='M4.5 12.75l6 6 9-13.5'/>
         </svg>
       </div>
-      <div class='order-confirmed-title' id='orderConfirmedTitle'>Pedido Recebido!</div>
-      <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.</div>
-      <button id='orderConfirmedOk' onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
+      <div class='order-confirmed-title'>Pedido Recebido!</div>
+      <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi recebido! Verifique a mensagem no seu WhatsApp clique em <strong>Enviar</strong> para concluir e ou falar com a loja pelo telefone: .</div>
+      <button onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
     </div>
   </div>
 
@@ -2851,25 +2839,6 @@
       document.getElementById('catNavWrap').style.display = '';
       document.getElementById('mainContent').style.display = '';
       document.getElementById('siteFooter').style.display = '';
-
-      // Força o navegador a recalcular o layout logo depois de exibir esses containers.
-      // Corrige um bug conhecido do Safari (iOS/macOS): quando um elemento com
-      // "position: sticky" (o cabeçalho, no nosso caso) passa de escondido pra visível
-      // DEPOIS da primeira renderização da página, o Safari às vezes não recalcula a
-      // posição/zoom corretamente sozinho — só quando algo força um recálculo (como o
-      // usuário pinçando a tela pra ajustar o zoom). Disparamos esse recálculo aqui mesmo,
-      // sem precisar que a pessoa faça isso manualmente.
-      void document.body.offsetHeight; // força um reflow síncrono
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          window.scrollTo(0, 0);
-          window.dispatchEvent(new Event('resize'));
-          // Rechecagem explícita: garante que as setas de rolagem da barra de categorias
-          // fiquem com o estado certo depois desse recálculo forçado (no Safari, medidas
-          // lidas bem nesse momento podem vir erradas/zeradas se não recalcularmos de novo).
-          if (typeof checkCatNavOverflow === 'function') checkCatNavOverflow();
-        });
-      });
     }
 
     // ============================================
@@ -2989,12 +2958,6 @@
       currentProduct = PRODUCTS[idx]; selectedVariation = null;
       document.getElementById("qtyVal").value = 1;
       document.getElementById("qtyVal").setAttribute('data-max', currentProduct.qtdMaxima);
-      // Reseta a rolagem do modal, para não abrir o produto novo já rolado na posição
-      // em que o produto anterior tinha ficado (o que escondia nome/preço/descrição)
-      var modalBodyEl = document.querySelector('#productModal .modal-body');
-      if (modalBodyEl) modalBodyEl.scrollTop = 0;
-      var modalEl = document.querySelector('#productModal .modal');
-      if (modalEl) modalEl.scrollTop = 0;
       const imgs = [currentProduct.img1, currentProduct.img2, currentProduct.img3, currentProduct.img4].filter(Boolean);
       document.getElementById("modalMainImg").src = imgs[0] || '';
       document.getElementById('modalMainImg').onerror = function() { handleImgError(this); };
@@ -3351,14 +3314,6 @@
       return /Android/i.test(navigator.userAgent || '');
     }
 
-    // Detecta iOS/iPadOS de forma geral (qualquer navegador — Safari, Chrome, Firefox...).
-    // A Apple exige que todo navegador no iOS use o motor do Safari (WebKit) por baixo dos
-    // panos, então o mesmo problema de "aba pré-aberta fica bloqueada" do Safari também
-    // acontece no Chrome/Firefox/Edge quando rodam no iPhone/iPad.
-    function detectarIOS() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-    }
-
     // Tenta abrir diretamente o aplicativo do WhatsApp (celular ou desktop, se instalado)
     // usando o protocolo "whatsapp://". Se o app não assumir o controle da aba em pouco
     // tempo (ou seja, se não estiver instalado), cai automaticamente no link tradicional
@@ -3381,24 +3336,10 @@
       return false;
     }
 
-    // Mostra um aviso na tela pedindo pra pessoa confirmar/permitir quando o navegador
-    // perguntar se pode abrir o WhatsApp — usado no Brave e nos demais navegadores desktop.
-    function avisarConfirmacaoAbrirApp(mensagemTexto) {
-      if (typeof showToast !== 'function') return;
-      showToast(mensagemTexto, true);
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(function () {
-        var el = document.getElementById('toast');
-        if (el) { el.classList.remove('show'); el.style.zIndex = ''; }
-      }, 6000);
-    }
-
     async function abrirWhatsApp(waWindow, telefone, mensagem) {
       var textoCodificado = encodeURIComponent(mensagem);
       var urlWeb = 'https://wa.me/' + telefone + '?text=' + textoCodificado;
       var ehAndroid = detectarAndroid();
-      var ehIOS = detectarIOS();
-      var ehBrave = await detectarBrave();
 
       // Navegador in-app (Instagram, Facebook, TikTok...): copia a mensagem e orienta a
       // pessoa a abrir no navegador externo, em vez de tentar qualquer link de app.
@@ -3412,46 +3353,16 @@
         return;
       }
 
-      if (ehIOS) {
-        // Em qualquer navegador no iOS/iPadOS (Safari, Chrome, Firefox, Brave...) navegamos
-        // direto na aba ATUAL, sem pré-abrir popup: o WebKit (motor usado por todos eles no
-        // iOS, por exigência da Apple) bloqueia silenciosamente a navegação de uma aba aberta
-        // via window.open() se ela ficar tempo demais sem ser redirecionada — o que acontece
-        // aqui, já que esperamos a confirmação do pedido antes de abrir o WhatsApp.
-        if (ehBrave) {
-          avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-          await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-        }
-
-        // No Brave, tentar o protocolo whatsapp:// dispara a tela própria de confirmação
-        // dele; como o wa.me já cuida do redirecionamento pro app depois, vamos direto pra lá.
-        if (ehBrave) {
-          try { window.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-          return;
-        }
-
-        // Demais navegadores no iOS: tenta o protocolo do app, com temporizador de
-        // segurança próprio (não existe "intent://" com fallback embutido no iOS).
-        var urlAppIOS = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
-        var appAssumiuControleIOS = false;
-        function marcarAppAssumiuControleIOS() { appAssumiuControleIOS = true; }
-        document.addEventListener('visibilitychange', function () {
-          if (document.hidden) marcarAppAssumiuControleIOS();
-        });
-        window.addEventListener('pagehide', marcarAppAssumiuControleIOS);
-        window.addEventListener('blur', marcarAppAssumiuControleIOS);
-
+      // Brave: tentar o protocolo whatsapp:// / intent:// dispara uma tela própria de
+      // confirmação de segurança do navegador. Para evitar isso, vamos direto pro link
+      // wa.me (o próprio WhatsApp cuida do redirecionamento pro app a partir daí).
+      if (await detectarBrave()) {
         try {
-          window.location.href = urlAppIOS;
+          if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
+          else { window.location.href = urlWeb; }
         } catch (err) {
-          window.location.href = urlWeb;
-          return;
+          window.open(urlWeb, '_blank');
         }
-
-        setTimeout(function () {
-          if (appAssumiuControleIOS) return; // o app abriu, não precisa do fallback
-          window.location.href = urlWeb;
-        }, 1200);
         return;
       }
 
@@ -3459,18 +3370,9 @@
         // No Android navegamos direto na aba ATUAL (sem usar a aba em branco pré-aberta):
         // uma aba criada via window.open() parece ficar marcada pelo Chrome como "aberta
         // por script" durante toda a sua vida, o que impede o app do WhatsApp de abrir
-        // mesmo depois (inclusive em um clique genuíno dentro dela).
-        if (ehBrave) {
-          // No Brave, tentar whatsapp:///intent:// dispara a tela própria de confirmação
-          // dele; vamos direto pro wa.me, que cuida do redirecionamento pro app depois.
-          avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-          await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-          try { window.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-          return;
-        }
-
-        // O esquema "intent://" já tem um fallback embutido (S.browser_fallback_url) caso
-        // o app não esteja instalado, então nem precisamos do temporizador de segurança aqui.
+        // mesmo depois (inclusive em um clique genuíno dentro dela). O esquema "intent://"
+        // já tem um fallback embutido (S.browser_fallback_url) caso o app não esteja
+        // instalado, então nem precisamos do temporizador de segurança aqui.
         var urlIntent = 'intent://send?phone=' + telefone + '&text=' + textoCodificado +
           '#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=' + encodeURIComponent(urlWeb) + ';end';
         try {
@@ -3481,43 +3383,14 @@
         return;
       }
 
-      // Desktop (Chrome, Firefox, Edge, Brave...): mantém a aba pré-aberta (evita bloqueio
-      // de pop-up) e tenta o protocolo "whatsapp://", com fallback por temporizador para o
-      // WhatsApp Web. No Brave, pulamos direto pro wa.me (ele mostra sua própria tela de
-      // confirmação para qualquer link de app, então nem tentamos o protocolo primeiro).
+      // iOS e desktop: mantém a aba pré-aberta (evita bloqueio de pop-up) e tenta o
+      // protocolo "whatsapp://", com fallback por temporizador para o WhatsApp Web.
+      var urlApp = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
       var win = (waWindow && !waWindow.closed) ? waWindow : window.open('', '_blank');
       if (!win) { window.open(urlWeb, '_blank'); return; } // navegador bloqueou até a aba em branco
 
-      if (ehBrave) {
-        avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-        await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-
-        // Assim que o WhatsApp assumir a tela (a aba perde o foco/fica oculta), fechamos
-        // essa aba automaticamente — ela não precisa continuar aberta depois disso.
-        try {
-          win.addEventListener('blur', function () { try { win.close(); } catch (e) {} });
-          win.addEventListener('pagehide', function () { try { win.close(); } catch (e) {} });
-          if (win.document) {
-            win.document.addEventListener('visibilitychange', function () {
-              if (win.document.hidden) { try { win.close(); } catch (e) {} }
-            });
-          }
-        } catch (err) {
-          // se não conseguir "ouvir" a aba, ela só fica aberta em segundo plano — sem problema
-        }
-
-        try { win.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-        return;
-      }
-
-      var urlApp = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
       var appAssumiuControle = false;
-      function marcarAppAssumiuControle() {
-        appAssumiuControle = true;
-        // O WhatsApp assumiu a tela — fecha essa aba automaticamente, ela não precisa
-        // continuar aberta em segundo plano depois que o app abriu.
-        try { win.close(); } catch (e) {}
-      }
+      function marcarAppAssumiuControle() { appAssumiuControle = true; }
 
       // Se o app abrir por cima da aba, ela perde o foco/fica oculta — usamos isso
       // como sinal de que o app assumiu e cancelamos o fallback para o WhatsApp Web
@@ -3532,11 +3405,6 @@
       } catch (err) {
         // Alguns navegadores podem bloquear o acesso ao document da aba; segue só com o timeout
       }
-
-      // Alguns navegadores desktop mostram uma confirmação nativa antes de abrir o app;
-      // avisamos a pessoa com antecedência pra ela não estranhar.
-      avisarConfirmacaoAbrirApp('Seu navegador pode pedir uma confirmação para abrir o WhatsApp — é só permitir.');
-      await new Promise(function (resolve) { setTimeout(resolve, 1500); });
 
       try {
         win.location.href = urlApp;
@@ -3574,9 +3442,9 @@
       var firstError = null;
       function markError(el) { el.classList.add('field-error'); if (!firstError) firstError = el; hasError = true; }
 
-      if (!del) { var dg = document.querySelector('.form-group:has(#deliveryOptions)') || document.getElementById('deliveryOptions').closest('.form-group'); if (dg) { dg.classList.add('delivery-error'); if (!firstError) firstError = dg; } hasError = true; }
-      if (!phone) markError(document.getElementById('custPhone'));
       if (!name) markError(document.getElementById('custName'));
+      if (!phone) markError(document.getElementById('custPhone'));
+      if (!del) { var dg = document.querySelector('.form-group:has(#deliveryOptions)') || document.getElementById('deliveryOptions').closest('.form-group'); if (dg) { dg.classList.add('delivery-error'); if (!firstError) firstError = dg; } hasError = true; }
       if (!pay) markError(document.getElementById('paymentMethod'));
 
       if (hasError) {
@@ -3598,50 +3466,11 @@
       // Isso evita que o navegador bloqueie o pop-up depois do "await" mais abaixo.
       // A aba só será direcionada para o link do WhatsApp quando a mensagem estiver pronta.
       //
-      // EXCEÇÃO: no Android e em qualquer navegador no iOS/iPadOS, uma aba criada via
-      // window.open() parece ficar marcada como "aberta por script" e, depois de um tempo
-      // (principalmente no iOS, que é mais rígido nisso por usar o motor do Safari), o
-      // navegador bloqueia silenciosamente qualquer tentativa de navegá-la mais tarde. Por
-      // isso, nessas plataformas navegamos direto na aba atual mais adiante, sem pré-abrir
-      // nada aqui.
-      var waWindow = (detectarAndroid() || detectarIOS()) ? null : window.open('', '_blank');
-
-      // Em vez de deixar a aba em branco (about:blank) enquanto aguardamos a confirmação
-      // do pedido, escrevemos uma pequena página avisando o que está acontecendo.
-      if (waWindow) {
-        try {
-          waWindow.document.open();
-          waWindow.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecionando para o WhatsApp...</title>
-<style>
-  html,body{height:100%;margin:0}
-  body{display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px;box-sizing:border-box}
-  .box{max-width:420px;text-align:center}
-  .spinner{width:48px;height:48px;border:5px solid rgba(42,92,63,0.15);border-top-color:#2A5C3F;border-radius:50%;margin:0 auto 24px;animation:spin 0.8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  h1{font-size:1.5rem;color:#1B1B1B;margin:0 0 16px;line-height:1.3}
-  p{font-size:1.15rem;color:#4A4A47;line-height:1.55;margin:0 0 12px}
-  strong{color:#2A5C3F}
-</style>
-</head>
-<body>
-  <div class="box">
-    <div class="spinner"></div>
-    <h1>Enviando seu pedido para o WhatsApp...</h1>
-    <p>Se o navegador pedir uma confirmação de segurança, toque em <strong>Permitir</strong> (ou "Abrir") para continuar.</p>
-    <p>Essa janela vai atualizar sozinha em instantes.</p>
-  </div>
-</body>
-</html>`);
-          waWindow.document.close();
-        } catch (err) {
-          // se falhar por algum motivo, a aba só fica em branco até ser redirecionada — sem problema
-        }
-      }
+      // EXCEÇÃO: no Android, uma aba criada via window.open() parece ficar marcada pelo
+      // Chrome como "aberta por script" durante toda a sua vida, o que impede o app do
+      // WhatsApp de abrir mesmo depois (mesmo em um clique genuíno dentro dela). Por isso,
+      // no Android navegamos direto na aba atual mais adiante, sem pré-abrir nada aqui.
+      var waWindow = detectarAndroid() ? null : window.open('', '_blank');
 
       // Trava o botão para evitar cliques duplicados enquanto aguarda o servidor
       var btnEnviar = document.getElementById('btnEnviarPedido');
@@ -3691,8 +3520,8 @@
       var numeroPedidoFinal = (resultado && resultado.numeroPedido) ? resultado.numeroPedido : numeroPedido;
 
       let msg = (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "\n━━━━━━━━━━━━━━━\n";
-      msg += `Pedido: #${numeroPedidoFinal}\n`;
       msg += "*DADOS DO CLIENTE:*\n";
+      msg += `Pedido: #${numeroPedidoFinal}\n`;
       msg += `Nome: ${name}\nTel: ${phone}\n`;
       if (del.value !== 'retirada') {
         msg += 'Endereço:\n';
@@ -3719,23 +3548,11 @@
       cart = [];
       currentCoupon = null;
       renderCart();
-      var orderConfirmedTitle = document.getElementById('orderConfirmedTitle');
-      if (orderConfirmedTitle) {
-        orderConfirmedTitle.innerHTML = `Pedido Recebido nº: <span style="font-size:1.2em">#${numeroPedidoFinal}</span>`;
-      }
       var orderConfirmedText = document.getElementById('orderConfirmedText');
       if (orderConfirmedText) {
-        orderConfirmedText.innerHTML = `Verifique a mensagem no seu WhatsApp, clique em <strong>Enviar</strong> para concluir ou mais informações através do telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
+        orderConfirmedText.innerHTML = `Seu pedido <strong>nº: #${numeroPedidoFinal}</strong> foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.`;
       }
       document.getElementById('orderConfirmed').classList.add('open');
-
-      // Trava os botões de fechar (X e OK) enquanto o redirecionamento pro WhatsApp ainda
-      // não aconteceu — se o cliente fechar essa tela antes da hora, o redirecionamento
-      // pode não chegar a ocorrer. Só libera depois que o processo realmente for disparado.
-      var btnFecharX = document.getElementById('orderConfirmedCloseX');
-      var btnFecharOk = document.getElementById('orderConfirmedOk');
-      if (btnFecharX) { btnFecharX.disabled = true; btnFecharX.style.opacity = '0.3'; btnFecharX.style.cursor = 'not-allowed'; }
-      if (btnFecharOk) { btnFecharOk.disabled = true; btnFecharOk.style.opacity = '0.6'; btnFecharOk.style.cursor = 'not-allowed'; btnFecharOk.textContent = 'Aguarde...'; }
 
       if (btnEnviar) btnEnviar.disabled = false;
       if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido pelo WhatsApp';
@@ -3743,24 +3560,11 @@
       // Dá um tempinho pro cliente realmente ver a mensagem "Pedido Enviado!" antes da
       // tela trocar pro WhatsApp (o app costuma abrir muito rápido, sem esse atraso a
       // confirmação mal aparece na tela).
-      //
-      // No Safari de verdade (app da Apple), esse tempo precisa ser bem mais curto: ele
-      // tenta abrir o app externo de forma silenciosa e simplesmente ignora a tentativa se
-      // tiver passado tempo demais desde o toque do usuário. Já Brave/Chrome/Edge no iOS
-      // mostram sua própria tela de confirmação (não dependem desse "gesto recente"), então
-      // podem usar o mesmo tempo do Android/Desktop sem problema.
-      var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
-        /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
-      var tempoEspera = ehSafariReal ? 500 : 4000;
-      await new Promise(function (resolve) { setTimeout(resolve, tempoEspera); });
+      await new Promise(function (resolve) { setTimeout(resolve, 3500); });
 
       // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
       // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
       await abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
-
-      // Redirecionamento já disparado — libera os botões de fechar
-      if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
-      if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
     }
 
     // ============================================
@@ -3779,14 +3583,8 @@
             cartItems.style.overflow = '';
             cartItems.style.overflowY = 'auto';
           }
-
-          // Corrige um bug conhecido do teclado no iOS Safari (a página/formulário pode
-          // ficar "desajustado" visualmente depois que o teclado fecha) forçando um
-          // recálculo leve do layout — sem mexer na posição de rolagem nem travar o
-          // overflow do body, que era o que causava o desajuste no formulário de checkout.
-          requestAnimationFrame(function () {
-            window.dispatchEvent(new Event('resize'));
-          });
+          window.scrollTo(0, 0);
+          document.body.style.overflow = 'hidden';
         }, 100);
       }
     });
@@ -3867,16 +3665,6 @@
       document.body.style.overflow = '';
       document.body.classList.remove('modal-open');
     }
-    // Formata o telefone da loja (guardado com código do país, ex: 5582999999999)
-    // para exibição legível, ex: (82) 99999-9999
-    function formatarTelefoneExibicao(numero) {
-      var v = (numero || '').replace(/\D/g, '');
-      if (v.length > 11 && v.indexOf('55') === 0) v = v.substring(2); // remove o código do país (55)
-      if (v.length === 11) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 5) + '-' + v.substr(7);
-      if (v.length === 10) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 4) + '-' + v.substr(6);
-      return numero || '';
-    }
-
     function maskPhone(input) {
       var v = input.value.replace(/\D/g, '');
       if (v.length > 11) v = v.substr(0, 11);
@@ -4068,18 +3856,6 @@
     // ============================================
     // INIT
     // ============================================
-    // Calcula a altura real da área visível da tela (via visualViewport quando disponível),
-    // que é mais confiável que "100vh"/"100dvh" em navegadores como o Chrome no iPhone —
-    // onde a barra de endereço/menu pode deixar parte do conteúdo (como o botão de enviar
-    // pedido) escondida abaixo da área realmente visível.
-    // Nota: chegamos a usar uma variável CSS calculada via JS (--vh-real) pra controlar a
-    // altura do checkout e do modal de produto no mobile, mas isso conflitava com o teclado
-    // virtual do Safari (e a barra de "Preencher Automaticamente"), deixando parte do fundo
-    // da página visível atrás do formulário. Trocamos por uma abordagem mais simples e
-    // robusta: os overlays já usam "position:fixed; inset:0" (cobrem a tela toda de forma
-    // confiável, sem cálculo nenhum), e os modais internos usam "height:100%" pra preencher
-    // esse espaço — o próprio navegador cuida de ajustar isso quando o teclado abre/fecha.
-
     async function init() {
       try {
         await Promise.all([loadConfig(), loadProducts(), loadClientes()]);
