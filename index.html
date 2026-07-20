@@ -1957,9 +1957,7 @@
       .checkout-modal {
         max-width: 100vw !important;
         width: 100% !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        height: var(--vh-real, 100dvh) !important;
+        height: 100% !important;
         border-radius: 0 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1992,9 +1990,8 @@
       .modal {
         max-width: 100vw !important;
         width: 100% !important;
-        max-height: 100vh !important;
-        height: 100vh !important;
-        height: var(--vh-real, 100dvh) !important;
+        max-height: 100% !important;
+        height: 100% !important;
         border-radius: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
@@ -2867,6 +2864,10 @@
         requestAnimationFrame(function () {
           window.scrollTo(0, 0);
           window.dispatchEvent(new Event('resize'));
+          // Rechecagem explícita: garante que as setas de rolagem da barra de categorias
+          // fiquem com o estado certo depois desse recálculo forçado (no Safari, medidas
+          // lidas bem nesse momento podem vir erradas/zeradas se não recalcularmos de novo).
+          if (typeof checkCatNavOverflow === 'function') checkCatNavOverflow();
         });
       });
     }
@@ -4071,25 +4072,13 @@
     // que é mais confiável que "100vh"/"100dvh" em navegadores como o Chrome no iPhone —
     // onde a barra de endereço/menu pode deixar parte do conteúdo (como o botão de enviar
     // pedido) escondida abaixo da área realmente visível.
-    function ajustarAlturaViewportReal() {
-      var alturaJanela = window.innerHeight;
-      var alturaVisivel = (window.visualViewport && window.visualViewport.height) || alturaJanela;
-
-      // Quando o teclado virtual abre, a altura visível encolhe bastante (o teclado "come"
-      // uma parte da tela). Se a gente reagisse a isso encolhendo o modal, os campos do
-      // formulário ficariam espremidos/escondidos. Por isso, só atualizamos a variável
-      // quando a diferença for pequena (mudança real de orientação/tela) — se a diferença
-      // for grande, é o teclado abrindo, e nesse caso ignoramos e mantemos o último valor.
-      if (alturaJanela - alturaVisivel > 150) return;
-
-      document.documentElement.style.setProperty('--vh-real', alturaVisivel + 'px');
-    }
-    ajustarAlturaViewportReal();
-    window.addEventListener('resize', ajustarAlturaViewportReal);
-    window.addEventListener('orientationchange', ajustarAlturaViewportReal);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', ajustarAlturaViewportReal);
-    }
+    // Nota: chegamos a usar uma variável CSS calculada via JS (--vh-real) pra controlar a
+    // altura do checkout e do modal de produto no mobile, mas isso conflitava com o teclado
+    // virtual do Safari (e a barra de "Preencher Automaticamente"), deixando parte do fundo
+    // da página visível atrás do formulário. Trocamos por uma abordagem mais simples e
+    // robusta: os overlays já usam "position:fixed; inset:0" (cobrem a tela toda de forma
+    // confiável, sem cálculo nenhum), e os modais internos usam "height:100%" pra preencher
+    // esse espaço — o próprio navegador cuida de ajustar isso quando o teclado abre/fecha.
 
     async function init() {
       try {
