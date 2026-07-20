@@ -3674,7 +3674,7 @@
         dataHora: new Date().toLocaleString('pt-BR'),
         nome: name,
         telefone: phoneApenasNumeros,
-        cep: typeof cep !== 'undefined' ? cep : '',
+        cep: typeof cep !== 'undefined' ? cep.replace(/\D/g, '') : '',
         endereco: typeof endereco !== 'undefined' ? endereco : '',
         bairro: typeof bairro !== 'undefined' ? bairro : '',
         cidade: typeof cidade !== 'undefined' ? cidade : '',
@@ -3693,6 +3693,7 @@
       function montarMensagem(numeroParaMensagem) {
         let m = (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "\n━━━━━━━━━━━━━━━\n";
         m += `Nº do Pedido: #${numeroParaMensagem}\n`;
+        m += `Data/Hora: ${dadosPedido.dataHora.replace(',', ' -')}\n`;
         m += "*DADOS DO CLIENTE:*\n";
         m += `Nome: ${name}\nTel: ${phoneComDDD}\n`;
         if (del.value !== 'retirada') {
