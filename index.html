@@ -2247,14 +2247,14 @@
         <div class="form-group"><label>Opção de Entrega *</label>
           <div class="radio-group" id="deliveryOptions"></div>
         </div>
-        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
+        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value)'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
             placeholder="Seu nome completo"></div>
         <div id='addressGroup' style='display:none'>
   <div class='form-group'>
     <label>CEP *</label>
-    <input type='text' id='custCep' placeholder='00000-000' maxlength='9' oninput='maskCep(this); buscarCep(this.value)' onblur='buscarCep(this.value)'>
+    <input type='text' id='custCep' placeholder='00000-000' maxlength='9' oninput='maskCep(this); buscarCep(this.value); buscarClientePorCep(this.value)' onblur='buscarCep(this.value); buscarClientePorCep(this.value)'>
   </div>
   <div class='form-group'>
     <label>Endereço *</label>
@@ -3580,12 +3580,14 @@
       function markError(el) { el.classList.add('field-error'); if (!firstError) firstError = el; hasError = true; }
 
       if (!del) { var dg = document.querySelector('.form-group:has(#deliveryOptions)') || document.getElementById('deliveryOptions').closest('.form-group'); if (dg) { dg.classList.add('delivery-error'); if (!firstError) firstError = dg; } hasError = true; }
-      if (!phone) markError(document.getElementById('custPhone'));
+      var phoneDigitos = phone.replace(/\D/g, '');
+      var phoneMuitoCurto = phone && phoneDigitos.length < 9;
+      if (!phone || phoneMuitoCurto) markError(document.getElementById('custPhone'));
       if (!name) markError(document.getElementById('custName'));
       if (!pay) markError(document.getElementById('paymentMethod'));
 
       if (hasError) {
-        showToast("Preencha todos os campos obrigatórios", true);
+        showToast(phoneMuitoCurto ? "Telefone precisa ter 9 dígitos" : "Preencha todos os campos obrigatórios", true);
         if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus && firstError.querySelector && (firstError.querySelector('input,select,textarea') || firstError).focus(); }
         return;
       }
@@ -3690,9 +3692,9 @@
         observacoes: obs
       };
 
-      function montarMensagem(numeroParaMensagem) {
+      function montarMensagem(numeroParaMensagem, incluirNumeroPedido) {
         let m = (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "\n━━━━━━━━━━━━━━━\n";
-        m += `Nº do Pedido: #${numeroParaMensagem}\n`;
+        if (incluirNumeroPedido) m += `Nº do Pedido: #${numeroParaMensagem}\n`;
         m += `Data/Hora: ${dadosPedido.dataHora.replace(',', ' -')}\n`;
         m += "*DADOS DO CLIENTE:*\n";
         m += `Nome: ${name}\nTel: ${phoneComDDD}\n`;
@@ -3743,7 +3745,7 @@
         /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
 
       if (ehSafariReal) {
-        var msgSafari = montarMensagem(numeroPedido);
+        var msgSafari = montarMensagem(numeroPedido, false);
         var textoCodificadoSafari = encodeURIComponent(msgSafari);
         var urlWebSafari = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + textoCodificadoSafari;
         var urlAppSafari = 'whatsapp://send?phone=' + CONFIG.whatsapp + '&text=' + textoCodificadoSafari;
@@ -3791,7 +3793,7 @@
       // Se o servidor não responder a tempo (ou der erro), usamos o número provisório para não travar o pedido.
       var resultado = await salvarPedidoEObterNumero(dadosPedido);
       var numeroPedidoFinal = (resultado && resultado.numeroPedido) ? resultado.numeroPedido : numeroPedido;
-      let msg = montarMensagem(numeroPedidoFinal);
+      let msg = montarMensagem(numeroPedidoFinal, true);
 
       // Mostra a confirmação ANTES de abrir o WhatsApp — em alguns celulares/navegadores
       // a página pode navegar direto para o app ou para o wa.me logo em seguida, então é
@@ -4265,79 +4267,74 @@ async function buscarCep(cep) {
 }
 
 // ============================================
-// BUSCA DE CLIENTE PELO TELEFONE (aba "Clientes")
+// BUSCA DE CLIENTE PELO CEP (aba "Clientes")
 // ============================================
 
-// Evita repetir a mesma busca para o mesmo telefone
+// Evita repetir a mesma busca para o mesmo telefone (só limpa campos quando incompleto)
 var _ultimoTelBuscado = '';
 
-function buscarClientePorTelefone(valor) {
+// Quando o telefone é apagado/fica incompleto, limpa os demais campos preenchidos
+// automaticamente (nome, endereço...), pra não deixar dados de um cliente anterior.
+function limparCamposSeTelefoneIncompleto(valor) {
   var telLocal = (valor || '').replace(/\D/g, '');
+  if (telLocal.length >= 8) return; // telefone completo, não mexe em nada
+
+  _ultimoTelBuscado = '';
+  var nomeInput = document.getElementById('custName');
+  if (nomeInput) nomeInput.value = '';
+}
+
+// Extrai só o número local (sem DDD) de um telefone salvo com DDD (10 ou 11 dígitos)
+function extrairTelefoneLocal(numero) {
+  var v = (numero || '').replace(/\D/g, '');
+  if (v.length === 11) return v.slice(-9);
+  if (v.length === 10) return v.slice(-8);
+  return v;
+}
+
+// Evita repetir a mesma busca para o mesmo CEP
+var _ultimoCepBuscadoCliente = '';
+
+function buscarClientePorCep(valor) {
+  var cepLimpo = (valor || '').replace(/\D/g, '');
 
   var nomeInput = document.getElementById('custName');
-  var cepInput = document.getElementById('custCep');
+  var phoneInput = document.getElementById('custPhone');
   var enderecoInput = document.getElementById('custEndereco');
   var complementoInput = document.getElementById('custComplemento');
   var bairroInput = document.getElementById('custBairro');
   var cidadeInput = document.getElementById('custCidade');
 
-  // Telefone apagado ou incompleto: limpa os demais campos e reseta o controle de busca.
-  // Os dados só voltam a aparecer quando um telefone completo e cadastrado for digitado de novo.
-  if (telLocal.length < 8) {
-    _ultimoTelBuscado = '';
-    if (nomeInput) nomeInput.value = '';
-    if (cepInput) cepInput.value = '';
-    if (enderecoInput) enderecoInput.value = '';
-    if (complementoInput) complementoInput.value = '';
-    if (bairroInput) bairroInput.value = '';
-    if (cidadeInput) cidadeInput.value = '';
-    return;
-  }
+  // Só busca quando o CEP estiver completo (8 dígitos)
+  if (cepLimpo.length !== 8) return;
+  if (cepLimpo === _ultimoCepBuscadoCliente) return;
+  _ultimoCepBuscadoCliente = cepLimpo;
 
-  // Só busca quando o telefone estiver completo (8 ou 9 dígitos locais)
-  if (telLocal !== _ultimoTelBuscado) {
-    _ultimoTelBuscado = telLocal;
-  } else {
-    return;
-  }
-
-  // Busca pelo número exatamente como foi digitado (sem DDD). Se não achar, tenta como
-  // compatibilidade com clientes cadastrados antes (quando o telefone incluía o DDD) —
-  // procura um telefone salvo que termine com o número local digitado.
-  var cliente = CLIENTES && CLIENTES[telLocal];
-  if (!cliente && CLIENTES) {
+  // Procura, entre os clientes cadastrados, algum com esse mesmo CEP
+  var cliente = null;
+  if (CLIENTES) {
     for (var chave in CLIENTES) {
-      if (chave.length > telLocal.length && chave.slice(-telLocal.length) === telLocal) {
+      if ((CLIENTES[chave].cep || '').replace(/\D/g, '') === cepLimpo) {
         cliente = CLIENTES[chave];
         break;
       }
     }
   }
-  if (!cliente) return; // cliente novo, não faz nada
+  if (!cliente) return; // nenhum cliente cadastrado com esse CEP
 
-  if (nomeInput && cliente.nome) nomeInput.value = cliente.nome;
-
-  if (cepInput && cliente.cep) {
-    cepInput.value = cliente.cep;
-    maskCep(cepInput);
-    _ultimoCepBuscado = cepInput.value.replace(/\D/g, ''); // evita nova chamada ao ViaCEP
-
-    // Busca o DDD em segundo plano a partir do CEP já salvo do cliente (sem mexer nos
-    // campos de endereço, que já estão preenchidos com os dados do cadastro)
-    var cepParaDDD = cepInput.value.replace(/\D/g, '');
-    if (cepParaDDD.length === 8) {
-      fetch(`https://viacep.com.br/ws/${cepParaDDD}/json/`)
-        .then(function(r) { return r.json(); })
-        .then(function(d) { if (d && d.ddd) { window._dddDetectadoPorCep = d.ddd; } })
-        .catch(function() { /* se falhar, só não detecta o DDD dessa vez */ });
-    }
+  // Só preenche nome/telefone se ainda estiverem vazios — não sobrescreve o que a pessoa
+  // já digitou (o endereço em si já é preenchido pela busca normal do CEP, via ViaCEP)
+  if (nomeInput && !nomeInput.value && cliente.nome) nomeInput.value = cliente.nome;
+  if (phoneInput && !phoneInput.value && cliente.telefone) {
+    phoneInput.value = extrairTelefoneLocal(cliente.telefone);
+    maskPhone(phoneInput);
   }
-  if (enderecoInput && cliente.endereco) enderecoInput.value = cliente.endereco;
-  if (complementoInput && cliente.complemento) complementoInput.value = cliente.complemento;
-  if (bairroInput && cliente.bairro) bairroInput.value = cliente.bairro;
-  if (cidadeInput && cliente.cidade) cidadeInput.value = cliente.cidade;
+  if (enderecoInput && !enderecoInput.value && cliente.endereco) enderecoInput.value = cliente.endereco;
+  if (complementoInput && !complementoInput.value && cliente.complemento) complementoInput.value = cliente.complemento;
+  if (bairroInput && !bairroInput.value && cliente.bairro) bairroInput.value = cliente.bairro;
+  if (cidadeInput && !cidadeInput.value && cliente.cidade) cidadeInput.value = cliente.cidade;
 
-  [cepInput, enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
+  [enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
     if (el) el.classList.remove('field-error');
   });
 
