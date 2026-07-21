@@ -3555,6 +3555,27 @@
       }, 1200);
     }
 
+    // Painel de debug temporário — mostra informações direto na tela, útil pra depurar
+    // em celulares sem acesso ao Console do navegador.
+    function debugTela(msg) {
+      var painel = document.getElementById('painelDebug');
+      if (!painel) {
+        painel = document.createElement('div');
+        painel.id = 'painelDebug';
+        painel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:50vh;overflow-y:auto;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-family:monospace;padding:10px;z-index:99999;white-space:pre-wrap;word-break:break-all;';
+        var botaoFechar = document.createElement('button');
+        botaoFechar.textContent = '✕ Fechar debug';
+        botaoFechar.style.cssText = 'display:block;margin-bottom:8px;background:#c00;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:12px;';
+        botaoFechar.onclick = function() { painel.remove(); };
+        painel.appendChild(botaoFechar);
+        document.body.appendChild(painel);
+      }
+      var linha = document.createElement('div');
+      linha.style.cssText = 'border-top:1px solid #333;padding:4px 0;';
+      linha.textContent = new Date().toLocaleTimeString('pt-BR') + ' — ' + msg;
+      painel.appendChild(linha);
+    }
+
     async function sendWhatsApp() {
       const name = document.getElementById("custName").value.trim();
       const phone = document.getElementById("custPhone").value.trim();
@@ -3743,15 +3764,18 @@
       // (mostram sua própria tela de confirmação), então só o Safari precisa desse atalho.
       var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
         /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
+      debugTela('userAgent: ' + navigator.userAgent);
+      debugTela('ehSafariReal: ' + ehSafariReal);
 
       if (ehSafariReal) {
         var msgSafari = montarMensagem(numeroPedido, false);
         var textoCodificadoSafari = encodeURIComponent(msgSafari);
         var urlWebSafari = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + textoCodificadoSafari;
         var urlAppSafari = 'whatsapp://send?phone=' + CONFIG.whatsapp + '&text=' + textoCodificadoSafari;
+        debugTela('urlAppSafari: ' + urlAppSafari);
 
         var appAssumiuControleSafariDireto = false;
-        function marcarAppAssumiuControleSafariDireto() { appAssumiuControleSafariDireto = true; }
+        function marcarAppAssumiuControleSafariDireto() { appAssumiuControleSafariDireto = true; debugTela('App assumiu controle (blur/hidden/pagehide detectado)'); }
         document.addEventListener('visibilitychange', function () {
           if (document.hidden) marcarAppAssumiuControleSafariDireto();
         });
@@ -3762,11 +3786,15 @@
         // de abrir o app no Safari, já que qualquer atraso faz ele ignorar a tentativa.
         try {
           window.location.href = urlAppSafari;
+          debugTela('window.location.href = urlAppSafari executado sem erro');
         } catch (err) {
+          debugTela('ERRO ao tentar urlAppSafari: ' + err.message);
           window.location.href = urlWebSafari;
         }
         setTimeout(function () {
+          debugTela('Timeout 1200ms disparado. appAssumiuControleSafariDireto=' + appAssumiuControleSafariDireto);
           if (appAssumiuControleSafariDireto) return;
+          debugTela('Navegando para urlWebSafari (fallback): ' + urlWebSafari);
           window.location.href = urlWebSafari;
         }, 1200);
 
