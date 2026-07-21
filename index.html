@@ -3555,27 +3555,6 @@
       }, 1200);
     }
 
-    // Painel de debug temporário — mostra informações direto na tela, útil pra depurar
-    // em celulares sem acesso ao Console do navegador (ex: Chrome no iPhone).
-    function debugTela(msg) {
-      var painel = document.getElementById('painelDebug');
-      if (!painel) {
-        painel = document.createElement('div');
-        painel.id = 'painelDebug';
-        painel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:50vh;overflow-y:auto;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-family:monospace;padding:10px;z-index:99999;white-space:pre-wrap;word-break:break-all;';
-        var botaoFechar = document.createElement('button');
-        botaoFechar.textContent = '✕ Fechar debug';
-        botaoFechar.style.cssText = 'display:block;margin-bottom:8px;background:#c00;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:12px;';
-        botaoFechar.onclick = function() { painel.remove(); };
-        painel.appendChild(botaoFechar);
-        document.body.appendChild(painel);
-      }
-      var linha = document.createElement('div');
-      linha.style.cssText = 'border-top:1px solid #333;padding:4px 0;';
-      linha.textContent = new Date().toLocaleTimeString('pt-BR') + ' — ' + msg;
-      painel.appendChild(linha);
-    }
-
     async function sendWhatsApp() {
       const name = document.getElementById("custName").value.trim();
       const phone = document.getElementById("custPhone").value.trim();
@@ -3764,9 +3743,6 @@
       // (mostram sua própria tela de confirmação), então só o Safari precisa desse atalho.
       var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
         /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
-      console.log('[Pedido] userAgent:', navigator.userAgent, '| ehSafariReal:', ehSafariReal);
-      debugTela('userAgent: ' + navigator.userAgent);
-      debugTela('ehSafariReal: ' + ehSafariReal);
 
       if (ehSafariReal) {
         var msgSafari = montarMensagem(numeroPedido, false);
@@ -3817,10 +3793,6 @@
       // Se o servidor não responder a tempo (ou der erro), usamos o número provisório para não travar o pedido.
       var resultado = await salvarPedidoEObterNumero(dadosPedido);
       var numeroPedidoFinal = (resultado && resultado.numeroPedido) ? resultado.numeroPedido : numeroPedido;
-      console.log('[Pedido] Número provisório:', numeroPedido, '| Resultado do servidor:', resultado, '| Número final usado:', numeroPedidoFinal);
-      debugTela('Número provisório: ' + numeroPedido);
-      debugTela('Resultado do servidor: ' + JSON.stringify(resultado));
-      debugTela('Número final usado: ' + numeroPedidoFinal);
       let msg = montarMensagem(numeroPedidoFinal, true);
 
       // Mostra a confirmação ANTES de abrir o WhatsApp — em alguns celulares/navegadores
@@ -3931,7 +3903,7 @@
     }
     async function salvarPedidoEObterNumero(dadosPedido) {
       if (!LOJAFACIL.salvar_pedidos) {
-        console.warn('[Pedido] LOJAFACIL.salvar_pedidos não está configurado — usando número provisório.');
+        console.warn('LOJAFACIL.salvar_pedidos não está configurado — usando número provisório.');
         return null;
       }
       try {
@@ -3939,8 +3911,6 @@
         // Timeout de segurança: o Apps Script pode levar até ~15s em caso de pedidos simultâneos (LockService)
         var timeoutId = setTimeout(function() { controller.abort(); }, 12000);
 
-        console.log('[Pedido] Enviando para o Apps Script:', LOJAFACIL.salvar_pedidos, dadosPedido);
-        debugTela('Enviando para: ' + LOJAFACIL.salvar_pedidos);
 
         var response = await fetch(LOJAFACIL.salvar_pedidos, {
           method: 'POST',
@@ -3952,16 +3922,10 @@
         });
         clearTimeout(timeoutId);
 
-        console.log('[Pedido] Resposta HTTP recebida, status:', response.status);
-        debugTela('Status HTTP: ' + response.status);
-
         var data = await response.json();
-        console.log('[Pedido] Corpo da resposta (JSON):', data);
-        debugTela('Resposta JSON: ' + JSON.stringify(data));
         return data; // { status: 'ok', numeroPedido: N, ... }
       } catch (err) {
-        console.error('[Pedido] Erro ao salvar pedido / obter número oficial:', err);
-        debugTela('ERRO: ' + (err && err.message ? err.message : String(err)));
+        console.error('Erro ao salvar pedido / obter número oficial:', err);
         return null;
       }
     }
