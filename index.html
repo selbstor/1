@@ -3429,15 +3429,11 @@
           await new Promise(function (resolve) { setTimeout(resolve, 1800); });
         }
 
-        // No Brave, tentar o protocolo whatsapp:// dispara a tela própria de confirmação
-        // dele; como o wa.me já cuida do redirecionamento pro app depois, vamos direto pra lá.
-        if (ehBrave) {
-          try { window.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-          return;
-        }
-
-        // Demais navegadores no iOS: tenta o protocolo do app, com temporizador de
-        // segurança próprio (não existe "intent://" com fallback embutido no iOS).
+        // Tenta o protocolo do app (whatsapp://), com temporizador de segurança próprio
+        // (não existe "intent://" com fallback embutido no iOS). Fazemos isso mesmo no
+        // Brave — apesar de disparar a tela própria de confirmação dele — porque, ao
+        // contrário de navegar direto pro wa.me, essa tentativa não troca o conteúdo da
+        // aba: se o app abrir, a aba continua na loja, sem precisar voltar manualmente.
         var urlAppIOS = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
         var appAssumiuControleIOS = false;
         function marcarAppAssumiuControleIOS() { appAssumiuControleIOS = true; }
