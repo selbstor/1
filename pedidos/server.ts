@@ -9,6 +9,11 @@ async function startServer() {
   // Add JSON parsing middleware
   app.use(express.json());
 
+  // Serve the config.js file from the root directory
+  app.get("/config.js", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "config.js"));
+  });
+
   // API Proxy Route for Google Sheets
   app.get("/api/proxy-sheet", async (req, res) => {
     try {

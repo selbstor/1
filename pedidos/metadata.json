@@ -1,5 +1,5 @@
 {
-  "name": "Filtro de Planilhas Google",
+  "name": "Pedidos Recebidos",
   "description": "Importe planilhas públicas do Google Sheets, filtre os dados por intervalo de datas e exporte em formato CSV delimitado por pipe (|).",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
