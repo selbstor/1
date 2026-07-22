@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, FormEvent, Fragment, useRef } from "react";
+import { useState, useEffect, useMemo, FormEvent, Fragment, useRef, MouseEvent } from "react";
 import { 
   FileSpreadsheet, 
   Download, 
@@ -18,7 +18,12 @@ import {
   FileText,
   ChevronDown,
   Check,
-  Filter
+  Filter,
+  Trash2,
+  History,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { SheetParseResult } from "./types";
@@ -27,13 +32,15 @@ import {
   processRawCSV, 
   parseDateString, 
   generateSemicolonCSV,
-  formatDateToYYYYMMDD
+  formatDateToYYYYMMDD,
+  parseItemsDetail
 } from "./utils";
 import { DEMO_CSV_DATA } from "./data";
+import { config } from "./config";
 
 export default function App() {
   // Application State
-  const [sheetUrl, setSheetUrl] = useState<string>("");
+  const [sheetUrl, setSheetUrl] = useState<string>(config.pedidos);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -50,6 +57,10 @@ export default function App() {
   const [appliedEndDate, setAppliedEndDate] = useState<string>("");
   const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>("");
 
+  // Sorting States
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
   // Column Visibility States
   const [pendingVisibleColumns, setPendingVisibleColumns] = useState<Record<number, boolean>>({});
   const [appliedVisibleColumns, setAppliedVisibleColumns] = useState<Record<number, boolean>>({});
@@ -64,6 +75,37 @@ export default function App() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsColumnDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Google Sheets URL Combobox States
+  const [savedUrls, setSavedUrls] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("google_sheets_saved_urls");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(url => typeof url === "string" && url.trim().length > 0);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  });
+  const [isUrlDropdownOpen, setIsUrlDropdownOpen] = useState<boolean>(false);
+  const urlDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Click outside listener for URL dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (urlDropdownRef.current && !urlDropdownRef.current.contains(event.target as Node)) {
+        setIsUrlDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -104,6 +146,8 @@ export default function App() {
   // Sync selected Date Column when sheet data changes
   useEffect(() => {
     if (sheetData) {
+      setSortColumn(null);
+      setSortDirection("asc");
       let initialCol = -1;
       
       // Look for a column explicitly named or containing "Data/Hora" (case-insensitive)
@@ -146,10 +190,25 @@ export default function App() {
       setAppliedEndDate(defaultEnd);
       setAppliedSearchQuery("");
 
-      // Initialize all columns as visible by default
+      // Load column visibility preferences from localStorage
+      let savedVisibility: Record<string, boolean> = {};
+      try {
+        const savedVisibilityStr = localStorage.getItem("google_sheets_columns_visibility_by_name");
+        if (savedVisibilityStr) {
+          savedVisibility = JSON.parse(savedVisibilityStr);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved column visibility", e);
+      }
+
+      // Initialize columns based on saved preferences or default to true
       const initialVisibleCols: Record<number, boolean> = {};
-      sheetData.headers.forEach((_, idx) => {
-        initialVisibleCols[idx] = true;
+      sheetData.headers.forEach((header, idx) => {
+        if (header in savedVisibility) {
+          initialVisibleCols[idx] = savedVisibility[header];
+        } else {
+          initialVisibleCols[idx] = true;
+        }
       });
       setPendingVisibleColumns(initialVisibleCols);
       setAppliedVisibleColumns(initialVisibleCols);
@@ -158,11 +217,38 @@ export default function App() {
     }
   }, [sheetData]);
 
+  // Save column visibility preferences to localStorage when applied columns change
+  useEffect(() => {
+    if (sheetData && Object.keys(appliedVisibleColumns).length > 0) {
+      try {
+        const savedVisibilityStr = localStorage.getItem("google_sheets_columns_visibility_by_name") || "{}";
+        let savedVisibility: Record<string, boolean> = {};
+        try {
+          savedVisibility = JSON.parse(savedVisibilityStr);
+        } catch (e) {
+          // ignore
+        }
+
+        // Update the visibility status for each header in the current sheet
+        sheetData.headers.forEach((header, idx) => {
+          if (appliedVisibleColumns[idx] !== undefined) {
+            savedVisibility[header] = appliedVisibleColumns[idx] !== false;
+          }
+        });
+
+        localStorage.setItem("google_sheets_columns_visibility_by_name", JSON.stringify(savedVisibility));
+      } catch (e) {
+        console.error("Failed to save column visibility to localStorage", e);
+      }
+    }
+  }, [appliedVisibleColumns, sheetData]);
+
   // Handle Google Sheets Loading via Backend Proxy
-  const handleLoadSheet = async (e?: FormEvent) => {
+  const handleLoadSheet = async (e?: FormEvent, customUrl?: string) => {
     if (e) e.preventDefault();
-    if (!sheetUrl.trim()) {
-      setError("Por favor, insira um link válido do Google Sheets.");
+    const targetUrl = customUrl || sheetUrl;
+    if (!targetUrl || !targetUrl.trim()) {
+      setError("Por favor, configure um link válido do Google Sheets.");
       return;
     }
 
@@ -172,7 +258,7 @@ export default function App() {
     setShowPreviewExport(false);
 
     try {
-      const response = await fetch(`/api/proxy-sheet?url=${encodeURIComponent(sheetUrl.trim())}`);
+      const response = await fetch(`/api/proxy-sheet?url=${encodeURIComponent(targetUrl.trim())}`);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -184,14 +270,15 @@ export default function App() {
         throw new Error("A planilha está vazia ou não possui colunas válidas.");
       }
 
-      const processed = processRawCSV(rawRows, sheetUrl.trim());
+      const processed = processRawCSV(rawRows, targetUrl.trim());
       setSheetData(processed);
       if (data.title) {
         setSheetName(data.title);
       } else {
         setSheetName("planilha_filtrada");
       }
-      setSuccessMsg("Planilha carregada com sucesso do Google Sheets!");
+      saveUrlToHistory(targetUrl.trim());
+      setSuccessMsg("");
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Erro de conexão ao carregar a planilha pública.");
@@ -199,6 +286,53 @@ export default function App() {
       setIsLoading(false);
     }
   };
+
+  // Helper to save a loaded URL to history list
+  const saveUrlToHistory = (url: string) => {
+    if (!url || !url.trim() || url.includes("(Demonstração)")) return;
+    const trimmed = url.trim();
+    setSavedUrls(prev => {
+      const filtered = prev.filter(u => u.trim() !== trimmed);
+      const updated = [trimmed, ...filtered].slice(0, 10); // keep last 10 entries
+      try {
+        localStorage.setItem("google_sheets_saved_urls", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to save google_sheets_saved_urls to localStorage", e);
+      }
+      return updated;
+    });
+  };
+
+  // Helper to remove a URL from history
+  const deleteUrlFromHistory = (e: MouseEvent, urlToDelete: string) => {
+    e.stopPropagation(); // prevent click from triggering setSheetUrl
+    const trimmed = urlToDelete.trim();
+    setSavedUrls(prev => {
+      const updated = prev.filter(u => u.trim() !== trimmed);
+      try {
+        localStorage.setItem("google_sheets_saved_urls", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to delete from google_sheets_saved_urls", e);
+      }
+      return updated;
+    });
+  };
+
+  // Save sheetUrl to localStorage whenever it changes (except if it's the demo URL)
+  useEffect(() => {
+    try {
+      if (sheetUrl !== undefined && !sheetUrl.includes("(Demonstração)")) {
+        localStorage.setItem("google_sheets_url", sheetUrl);
+      }
+    } catch (e) {
+      console.error("Failed to save google_sheets_url to localStorage", e);
+    }
+  }, [sheetUrl]);
+
+  // Load sheet automatically on mount from the configured pedidos URL
+  useEffect(() => {
+    handleLoadSheet(undefined, config.pedidos);
+  }, []);
 
   // Load Built-in Demo Data Instantly
   const handleLoadDemo = () => {
@@ -241,6 +375,8 @@ export default function App() {
     setAppliedSearchQuery("");
     setPendingVisibleColumns({});
     setAppliedVisibleColumns({});
+    setSortColumn(null);
+    setSortDirection("asc");
     setCurrentPage(1);
     setShowPreviewExport(false);
   };
@@ -342,20 +478,111 @@ export default function App() {
     };
   }, [sheetData, appliedColIndex, appliedStartDate, appliedEndDate, appliedSearchQuery, appliedVisibleColumns]);
 
+  // Helper to check if a header column is sortable
+  const isSortableHeader = (header: string) => {
+    return true;
+  };
+
+  // Handler to toggle or set sorting column
+  const handleSort = (header: string) => {
+    if (sortColumn === header) {
+      setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(header);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
+  };
+
+  // Sort filtered rows based on sorting rules
+  const sortedRows = useMemo(() => {
+    if (!sortColumn || !sheetData) return filteredRows;
+
+    const colIndex = sheetData.headers.findIndex(
+      h => h.trim().toLowerCase() === sortColumn.toLowerCase()
+    );
+
+    if (colIndex === -1) return filteredRows;
+
+    const rowsToSort = [...filteredRows];
+
+    rowsToSort.sort((rowA, rowB) => {
+      const valA = rowA[colIndex] || "";
+      const valB = rowB[colIndex] || "";
+
+      // 1. Sort by Date/Time
+      if (sortColumn.toLowerCase().includes("data/hora") || sortColumn.toLowerCase().includes("data hora")) {
+        const dateA = parseDateString(valA);
+        const dateB = parseDateString(valB);
+        if (dateA && dateB) {
+          return sortDirection === "asc"
+            ? dateA.getTime() - dateB.getTime()
+            : dateB.getTime() - dateA.getTime();
+        }
+        if (dateA) return sortDirection === "asc" ? -1 : 1;
+        if (dateB) return sortDirection === "asc" ? 1 : -1;
+      }
+
+      // 2. Sort by Order Number (Pedido)
+      if (sortColumn.toLowerCase().includes("pedido")) {
+        // Extract numbers from the value if possible (e.g. "Pedido #123" or just "123")
+        const numA = parseFloat(valA.replace(/[^\d.]/g, ""));
+        const numB = parseFloat(valB.replace(/[^\d.]/g, ""));
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return sortDirection === "asc" ? numA - numB : numB - numA;
+        }
+      }
+
+      // 3. General Numeric Sorting for columns like Valor, Preço, Quantidade, etc.
+      const cleanNum = (s: string) => {
+        let cleaned = s.replace(/R\$\s*|\$\s*/gi, "").trim();
+        // Handle Brazilian format: remove dot thousands separator, change decimal comma to dot
+        if (cleaned.includes(".") && cleaned.includes(",")) {
+          if (cleaned.indexOf(".") < cleaned.indexOf(",")) {
+            cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+          } else {
+            cleaned = cleaned.replace(/,/g, "");
+          }
+        } else if (cleaned.includes(",") && !cleaned.includes(".")) {
+          cleaned = cleaned.replace(",", ".");
+        }
+        // Ensure it looks like a valid number before parsing
+        if (/^-?\d+(?:\.\d+)?$/.test(cleaned)) {
+          return parseFloat(cleaned);
+        }
+        return NaN;
+      };
+
+      const numA = cleanNum(valA);
+      const numB = cleanNum(valB);
+
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return sortDirection === "asc" ? numA - numB : numB - numA;
+      }
+
+      // Default alphabetical fallback sorting
+      return sortDirection === "asc"
+        ? String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' })
+        : String(valB).localeCompare(String(valA), undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    return rowsToSort;
+  }, [filteredRows, sortColumn, sortDirection, sheetData]);
+
   // Paginated rows for preview
   const paginatedRows = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
-    return filteredRows.slice(startIndex, startIndex + rowsPerPage);
-  }, [filteredRows, currentPage, rowsPerPage]);
+    return sortedRows.slice(startIndex, startIndex + rowsPerPage);
+  }, [sortedRows, currentPage, rowsPerPage]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / rowsPerPage));
 
   // Reset pagination page if bounds are exceeded
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [filteredRows, totalPages, currentPage]);
+  }, [sortedRows, totalPages, currentPage]);
 
   // Handle Export of Semicolon Separated CSV
   const handleExportCSV = () => {
@@ -368,9 +595,60 @@ export default function App() {
         .filter(idx => appliedVisibleColumns[idx] !== false);
 
       const headers = visibleIndices.map(idx => sheetData.headers[idx]);
-      const rowsForExport = filteredRows.map(row => visibleIndices.map(idx => row[idx]));
+      
+      const orderColIdx = sheetData.headers.findIndex(h => {
+        const hLower = h.toLowerCase().trim();
+        return ["pedido", "nº do pedido", "nº pedido", "número do pedido", "numero do pedido", "order", "id", "id do pedido", "id pedido"].some(c => hLower === c || hLower.includes(c));
+      });
+      const orderColIdxInVisible = visibleIndices.indexOf(orderColIdx);
+      const orderNoIndex = orderColIdxInVisible !== -1 ? orderColIdxInVisible : 0;
 
-      const csvContent = generateSemicolonCSV(headers, rowsForExport, delimiter);
+      const cleanCurrency = (val: string): string => {
+        if (!val) return "";
+        return val.replace(/R\$\s*/gi, "").trim();
+      };
+
+      const finalExportRows: string[][] = [];
+      sortedRows.forEach((row) => {
+        // 1. Add the main row
+        const mainExportRow = visibleIndices.map(idx => cleanCurrency(row[idx] || ""));
+        finalExportRows.push(mainExportRow);
+
+        // 2. Check if we have items to parse and append
+        if (itemsColIndex !== -1) {
+          const cellValue = row[itemsColIndex];
+          if (cellValue && cellValue.trim()) {
+            const parsed = parseItemsDetail(cellValue, sheetData.headers[itemsColIndex]);
+            if (parsed.rows.length > 0) {
+              const totalColumns = headers.length;
+              const orderNo = orderColIdx !== -1 ? (row[orderColIdx] || "") : (row[0] || "");
+
+              // Build item rows
+              parsed.rows.forEach((itemRow) => {
+                const itemExportRow = Array(totalColumns).fill("");
+                itemExportRow[orderNoIndex] = cleanCurrency(orderNo);
+
+                let itemColIdx = 0;
+                itemRow.forEach((val) => {
+                  while (itemColIdx === orderNoIndex) {
+                    itemColIdx++;
+                  }
+                  const cleanedVal = cleanCurrency(val);
+                  if (itemColIdx < totalColumns) {
+                    itemExportRow[itemColIdx] = cleanedVal;
+                  } else {
+                    itemExportRow.push(cleanedVal);
+                  }
+                  itemColIdx++;
+                });
+                finalExportRows.push(itemExportRow);
+              });
+            }
+          }
+        }
+      });
+
+      const csvContent = generateSemicolonCSV(headers, finalExportRows, delimiter);
       
       // Create a blob and trigger browser download
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -397,8 +675,8 @@ export default function App() {
   // Preview generated semicolon content (first few lines)
   const semicolonPreviewText = useMemo(() => {
     if (!sheetData) return "";
-    const limit = Math.min(filteredRows.length, 5);
-    const previewRows = filteredRows.slice(0, limit);
+    const limit = Math.min(sortedRows.length, 5);
+    const previewRows = sortedRows.slice(0, limit);
 
     // Filter out columns that are not selected/visible
     const visibleIndices = sheetData.headers
@@ -406,10 +684,61 @@ export default function App() {
       .filter(idx => appliedVisibleColumns[idx] !== false);
 
     const headers = visibleIndices.map(idx => sheetData.headers[idx]);
-    const rowsForExport = previewRows.map(row => visibleIndices.map(idx => row[idx]));
+    
+    const orderColIdx = sheetData.headers.findIndex(h => {
+      const hLower = h.toLowerCase().trim();
+      return ["pedido", "nº do pedido", "nº pedido", "número do pedido", "numero do pedido", "order", "id", "id do pedido", "id pedido"].some(c => hLower === c || hLower.includes(c));
+    });
+    const orderColIdxInVisible = visibleIndices.indexOf(orderColIdx);
+    const orderNoIndex = orderColIdxInVisible !== -1 ? orderColIdxInVisible : 0;
 
-    return generateSemicolonCSV(headers, rowsForExport, delimiter);
-  }, [sheetData, filteredRows, delimiter, appliedVisibleColumns]);
+    const cleanCurrency = (val: string): string => {
+      if (!val) return "";
+      return val.replace(/R\$\s*/gi, "").trim();
+    };
+
+    const finalExportRows: string[][] = [];
+    previewRows.forEach((row) => {
+      // 1. Add the main row
+      const mainExportRow = visibleIndices.map(idx => cleanCurrency(row[idx] || ""));
+      finalExportRows.push(mainExportRow);
+
+      // 2. Check if we have items to parse and append
+      if (itemsColIndex !== -1) {
+        const cellValue = row[itemsColIndex];
+        if (cellValue && cellValue.trim()) {
+          const parsed = parseItemsDetail(cellValue, sheetData.headers[itemsColIndex]);
+          if (parsed.rows.length > 0) {
+            const totalColumns = headers.length;
+            const orderNo = orderColIdx !== -1 ? (row[orderColIdx] || "") : (row[0] || "");
+
+            // Build item rows
+            parsed.rows.forEach((itemRow) => {
+              const itemExportRow = Array(totalColumns).fill("");
+              itemExportRow[orderNoIndex] = cleanCurrency(orderNo);
+
+              let itemColIdx = 0;
+              itemRow.forEach((val) => {
+                while (itemColIdx === orderNoIndex) {
+                  itemColIdx++;
+                }
+                const cleanedVal = cleanCurrency(val);
+                if (itemColIdx < totalColumns) {
+                  itemExportRow[itemColIdx] = cleanedVal;
+                } else {
+                  itemExportRow.push(cleanedVal);
+                }
+                itemColIdx++;
+              });
+              finalExportRows.push(itemExportRow);
+            });
+          }
+        }
+      }
+    });
+
+    return generateSemicolonCSV(headers, finalExportRows, delimiter);
+  }, [sheetData, sortedRows, delimiter, appliedVisibleColumns, itemsColIndex]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] font-sans antialiased pb-20 selection:bg-emerald-100 selection:text-emerald-900" id="main-container">
@@ -425,32 +754,9 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight text-slate-900 font-display">
-                Filtro de Planilhas Google
+                Pedidos Recebidos
               </h1>
-              <p className="text-xs text-slate-500 font-medium">
-                Extraia e segmente dados por data com exportação em ponto e vírgula (;)
-              </p>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setShowInstructions(!showInstructions)}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer"
-              id="help-toggle-btn"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>Instruções</span>
-            </button>
-            {sheetData && (
-              <button
-                onClick={handleClear}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent rounded-lg transition-colors cursor-pointer"
-                id="clear-btn"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Limpar</span>
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -557,7 +863,7 @@ export default function App() {
           <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start space-x-3 shadow-2xs animate-fade-in" id="success-banner">
             <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-sm font-bold text-emerald-900">Sucesso!</h3>
+              <h3 className="text-sm font-bold text-emerald-900"></h3>
               <p className="text-xs text-emerald-700 mt-0.5">{successMsg}</p>
             </div>
             <button onClick={() => setSuccessMsg(null)} className="text-emerald-400 hover:text-emerald-600">
@@ -582,7 +888,7 @@ export default function App() {
             </div>
 
             <form onSubmit={handleLoadSheet} className="space-y-4">
-              <div>
+              <div ref={urlDropdownRef} className="relative">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
                   Link da Planilha do Google Sheets
                 </label>
@@ -593,20 +899,89 @@ export default function App() {
                     placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
                     value={sheetUrl}
                     onChange={(e) => setSheetUrl(e.target.value)}
-                    className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all focus:ring-3 focus:ring-emerald-100"
+                    onFocus={() => setIsUrlDropdownOpen(true)}
+                    className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all focus:ring-3 focus:ring-emerald-100"
                     id="sheet-url-input"
+                    autoComplete="off"
                   />
-                  <div className="absolute right-3.5 top-3 text-slate-400">
-                    <FileSpreadsheet className="w-5 h-5" />
+                  <div className="absolute left-3.5 top-3.5 text-slate-400">
+                    <FileSpreadsheet className="w-4 h-4" />
                   </div>
+                  {savedUrls.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsUrlDropdownOpen(!isUrlDropdownOpen)}
+                      className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                      title="Histórico de planilhas"
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isUrlDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                    </button>
+                  )}
                 </div>
+
+                {/* Dropdown with History */}
+                <AnimatePresence>
+                  {isUrlDropdownOpen && savedUrls.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-hidden flex flex-col"
+                    >
+                      <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                          <History className="w-3 h-3 text-slate-400" />
+                          Planilhas Recentes
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSavedUrls([]);
+                            localStorage.removeItem("google_sheets_saved_urls");
+                          }}
+                          className="text-[10px] font-bold text-red-500 hover:text-red-700 hover:underline cursor-pointer"
+                        >
+                          Limpar Histórico
+                        </button>
+                      </div>
+                      <div className="overflow-y-auto divide-y divide-slate-50 py-1 max-h-48">
+                        {savedUrls.map((url, index) => (
+                          <div
+                            key={index}
+                            onClick={() => {
+                              setSheetUrl(url);
+                              setIsUrlDropdownOpen(false);
+                            }}
+                            className="flex items-center justify-between px-3.5 py-2 hover:bg-slate-50/80 cursor-pointer group transition-colors"
+                          >
+                            <div className="flex items-center space-x-2 min-w-0 flex-1">
+                              <FileSpreadsheet className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-emerald-500" />
+                              <span className="text-xs text-slate-600 truncate font-mono">
+                                {url}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => deleteUrlFromHistory(e, url)}
+                              className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                              title="Remover do histórico"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 inline-flex items-center justify-center space-x-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-semibold text-sm rounded-xl transition-all shadow-xs hover:shadow-md cursor-pointer disabled:cursor-not-allowed"
+                  className="w-full inline-flex items-center justify-center space-x-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-semibold text-sm rounded-xl transition-all shadow-xs hover:shadow-md cursor-pointer disabled:cursor-not-allowed"
                   id="submit-url-btn"
                 >
                   {isLoading ? (
@@ -620,17 +995,6 @@ export default function App() {
                       <span>Carregar Planilha</span>
                     </>
                   )}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={handleLoadDemo}
-                  disabled={isLoading}
-                  className="inline-flex items-center justify-center space-x-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-colors border border-slate-200 cursor-pointer disabled:opacity-50"
-                  id="load-demo-btn"
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span>Usar Planilha Exemplo</span>
                 </button>
               </div>
             </form>
@@ -654,39 +1018,8 @@ export default function App() {
           <div className="space-y-6" id="loaded-view">
             {/* Control Panel Card */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2 text-[10px] font-bold tracking-widest text-emerald-600 uppercase">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse inline-block"></span>
-                    <span>Origem Conectada</span>
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-1.5 font-display truncate max-w-xl">
-                    <TableProperties className="w-4 h-4 text-slate-400" />
-                    <span>{sheetUrl.substring(0, 80)}{sheetUrl.length > 80 ? "..." : ""}</span>
-                  </h3>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleLoadSheet()}
-                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                    title="Recarregar dados originais"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Recarregar</span>
-                  </button>
-                  <button
-                    onClick={handleClear}
-                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Trocar Planilha</span>
-                  </button>
-                </div>
-              </div>
-
               {/* Filtering Controls Row */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 
                 {/* 1. Date Column Selector */}
                 <div>
@@ -724,9 +1057,7 @@ export default function App() {
                       </option>
                     ))}
                   </select>
-                  <span className="text-[10px] text-emerald-600 font-semibold mt-1 inline-block">
-                    {sheetData.detectedDateColumnIndex === pendingColIndex ? "✓ Coluna auto-detectada" : "Coluna customizada"}
-                  </span>
+
                 </div>
 
                 {/* 2. Start Date */}
@@ -774,7 +1105,7 @@ export default function App() {
                 {/* 4. Text Search */}
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
-                    Pesquisar Texto (Opcional)
+                    Pesquisar
                   </label>
                   <div className="relative">
                     <input
@@ -794,312 +1125,211 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Column Selection Combobox */}
+              {/* Column Selection Combobox & Apply Filters Button side-by-side */}
               <div className="mt-6 pt-5 border-t border-slate-100" ref={dropdownRef}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <div>
-                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                  {/* Combobox Wrapper with reduced size */}
+                  <div className="w-full sm:w-72 shrink-0">
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Campos para exibir no resultado</span>
+                      <span>Campos para exibição</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Escolha quais colunas serão exibidas na tabela e incluídas no arquivo CSV final.
-                    </p>
-                  </div>
-                </div>
 
-                <div className="relative">
-                  {/* Combobox Trigger Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsColumnDropdownOpen(!isColumnDropdownOpen);
-                      setColSearchQuery(""); // clear search on toggle
-                    }}
-                    className="w-full flex items-center justify-between bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-700 shadow-3xs transition-all cursor-pointer focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <div className="flex items-center space-x-2 truncate">
-                      <TableProperties className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="font-medium truncate text-slate-600">
-                        {(() => {
-                          const selectedCount = sheetData.headers.filter((_, idx) => pendingVisibleColumns[idx] !== false).length;
-                          const totalCount = sheetData.headers.length;
-                          if (selectedCount === totalCount) return "Todos os campos selecionados";
-                          if (selectedCount === 0) return "Nenhum campo selecionado";
-                          return `${selectedCount} de ${totalCount} campos selecionados`;
-                        })()}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isColumnDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
-                  </button>
-
-                  {/* Dropdown Options List */}
-                  <AnimatePresence>
-                    {isColumnDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute parent-dropdown z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg max-h-72 overflow-hidden flex flex-col"
+                    <div className="relative">
+                      {/* Combobox Trigger Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsColumnDropdownOpen(!isColumnDropdownOpen);
+                          setColSearchQuery(""); // clear search on toggle
+                        }}
+                        className="w-full flex items-center justify-between bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-700 shadow-3xs transition-all cursor-pointer focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                       >
-                        {/* Dropdown Header: Search & Multi-actions */}
-                        <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-2">
-                          <div className="relative">
-                            <input
-                              type="text"
-                              placeholder="Pesquisar campos..."
-                              value={colSearchQuery}
-                              onChange={(e) => setColSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 transition-colors"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                            {colSearchQuery && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setColSearchQuery("");
-                                }}
-                                className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between px-1">
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              Atalhos rápidos:
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const allSelected: Record<number, boolean> = {};
-                                  sheetData.headers.forEach((_, idx) => {
-                                    allSelected[idx] = true;
-                                  });
-                                  setPendingVisibleColumns(allSelected);
-                                }}
-                                className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors cursor-pointer"
-                              >
-                                Marcar Todos
-                              </button>
-                              <span className="text-slate-300 text-[10px]">|</span>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const noneSelected: Record<number, boolean> = {};
-                                  sheetData.headers.forEach((_, idx) => {
-                                    noneSelected[idx] = false;
-                                  });
-                                  if (pendingColIndex !== -1) {
-                                    noneSelected[pendingColIndex] = true;
-                                  } else if (sheetData.headers.length > 0) {
-                                    noneSelected[0] = true;
-                                  }
-                                  setPendingVisibleColumns(noneSelected);
-                                }}
-                                className="text-[10px] font-bold text-slate-500 hover:text-slate-700 hover:underline transition-colors cursor-pointer"
-                              >
-                                Desmarcar Todos
-                              </button>
-                            </div>
-                          </div>
+                        <div className="flex items-center space-x-2 truncate">
+                          <TableProperties className="w-4 h-4 text-slate-400 shrink-0" />
+                          <span className="font-medium truncate text-slate-600">
+                            {(() => {
+                              const selectedCount = sheetData.headers.filter((_, idx) => pendingVisibleColumns[idx] !== false).length;
+                              const totalCount = sheetData.headers.length;
+                              if (selectedCount === totalCount) return "Todos os campos";
+                              if (selectedCount === 0) return "Nenhum campo";
+                              return `${selectedCount} de ${totalCount} campos`;
+                            })()}
+                          </span>
                         </div>
+                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isColumnDropdownOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                      </button>
 
-                        {/* Dropdown Options Scrollable */}
-                        <div className="overflow-y-auto max-h-48 py-1 divide-y divide-slate-50">
-                          {(() => {
-                            const filteredHeaders = sheetData.headers
-                              .map((header, idx) => ({ header, idx }))
-                              .filter(({ header }) =>
-                                header.toLowerCase().includes(colSearchQuery.toLowerCase())
-                              );
+                      {/* Dropdown Options List */}
+                      <AnimatePresence>
+                        {isColumnDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute parent-dropdown z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg max-h-72 overflow-hidden flex flex-col"
+                          >
+                            {/* Dropdown Header: Search & Multi-actions */}
+                            <div className="p-2 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-2">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Pesquisar campos..."
+                                  value={colSearchQuery}
+                                  onChange={(e) => setColSearchQuery(e.target.value)}
+                                  className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                                {colSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setColSearchQuery("");
+                                    }}
+                                    className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
 
-                            if (filteredHeaders.length === 0) {
-                              return (
-                                <div className="p-4 text-center text-xs text-slate-400 font-medium">
-                                  Nenhum campo encontrado
+                              <div className="flex items-center justify-between px-1">
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Atalhos:
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const allSelected: Record<number, boolean> = {};
+                                      sheetData.headers.forEach((_, idx) => {
+                                        allSelected[idx] = true;
+                                      });
+                                      setPendingVisibleColumns(allSelected);
+                                    }}
+                                    className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors cursor-pointer"
+                                  >
+                                    Todos
+                                  </button>
+                                  <span className="text-slate-300 text-[10px]">|</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const noneSelected: Record<number, boolean> = {};
+                                      sheetData.headers.forEach((_, idx) => {
+                                        noneSelected[idx] = false;
+                                      });
+                                      if (pendingColIndex !== -1) {
+                                        noneSelected[pendingColIndex] = true;
+                                      } else if (sheetData.headers.length > 0) {
+                                        noneSelected[0] = true;
+                                      }
+                                      setPendingVisibleColumns(noneSelected);
+                                    }}
+                                    className="text-[10px] font-bold text-slate-500 hover:text-slate-700 hover:underline transition-colors cursor-pointer"
+                                  >
+                                    Nenhum
+                                  </button>
                                 </div>
-                              );
-                            }
+                              </div>
+                            </div>
 
-                            return filteredHeaders.map(({ header, idx }) => {
-                              const isChecked = pendingVisibleColumns[idx] !== false;
-                              const isDateCol = idx === pendingColIndex;
-                              return (
-                                <label
-                                  key={idx}
-                                  className="flex items-center justify-between px-3.5 py-2 hover:bg-slate-50/80 cursor-pointer select-none transition-colors"
-                                >
-                                  <div className="flex items-center space-x-2.5 min-w-0">
-                                    <input
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => {
-                                        setPendingVisibleColumns((prev) => ({
-                                          ...prev,
-                                          [idx]: !isChecked,
-                                        }));
-                                      }}
-                                      className="w-3.5 h-3.5 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded cursor-pointer shrink-0"
-                                    />
-                                    <span className="font-mono text-xs text-slate-700 truncate">
-                                      {header}
-                                    </span>
-                                    {isDateCol && (
-                                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 rounded font-sans font-bold shrink-0">
-                                        Filtro Data
-                                      </span>
-                                    )}
-                                  </div>
-                                  {isChecked && (
-                                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  )}
-                                </label>
-                              );
-                            });
-                          })()}
-                        </div>
-                      </motion.div>
+                            {/* Dropdown Options Scrollable */}
+                            <div className="overflow-y-auto max-h-48 py-1 divide-y divide-slate-50">
+                              {(() => {
+                                const filteredHeaders = sheetData.headers
+                                  .map((header, idx) => ({ header, idx }))
+                                  .filter(({ header }) =>
+                                    header.toLowerCase().includes(colSearchQuery.toLowerCase())
+                                  );
+
+                                if (filteredHeaders.length === 0) {
+                                  return (
+                                    <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                                      Nenhum campo encontrado
+                                    </div>
+                                  );
+                                }
+
+                                return filteredHeaders.map(({ header, idx }) => {
+                                  const isChecked = pendingVisibleColumns[idx] !== false;
+                                  const isDateCol = idx === pendingColIndex;
+                                  return (
+                                    <label
+                                      key={idx}
+                                      className="flex items-center justify-between px-3.5 py-2 hover:bg-slate-50/80 cursor-pointer select-none transition-colors"
+                                    >
+                                      <div className="flex items-center space-x-2.5 min-w-0">
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={() => {
+                                            setPendingVisibleColumns((prev) => ({
+                                              ...prev,
+                                              [idx]: !isChecked,
+                                            }));
+                                          }}
+                                          className="w-3.5 h-3.5 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded cursor-pointer shrink-0"
+                                        />
+                                        <span className="font-mono text-xs text-slate-700 truncate">
+                                          {header}
+                                        </span>
+                                        {isDateCol && (
+                                          <span className="text-[8px] bg-emerald-100 text-emerald-800 px-1 rounded font-sans font-bold shrink-0">
+                                            Filtro Data
+                                          </span>
+                                        )}
+                                      </div>
+                                      {isChecked && (
+                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      )}
+                                    </label>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* Filter Button positioned directly next to the combobox on the same line */}
+                  <button
+                    onClick={handleApplyFilters}
+                    className={`inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-2xs hover:shadow-sm shrink-0 ${
+                      hasPendingChanges 
+                      ? "bg-amber-500 hover:bg-amber-600 text-white animate-pulse" 
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                    id="apply-filter-btn"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Filtro</span>
+                  </button>
+
+                  {/* Inline Warning/Notification text */}
+                  <div className="text-xs flex-1 min-w-0 pb-1.5 sm:pb-3.5">
+                    {hasPendingChanges && (
+                      <span className="text-amber-600 font-semibold flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 animate-bounce shrink-0" />
+                        <span>Filtros alterados! Clique em Filtro para atualizar.</span>
+                      </span>
                     )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              {/* Manual Apply Filters Trigger Bar */}
-              <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-emerald-50/30 rounded-2xl border border-emerald-100/50">
-                <div className="text-xs">
-                  {hasPendingChanges ? (
-                    <span className="text-amber-600 font-semibold flex items-center gap-1.5">
-                      <AlertCircle className="w-4 h-4 animate-bounce" />
-                      <span>Filtros alterados! Clique no botão ao lado para atualizar os dados na tela antes de exportar.</span>
-                    </span>
-                  ) : (
-                    <span className="text-emerald-700 font-medium flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Os dados abaixo estão totalmente atualizados com os filtros configurados.</span>
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={handleApplyFilters}
-                  className={`w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-2xs hover:shadow-sm ${
-                    hasPendingChanges 
-                    ? "bg-amber-500 hover:bg-amber-600 text-white animate-pulse" 
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  }`}
-                  id="apply-filter-btn"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Filtrar Dados</span>
-                </button>
-              </div>
-
-              {/* Data Status Summary Bar */}
-              <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600">
-                  <div>
-                    Total na planilha: <strong className="text-slate-900">{sheetData.rows.length}</strong>
                   </div>
-                  <div className="h-4 w-px bg-slate-200 inline-block hidden sm:block"></div>
-                  <div>
-                    Após filtros: <strong className="text-emerald-600 text-sm">{filteredRows.length}</strong>
-                  </div>
-                  {invalidDateCount > 0 && (
-                    <>
-                      <div className="h-4 w-px bg-slate-200 inline-block hidden sm:block"></div>
-                      <div className="flex items-center space-x-1 text-amber-600">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        <span>{invalidDateCount} linhas sem data válida na coluna</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-                  <div className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-2xs">
-                    <label htmlFor="delimiter-input" className="text-xs font-semibold text-slate-500">
-                      delimitador
-                    </label>
-                    <input
-                      id="delimiter-input"
-                      type="text"
-                      value={delimiter}
-                      onChange={(e) => setDelimiter(e.target.value)}
-                      className="w-8 py-0.5 text-center text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-md focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-colors"
-                      maxLength={5}
-                    />
-                  </div>
-
-                  <button
-                    onClick={() => setShowPreviewExport(!showPreviewExport)}
-                    className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{showPreviewExport ? "Ocultar Estrutura CSV" : "Estrutura CSV"}</span>
-                  </button>
-
-                  <button
-                    onClick={handleExportCSV}
-                    disabled={filteredRows.length === 0}
-                    className="inline-flex items-center space-x-2 px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
-                    id="export-csv-btn"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Exportar Dados</span>
-                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Generated Semicolon Structure live preview (Visual Proof and confirmation of formatting) */}
-            <AnimatePresence>
-              {showPreviewExport && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
-                  className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm text-slate-300 font-mono text-xs overflow-hidden"
-                  id="semicolon-preview-container"
-                >
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
-                      Visualização de Arquivo de Saída (Separado por {delimiter || "espaço"})
-                    </span>
-                    <button 
-                      onClick={() => setShowPreviewExport(false)}
-                      className="text-slate-500 hover:text-slate-300 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <pre className="overflow-x-auto whitespace-pre-wrap max-h-40 leading-relaxed text-slate-300" id="raw-semicolon-preview">
-                    {semicolonPreviewText || "Nenhum dado coincide com os filtros aplicados."}
-                    {filteredRows.length > 5 && (
-                      <span className="text-slate-500 italic block mt-1">
-                        ... (+ {filteredRows.length - 5} linhas filtradas omitidas na visualização)
-                      </span>
-                    )}
-                  </pre>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Live Data Preview Table Card */}
             <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
               <div className="px-6 py-4.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-                <div className="flex items-center space-x-2">
-                  <TableProperties className="w-4.5 h-4.5 text-slate-400" />
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-display">
-                    Pré-visualização dos Resultados
-                  </h3>
-                </div>
+  
                 
                 <div className="flex items-center space-x-3">
                   {itemsColIndex !== -1 && filteredRows.length > 0 && (
@@ -1116,19 +1346,56 @@ export default function App() {
                         });
                         setExpandedRows(nextState);
                       }}
-                      className="text-[11px] font-semibold text-slate-600 hover:text-emerald-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-3xs transition-all flex items-center space-x-1.5 cursor-pointer"
+                      className="inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-2xs hover:shadow-sm"
                     >
-                      <RefreshCw className="w-3 h-3 text-slate-400 animate-pulse" />
+                      <RefreshCw className="w-3.5 h-3.5 text-white animate-pulse" />
                       <span>
-                        {paginatedRows.every((_, idx) => expandedRows[(currentPage - 1) * rowsPerPage + idx]) ? "Recolher Todos" : "Expandir Detalhes (Itens)"}
+                        {paginatedRows.every((_, idx) => expandedRows[(currentPage - 1) * rowsPerPage + idx]) ? "Recolher Todos" : "Expandir"}
                       </span>
                     </button>
                   )}
-                  <span className="px-2.5 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 shrink-0">
-                    {filteredRows.length} linhas filtradas
-                  </span>
+
+                  <button
+                    onClick={() => handleLoadSheet()}
+                    disabled={isLoading}
+                    className="inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-2xs hover:shadow-sm disabled:opacity-50 disabled:hover:bg-emerald-600 shrink-0"
+                    title="Recarregar dados originais"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 text-white ${isLoading ? "animate-spin" : ""}`} />
+                    <span>{isLoading ? "Recarregando..." : "Recarregar"}</span>
+                  </button>
+   
                 </div>
+
+                
               </div>
+
+              {/* Info & Quantity bar just above table headers */}
+              {filteredRows.length > 0 && (
+                <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-slate-500 w-full">
+                    <div className="flex items-center space-x-1.5">
+                      <span>Exibir</span>
+                      <select
+                        value={rowsPerPage}
+                        disabled={isLoading}
+                        onChange={(e) => {
+                          setRowsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="px-2 py-1 bg-white border border-slate-200 rounded-md focus:outline-hidden focus:border-emerald-500 text-xs font-medium text-slate-700 disabled:opacity-50"
+                      >
+                        {[5, 10, 25, 50].map((val) => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                      </select>
+                      <span>registros por página</span>
+                    </div>
+
+
+                  </div>
+                </div>
+              )}
 
               {/* Table Wrapper */}
               <div className="overflow-x-auto max-w-full">
@@ -1154,25 +1421,40 @@ export default function App() {
                           )}
                           {sheetData.headers.map((header, idx) => {
                             if (appliedVisibleColumns[idx] === false) return null;
+                            const isSorted = sortColumn === header;
                             return (
                               <th 
                                 key={idx} 
-                                className={`p-3.5 text-xs font-bold text-slate-700 whitespace-nowrap ${
-                                  idx === appliedColIndex ? "bg-emerald-50/50 text-emerald-900 border-x border-emerald-100/50" : ""
+                                onClick={() => handleSort(header)}
+                                className={`p-3.5 text-[11px] font-bold text-slate-800 uppercase tracking-wider whitespace-nowrap cursor-pointer select-none hover:bg-slate-100/80 transition-colors group ${
+                                  idx === appliedColIndex ? "bg-emerald-50/50 text-emerald-950 border-x border-emerald-100/50" : ""
                                 }`}
                               >
-                                <div className="flex items-center space-x-1">
-                                  <span>{header}</span>
-                                  {idx === appliedColIndex && (
-                                    <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  )}
+                                <div className="flex items-center justify-between space-x-2">
+                                  <div className="flex items-center space-x-1">
+                                    <span>{header}</span>
+                                    {idx === appliedColIndex && (
+                                      <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-1" title="Coluna de data ativa" />
+                                    )}
+                                  </div>
+                                  <div className="flex items-center shrink-0">
+                                    {isSorted ? (
+                                      sortDirection === "asc" ? (
+                                        <ArrowUp className="w-3.5 h-3.5 text-emerald-600 font-bold" />
+                                      ) : (
+                                        <ArrowDown className="w-3.5 h-3.5 text-emerald-600 font-bold" />
+                                      )
+                                    ) : (
+                                      <ArrowUpDown className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 transition-colors" />
+                                    )}
+                                  </div>
                                 </div>
                               </th>
                             );
                           })}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-mono text-xs text-slate-600">
+                      <tbody className="divide-y divide-slate-100 font-mono text-sm text-slate-900">
                         {paginatedRows.map((row, rowIdx) => {
                           const absoluteIndex = (currentPage - 1) * rowsPerPage + rowIdx;
                           const isExpanded = !!expandedRows[absoluteIndex];
@@ -1213,18 +1495,82 @@ export default function App() {
                               {itemsColIndex !== -1 && isExpanded && (
                                 <tr key={`detail-${rowIdx}`} className="bg-slate-50/30">
                                   <td colSpan={sheetData.headers.filter((_, idx) => appliedVisibleColumns[idx] !== false).length + 1} className="p-4 bg-slate-50/15">
-                                    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-3xs max-w-2xl ml-4 mr-4">
-                                      <div className="flex items-center space-x-2 mb-2">
+                                    <div className="bg-white rounded-xl border border-slate-200 p-4.5 shadow-3xs max-w-3xl ml-4 mr-4">
+                                      <div className="flex items-center space-x-2 mb-3.5">
                                         <div className="p-1 bg-emerald-50 rounded-md text-emerald-600 border border-emerald-100/40">
                                           <FileText className="w-3.5 h-3.5" />
                                         </div>
                                         <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 font-sans">
-                                          {sheetData.headers[itemsColIndex]} (Detalhes do registro)
+                                          {sheetData.headers[itemsColIndex]} 
                                         </span>
                                       </div>
-                                      <p className="text-sm font-semibold text-slate-800 whitespace-pre-wrap font-sans pl-1">
-                                        {row[itemsColIndex] || <span className="text-slate-300 italic font-normal">Nenhum item informado</span>}
-                                      </p>
+                                      
+                                      {(() => {
+                                        const cellValue = row[itemsColIndex];
+                                        if (!cellValue || !cellValue.trim()) {
+                                          return (
+                                            <p className="text-xs text-slate-400 italic pl-1">Nenhum item informado</p>
+                                          );
+                                        }
+
+                                        const parsed = parseItemsDetail(cellValue, sheetData.headers[itemsColIndex]);
+                                        
+                                        return (
+                                          <div className="overflow-hidden rounded-xl border border-slate-200 shadow-3xs bg-slate-50/10">
+                                            <table className="w-full text-left border-collapse bg-white">
+                                              <thead>
+                                                <tr className="border-b border-slate-200 bg-slate-50/70">
+                                                  {parsed.headers.map((hdr, hIdx) => {
+                                                    const isNumericHeader = hdr.toLowerCase().includes("preço") || 
+                                                                            hdr.toLowerCase().includes("valor") || 
+                                                                            hdr.toLowerCase().includes("total") ||
+                                                                            hdr.toLowerCase().includes("val") ||
+                                                                            hdr.toLowerCase().includes("subtotal") ||
+                                                                            hdr.toLowerCase().includes("qtd") ||
+                                                                            hdr.toLowerCase().includes("quantidade");
+                                                    return (
+                                                      <th
+                                                        key={hIdx}
+                                                        className={`px-4 py-2.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50/30 ${
+                                                          isNumericHeader ? "text-right" : "text-left"
+                                                        }`}
+                                                      >
+                                                        {hdr}
+                                                      </th>
+                                                    );
+                                                  })}
+                                                </tr>
+                                              </thead>
+                                              <tbody className="divide-y divide-slate-100 font-sans text-sm text-slate-900">
+                                                {parsed.rows.map((itemRow, rIdx) => (
+                                                  <tr key={rIdx} className="hover:bg-slate-50/50 transition-colors">
+                                                    {itemRow.map((cellText, cIdx) => {
+                                                      const hdr = parsed.headers[cIdx] || "";
+                                                      const isNumericCol = hdr.toLowerCase().includes("preço") || 
+                                                                           hdr.toLowerCase().includes("valor") || 
+                                                                           hdr.toLowerCase().includes("total") ||
+                                                                           hdr.toLowerCase().includes("val") ||
+                                                                           hdr.toLowerCase().includes("subtotal") ||
+                                                                           hdr.toLowerCase().includes("qtd") ||
+                                                                           hdr.toLowerCase().includes("quantidade");
+                                                      return (
+                                                        <td
+                                                          key={cIdx}
+                                                          className={`px-4 py-2 text-slate-900 ${
+                                                            isNumericCol ? "text-right font-semibold text-slate-950" : "text-left"
+                                                          }`}
+                                                        >
+                                                          {cellText}
+                                                        </td>
+                                                      );
+                                                    })}
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        );
+                                      })()}
                                     </div>
                                   </td>
                                 </tr>
@@ -1240,49 +1586,137 @@ export default function App() {
 
               {/* Table Pagination / Controls */}
               {filteredRows.length > 0 && (
-                <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/20" id="pagination-controls">
-                  <div className="flex items-center space-x-3 text-xs text-slate-500">
-                    <span>Exibir</span>
-                    <select
-                      value={rowsPerPage}
-                      onChange={(e) => {
-                        setRowsPerPage(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="px-2 py-1 bg-white border border-slate-200 rounded-md focus:outline-hidden focus:border-emerald-500"
-                    >
-                      {[5, 10, 25, 50].map((val) => (
-                        <option key={val} value={val}>{val}</option>
-                      ))}
-                    </select>
-                    <span>registros por página</span>
-                  </div>
+                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/20" id="pagination-controls">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                    {/* Left details */}
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2 text-xs text-slate-500">
+     
+                      <div>
+                        Total de Registros: <strong className="text-emerald-600 font-bold text-sm">{filteredRows.length}</strong>
+                      </div>
 
-                  <div className="flex items-center space-x-1 text-xs">
-                    <span className="text-slate-500 mr-2">
-                      Mostrando {Math.min(filteredRows.length, (currentPage - 1) * rowsPerPage + 1)}-{Math.min(filteredRows.length, currentPage * rowsPerPage)} de {filteredRows.length}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="p-1.5 text-slate-500 hover:text-slate-800 disabled:text-slate-300 hover:bg-slate-100 disabled:hover:bg-transparent rounded-lg border border-slate-200 disabled:border-slate-100 transition-colors cursor-pointer"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <span className="px-3 py-1 font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg">
-                      Pág. {currentPage} de {totalPages}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="p-1.5 text-slate-500 hover:text-slate-800 disabled:text-slate-300 hover:bg-slate-100 disabled:hover:bg-transparent rounded-lg border border-slate-200 disabled:border-slate-100 transition-colors cursor-pointer"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                      <span className="text-slate-300 hidden md:inline">|</span>
+
+                      <div>
+                        Mostrando <strong className="text-slate-900 font-medium">{Math.min(filteredRows.length, (currentPage - 1) * rowsPerPage + 1)}-{Math.min(filteredRows.length, currentPage * rowsPerPage)}</strong> de <strong className="text-slate-900 font-medium">{filteredRows.length}</strong>
+                      </div>
+
+                      {invalidDateCount > 0 && (
+                        <>
+                          <span className="text-slate-300 hidden md:inline">|</span>
+                          <div className="flex items-center space-x-1 text-amber-600">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>{invalidDateCount} s/ data válida</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Right pagination controls */}
+                    <div className="flex items-center space-x-1 text-xs shrink-0">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 hover:bg-slate-100 disabled:hover:bg-transparent rounded-lg border border-slate-200 disabled:border-slate-100 transition-colors cursor-pointer"
+                        title="Página Anterior"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="px-2 py-0.5 font-semibold text-slate-700 bg-white border border-slate-200 rounded-md">
+                        Pág. {currentPage} de {totalPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-1 text-slate-500 hover:text-slate-800 disabled:text-slate-300 hover:bg-slate-100 disabled:hover:bg-transparent rounded-lg border border-slate-200 disabled:border-slate-100 transition-colors cursor-pointer"
+                        title="Próxima Página"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
+
+            {/* Export Actions Section at the bottom */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center md:text-left">
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider font-display">
+                  Exportação de Resultados
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Configure o delimitador desejado e exporte os dados filtrados ou visualize a estrutura do CSV.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+                <div className="flex items-center space-x-1.5 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl shadow-2xs">
+                  <label htmlFor="delimiter-input" className="text-xs font-semibold text-slate-500">
+                    delimitador
+                  </label>
+                  <input
+                    id="delimiter-input"
+                    type="text"
+                    value={delimiter}
+                    onChange={(e) => setDelimiter(e.target.value)}
+                    className="w-8 py-0.5 text-center text-xs font-mono font-bold bg-white border border-slate-200 rounded-md focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-colors"
+                    maxLength={5}
+                  />
+                </div>
+
+                <button
+                  onClick={() => setShowPreviewExport(!showPreviewExport)}
+                  className="inline-flex items-center space-x-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <FileText className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{showPreviewExport ? "Ocultar Estrutura CSV" : "Estrutura CSV"}</span>
+                </button>
+
+                <button
+                  onClick={handleExportCSV}
+                  disabled={filteredRows.length === 0}
+                  className="inline-flex items-center space-x-2 px-4.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  id="export-csv-btn"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Exportar</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Generated Semicolon Structure live preview */}
+            <AnimatePresence>
+              {showPreviewExport && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                  className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm text-slate-300 font-mono text-xs overflow-hidden"
+                  id="semicolon-preview-container"
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
+                      Visualização de Arquivo de Saída (Separado por {delimiter || "espaço"})
+                    </span>
+                    <button 
+                      onClick={() => setShowPreviewExport(false)}
+                      className="text-slate-500 hover:text-slate-300 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <pre className="overflow-x-auto whitespace-pre-wrap max-h-40 leading-relaxed text-slate-300" id="raw-semicolon-preview">
+                    {semicolonPreviewText || "Nenhum dado coincide com os filtros aplicados."}
+                    {filteredRows.length > 5 && (
+                      <span className="text-slate-500 italic block mt-1">
+                        ... (+ {filteredRows.length - 5} linhas filtradas omitidas na visualização)
+                      </span>
+                    )}
+                  </pre>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </main>

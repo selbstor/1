@@ -267,3 +267,189 @@ export function generateSemicolonCSV(headers: string[], rows: string[][], delimi
     )
     .join("\r\n");
 }
+
+export interface ParsedItemsTable {
+  headers: string[];
+  rows: string[][];
+}
+
+/**
+ * Parses an items/products detail text cell into a structured table.
+ * Automatically handles multi-line lists, various delimiters (-, |, ;, comma),
+ * and dynamically infers or builds appropriate table column titles.
+ */
+export function parseItemsDetail(text: string, columnHeader: string): ParsedItemsTable {
+  if (!text) return { headers: [columnHeader], rows: [] };
+
+  // Determine if we should split by newline or other delimiters
+  let lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+  
+  // If there's only one line but it contains semicolons (;) or pipes (|), let's split it into lines by that separator
+  if (lines.length === 1) {
+    if (text.includes(";")) {
+      lines = text.split(";").map(p => p.trim()).filter(p => p.length > 0);
+    } else if (text.includes("|")) {
+      lines = text.split("|").map(p => p.trim()).filter(p => p.length > 0);
+    }
+  }
+
+  if (lines.length === 0) {
+    return { headers: [columnHeader], rows: [] };
+  }
+
+  // Detect internal delimiter for columns within each line (e.g. separating quantity, product name, value)
+  // Common delimiters: ' - ', ' | ', ';', '\t'
+  const delimiters = [' - ', ' | ', ';', '\t'];
+  let bestDelim = '';
+  let maxCount = 0;
+
+  for (const delim of delimiters) {
+    let count = 0;
+    for (const line of lines) {
+      if (line.includes(delim)) {
+        count++;
+      }
+    }
+    // If it appears in at least half of the non-empty lines, or in the only line
+    if (count > maxCount && (count >= lines.length / 2 || lines.length === 1)) {
+      maxCount = count;
+      bestDelim = delim;
+    }
+  }
+
+  // If no structured delimiter is found but we have a comma, check if we can use comma as delimiter
+  // (avoiding Brazilian currency decimal separator like 350,00)
+  if (!bestDelim && text.includes(",")) {
+    let commaCount = 0;
+    for (const line of lines) {
+      const parts = line.split(",");
+      if (parts.length > 1) {
+        let looksLikeDecimal = false;
+        for (let i = 1; i < parts.length; i++) {
+          const part = parts[i].trim();
+          if (/^\d{2}(\s|$)/.test(part) && /^\d+$/.test(parts[i-1].trim().slice(-1))) {
+            looksLikeDecimal = true;
+          }
+        }
+        if (!looksLikeDecimal) {
+          commaCount++;
+        }
+      }
+    }
+    if (commaCount >= lines.length / 2 || lines.length === 1) {
+      bestDelim = ",";
+    }
+  }
+
+  let parsedRows: string[][] = [];
+  if (bestDelim) {
+    parsedRows = lines.map(line => {
+      return line.split(bestDelim).map(part => {
+        let p = part.trim();
+        // Remove surrounding quotes
+        if (p.startsWith('"') && p.endsWith('"')) p = p.slice(1, -1).trim();
+        if (p.startsWith("'") && p.endsWith("'")) p = p.slice(1, -1).trim();
+        return p;
+      });
+    });
+  } else {
+    // Simple list where each line is a single column cell
+    parsedRows = lines.map(line => [line]);
+  }
+
+  // Let's check if the first row is a header row (contains keywords or is all text while others have numbers)
+  const firstRow = parsedRows[0];
+  const commonHeaderKeywords = [
+    "id", "qtd", "quant", "prod", "item", "val", "preço", "price", "desc", "nome", 
+    "name", "total", "status", "sku", "código", "codigo", "unit", "unid", "subtotal"
+  ];
+
+  const hasHeaderKeywords = firstRow.some(cell => 
+    commonHeaderKeywords.some(keyword => cell.toLowerCase().includes(keyword))
+  );
+
+  const isFirstRowAllText = firstRow.every(cell => isNaN(Number(cell.replace(/[\$R\s,\.-]/g, ''))));
+  const hasNumericValues = parsedRows.some(row => 
+    row.some(cell => {
+      const cleanVal = cell.replace(/[\$R\s\.-]/g, '').replace(',', '.');
+      return cell.trim() !== "" && !isNaN(Number(cleanVal)) && cleanVal.length > 0;
+    })
+  );
+
+  const isMultiRow = parsedRows.length > 1;
+  const isFirstRowHeader = firstRow.length > 1 && isMultiRow && (hasHeaderKeywords || (isFirstRowAllText && hasNumericValues));
+
+  // Process rows to extract quantity ending in 'x' or 'X'
+  const processedRows = parsedRows.map((row, idx) => {
+    // If it's the header row, we don't want to parse quantity out of it
+    if (idx === 0 && isFirstRowHeader) {
+      return {
+        qtd: "QTD",
+        cells: row
+      };
+    }
+
+    let extractedQtd = "-";
+    const cleanedCells = row.map(cell => {
+      // Matches quantity ending in 'x' or 'X', like '2x', '10X', '(3x)', '1.5x'
+      const match = cell.match(/(?:\b|\()(\d+(?:\.\d+)?\s*[xX])(?:\b|\))/);
+      if (match && extractedQtd === "-") {
+        extractedQtd = match[1].trim().replace(/[xX]/g, '').trim();
+        // Remove the matched pattern from the cell text
+        let cleaned = cell.replace(match[0], '').trim();
+        // Clean up remaining empty parentheses or brackets
+        cleaned = cleaned.replace(/\(\s*\)/g, '').replace(/\[\s*\]/g, '').trim();
+        // Clean up leading/trailing delimiters
+        cleaned = cleaned.replace(/^[\s\-\|;,]+|[\s\-\|;,]+$/g, '').trim();
+        // Clean up multiple spaces
+        cleaned = cleaned.replace(/\s+/g, ' ');
+        return cleaned;
+      }
+      return cell;
+    });
+
+    return {
+      qtd: extractedQtd,
+      cells: cleanedCells
+    };
+  });
+
+  const remainingRows = processedRows.map(r => r.cells);
+  let headers: string[] = [];
+  let dataRows: string[][] = [];
+
+  if (isFirstRowHeader) {
+    const firstCellHeader = processedRows[0].cells[0] || "Produtos";
+    const otherCellHeaders = processedRows[0].cells.slice(1);
+    headers = [firstCellHeader, "QTD", ...otherCellHeaders];
+    dataRows = processedRows.slice(1).map(r => {
+      const firstCell = r.cells[0] || "";
+      const otherCells = r.cells.slice(1);
+      return [firstCell, r.qtd, ...otherCells];
+    });
+  } else {
+    // Infer headers based on remaining columns
+    const maxCols = Math.max(...remainingRows.map(r => r.length), 1);
+    let baseHeaders: string[] = [];
+    if (maxCols === 1) {
+      baseHeaders = ["Produtos"];
+    } else if (maxCols === 2) {
+      baseHeaders = ["Produtos", "Valor"];
+    } else if (maxCols === 3) {
+      baseHeaders = ["Produtos", "Valor", "Informação"];
+    } else {
+      baseHeaders = Array.from({ length: maxCols }, (_, i) => i === 0 ? "Produtos" : `Campo ${i + 1}`);
+    }
+    
+    const firstCellHeader = baseHeaders[0] || "Produtos";
+    const otherCellHeaders = baseHeaders.slice(1);
+    headers = [firstCellHeader, "QTD", ...otherCellHeaders];
+    dataRows = processedRows.map(r => {
+      const firstCell = r.cells[0] || "";
+      const otherCells = r.cells.slice(1);
+      return [firstCell, r.qtd, ...otherCells];
+    });
+  }
+
+  return { headers, rows: dataRows };
+}
