@@ -3356,7 +3356,13 @@
     // panos, então o mesmo problema de "aba pré-aberta fica bloqueada" do Safari também
     // acontece no Chrome/Firefox/Edge quando rodam no iPhone/iPad.
     function detectarIOS() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+      var ua = navigator.userAgent || '';
+      if (/iPhone|iPad|iPod/i.test(ua)) return true;
+      // Detecta iPhone/iPad no modo "Solicitar Site de Desktop" do Safari: nesse modo, o
+      // user agent finge ser um Mac ("Macintosh"), mas o aparelho continua sendo touch —
+      // algo que um Mac de verdade nunca é (por isso usamos isso pra diferenciar).
+      if (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return true;
+      return false;
     }
 
     // Tenta abrir diretamente o aplicativo do WhatsApp (celular ou desktop, se instalado)
