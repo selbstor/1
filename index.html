@@ -1801,6 +1801,8 @@
       text-align: center;
       max-width: 400px;
       width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
       animation: slideUp 0.3s ease;
     }
     .order-confirmed-icon {
@@ -2430,7 +2432,7 @@
         if (field === 'NOME DA LOJA') cfg.storeName = val;
         else if (field === 'LOGO (URL)') cfg.logo = val;
         else if (field === 'WHATSAPP') cfg.whatsapp = val;
-        else if (field === 'ENVIAR WHATSAPP') cfg.enviarWhatsapp = val.toUpperCase() === 'SIM';
+        else if (field === 'ENVIAR WHATSAPP' || field === 'ENVIAR WHTSAPP') cfg.enviarWhatsapp = val.toUpperCase() === 'SIM';
         else if (field === 'INSTAGRAM') cfg.instagram = val;
         else if (field === 'FACEBOOK') cfg.facebook = val;
         else if (field === 'PIXEL FACEBOOK') cfg.pixelFacebook = val;
@@ -3731,6 +3733,18 @@
         observacoes: obs
       };
 
+      // Converte a mensagem (formatada estilo WhatsApp, com *negrito* e quebras de linha)
+      // para HTML, pra poder exibi-la diretamente na tela de confirmação do site.
+      function converterMensagemParaHtml(texto) {
+        var escapado = (texto || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        escapado = escapado.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+        escapado = escapado.replace(/\n/g, '<br>');
+        return escapado;
+      }
+
       function montarMensagem(numeroParaMensagem, incluirNumeroPedido) {
         let m = (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "\n━━━━━━━━━━━━━━━\n";
         if (incluirNumeroPedido) m += `Nº do Pedido: #${numeroParaMensagem}\n`;
@@ -3779,7 +3793,8 @@
       // "Não" na aba Configurações), só salva o pedido na planilha e mostra uma confirmação
       // simples — sem tentar abrir o WhatsApp de forma alguma.
       if (!CONFIG.enviarWhatsapp) {
-        await salvarPedidoEObterNumero(dadosPedido).catch(function () { return null; });
+        var resultadoSemWhats = await salvarPedidoEObterNumero(dadosPedido).catch(function () { return null; });
+        var numeroPedidoFinalSemWhats = (resultadoSemWhats && resultadoSemWhats.numeroPedido) ? resultadoSemWhats.numeroPedido : numeroPedido;
 
         closeCheckout();
         cart = [];
@@ -3790,7 +3805,8 @@
         if (orderConfirmedTitleSemWhats) orderConfirmedTitleSemWhats.innerHTML = 'Pedido Recebido!';
         var orderConfirmedTextSemWhats = document.getElementById('orderConfirmedText');
         if (orderConfirmedTextSemWhats) {
-          orderConfirmedTextSemWhats.innerHTML = `Maiores informações pelo telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
+          var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroPedidoFinalSemWhats, true));
+          orderConfirmedTextSemWhats.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Maiores informações pelo telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
         }
         document.getElementById('orderConfirmed').classList.add('open');
 
