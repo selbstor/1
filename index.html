@@ -2245,7 +2245,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg></button>
       </div>
-     
+      <div class="checkout-body">
+        
         <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
@@ -2288,16 +2289,11 @@
             </button>
           </div>
         </div>
-
- <div class="checkout-body">
-        <div class="form-group"><label>Opção de Entrega *</label>
+<div class="form-group"><label>Opção de Entrega *</label>
           <div class="radio-group" id="deliveryOptions"></div>
         </div>
-
         <div class="form-group"><label>Observações</label><textarea id="custObs"
             placeholder=""></textarea></div>
-
-
         <div class="checkout-summary" id="checkoutSummary"></div>
       </div>
       <div class="checkout-footer">
