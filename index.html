@@ -3768,6 +3768,10 @@
       }
 
       function mostrarConfirmacao(numeroParaExibir, incluirNumero) {
+        // Monta a mensagem completa ANTES de esvaziar o carrinho — a função usa o
+        // carrinho atual pra listar os itens do pedido.
+        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroParaExibir, incluirNumero));
+
         closeCheckout();
         cart = [];
         currentCoupon = null;
@@ -3780,7 +3784,7 @@
         }
         var orderConfirmedText = document.getElementById('orderConfirmedText');
         if (orderConfirmedText) {
-          orderConfirmedText.innerHTML = `Verifique a mensagem no seu WhatsApp, clique em <strong>Enviar</strong> para concluir ou mais informações através do telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
+          orderConfirmedText.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Verifique a mensagem no seu WhatsApp, clique em <strong>Enviar</strong> para concluir ou mais informações através do telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
         }
         document.getElementById('orderConfirmed').classList.add('open');
       }
