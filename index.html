@@ -3742,7 +3742,7 @@
       }
 
       function montarMensagem(numeroParaMensagem, incluirNumeroPedido) {
-        let m = (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "\n━━━━━━━━━━━━━━━\n";
+        let m = "*" + (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "*\n━━━━━━━━━━━━━━━\n";
         if (incluirNumeroPedido) m += `Nº do Pedido: #${numeroParaMensagem}\n`;
         m += `Data/Hora: ${dadosPedido.dataHora.replace(',', ' -')}\n`;
         m += "*DADOS DO CLIENTE:*\n";
@@ -3792,6 +3792,10 @@
         var resultadoSemWhats = await salvarPedidoEObterNumero(dadosPedido).catch(function () { return null; });
         var numeroPedidoFinalSemWhats = (resultadoSemWhats && resultadoSemWhats.numeroPedido) ? resultadoSemWhats.numeroPedido : numeroPedido;
 
+        // Monta a mensagem ANTES de esvaziar o carrinho — a função usa o carrinho atual
+        // pra listar os itens, então precisa rodar antes do "cart = []" abaixo.
+        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroPedidoFinalSemWhats, true));
+
         closeCheckout();
         cart = [];
         currentCoupon = null;
@@ -3801,7 +3805,6 @@
         if (orderConfirmedTitleSemWhats) orderConfirmedTitleSemWhats.innerHTML = 'Pedido Recebido!';
         var orderConfirmedTextSemWhats = document.getElementById('orderConfirmedText');
         if (orderConfirmedTextSemWhats) {
-          var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroPedidoFinalSemWhats, true));
           orderConfirmedTextSemWhats.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Maiores informações pelo telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
         }
         document.getElementById('orderConfirmed').classList.add('open');
