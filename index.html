@@ -2246,7 +2246,9 @@
           </svg></button>
       </div>
       <div class="checkout-body">
-        
+        <div class="form-group"><label>Opção de Entrega *</label>
+          <div class="radio-group" id="deliveryOptions"></div>
+        </div>
         <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
@@ -2288,9 +2290,6 @@
               Copiar
             </button>
           </div>
-        </div>
-<div class="form-group"><label>Opção de Entrega *</label>
-          <div class="radio-group" id="deliveryOptions"></div>
         </div>
         <div class="form-group"><label>Observações</label><textarea id="custObs"
             placeholder=""></textarea></div>
@@ -2360,6 +2359,7 @@
     let CONFIG = {};
     let PRODUCTS = [];
     let CLIENTES = {}; // cadastro de clientes, indexado por telefone (só números)
+    let DELIVERY_AREAS = []; // áreas de entrega cadastradas (CEP + Bairro + Cidade/UF + Taxa)
     let lojaFechadaPorHorario = false; // true quando a mensagem do topo tem horário e o momento atual está fora dele
     let cart = [];
     let currentCoupon = null;
@@ -2597,6 +2597,56 @@
       } catch (err) {
         // Falha ao carregar clientes não deve travar a loja
         console.error('Erro ao carregar clientes:', err);
+      }
+    }
+
+    // ============================================
+    // LOAD DELIVERY AREAS FROM SHEETS (aba "Delivery")
+    // ============================================
+    async function loadDeliveryAreas() {
+      try {
+        if (!LOJAFACIL.planilha_delivery) return; // aba não configurada, ignora silenciosamente
+
+        const res = await fetch(LOJAFACIL.planilha_delivery + '&_t=' + Date.now(), { cache: 'no-store' });
+        const text = await res.text();
+        const rows = parseCSV(text);
+        if (!rows.length) return;
+
+        // Localiza a linha de cabeçalho procurando a coluna "CEP"
+        let headerIdx = -1;
+        for (let i = 0; i < rows.length; i++) {
+          const rowUpper = rows[i].map(c => (c || '').toUpperCase());
+          if (rowUpper.some(c => c.includes('CEP'))) { headerIdx = i; break; }
+        }
+        if (headerIdx === -1) return;
+
+        const headers = rows[headerIdx].map(c => (c || '').trim().toUpperCase());
+        const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+
+        const col = {
+          cep: findCol(['CEP']),
+          bairro: findCol(['BAIRRO']),
+          cidade: findCol(['CIDADE']),
+          taxa: findCol(['TAXA'])
+        };
+
+        const areas = [];
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+          const row = rows[i];
+          const cepArea = col.cep !== -1 ? (row[col.cep] || '').replace(/\D/g, '') : '';
+          if (!cepArea) continue;
+
+          areas.push({
+            cep: cepArea,
+            bairro: col.bairro !== -1 ? (row[col.bairro] || '').trim().toLowerCase() : '',
+            cidade: col.cidade !== -1 ? (row[col.cidade] || '').trim().toLowerCase() : '',
+            taxa: col.taxa !== -1 ? parsePrecoBR(row[col.taxa] || '0') : 0
+          });
+        }
+        DELIVERY_AREAS = areas;
+      } catch (err) {
+        // Falha ao carregar áreas de delivery não deve travar a loja
+        console.error('Erro ao carregar áreas de delivery:', err);
       }
     }
 
@@ -3195,7 +3245,28 @@
       document.querySelectorAll(".radio-option").forEach(o => o.classList.remove("selected")); el.classList.add("selected"); el.querySelector("input").checked = true;
       document.getElementById("addressGroup").style.display = val !== "retirada" ? "block" : "none"; buildCheckoutSummary();
     }
-    function getDeliveryFee() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return 0; if (s.value === "delivery") return CONFIG.taxaDelivery || 0; if (s.value === "padrao") return CONFIG.taxaEntregaPadrao || 0; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].taxa; } return 0; }
+    function getDeliveryFee() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return 0; if (s.value === "delivery") { if (CONFIG.taxaDelivery > 0) return CONFIG.taxaDelivery; return obterTaxaDeliveryPorArea(); } if (s.value === "padrao") return CONFIG.taxaEntregaPadrao || 0; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].taxa; } return 0; }
+
+    // Quando "Taxa Delivery" está vazia na planilha de Configurações, procura a taxa
+    // específica da área do cliente (CEP + Bairro + Cidade/UF) na aba "Delivery".
+    function obterTaxaDeliveryPorArea() {
+      if (!DELIVERY_AREAS || !DELIVERY_AREAS.length) return 0;
+      var cepInput = document.getElementById('custCep');
+      var bairroInput = document.getElementById('custBairro');
+      var cidadeInput = document.getElementById('custCidade');
+      var cep = cepInput ? cepInput.value.replace(/\D/g, '') : '';
+      var bairro = bairroInput ? bairroInput.value.trim().toLowerCase() : '';
+      var cidade = cidadeInput ? cidadeInput.value.trim().toLowerCase() : '';
+      if (!cep && !bairro && !cidade) return 0;
+
+      for (var i = 0; i < DELIVERY_AREAS.length; i++) {
+        var area = DELIVERY_AREAS[i];
+        if (area.cep === cep && area.bairro === bairro && area.cidade === cidade) {
+          return area.taxa;
+        }
+      }
+      return 0;
+    }
     function getDeliveryLabel() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return ""; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].nome; } return { retirada: "Retirada no Local", delivery: "Delivery", padrao: "Entrega Padrão" }[s.value] || ""; }
 
     function buildCheckoutSummary() {
@@ -4261,7 +4332,7 @@
 
     async function init() {
       try {
-        await Promise.all([loadConfig(), loadProducts(), loadClientes()]);
+        await Promise.all([loadConfig(), loadProducts(), loadClientes(), loadDeliveryAreas()]);
         if (CONFIG.lojaAtiva === false) {
           document.getElementById('loadingScreen').classList.add('hidden');
           document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px"><div style="text-align:center;max-width:480px"><div style="width:64px;height:64px;background:rgba(42,92,63,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' fill=\'none\' viewBox=\'0 0 24 24\' stroke-width=\'1.5\' stroke=\'#2A5C3F\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg></div><h1 style="font-family:var(--font);font-size:1.5rem;font-weight:700;color:#1B1B1B;margin-bottom:8px">' + (CONFIG.storeName || 'Nossa Loja') + '</h1><p style="font-family:var(--font);font-size:1rem;color:#6B6760;line-height:1.6;margin-bottom:24px">' + (CONFIG.msgManutencao || 'Estamos temporariamente fechados. Volte em breve!') + '</p>' + (CONFIG.whatsapp ? '<a href="https://wa.me/' + CONFIG.whatsapp + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:white;border-radius:8px;font-family:var(--font);font-size:0.9rem;font-weight:600;text-decoration:none"><svg viewBox=\'0 0 24 24\' width=\'20\' height=\'20\' fill=\'currentColor\'><path d=\'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\'/></svg>Fale Conosco</a>' : '') + '</div></div>';
@@ -4353,6 +4424,10 @@ async function buscarCep(cep) {
       [cepInput, enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
         el.classList.remove('field-error');
       });
+
+      // Recalcula o resumo do pedido — a taxa de delivery por área (quando a Taxa Delivery
+      // da planilha de Configurações está vazia) depende do CEP/Bairro/Cidade preenchidos aqui
+      if (typeof buildCheckoutSummary === 'function') buildCheckoutSummary();
 
       // Se o logradouro não vier preenchido (comum em CEPs de cidades pequenas),
       // foca no campo de endereço para o usuário completar; senão, vai para complemento
@@ -4480,6 +4555,9 @@ function buscarClientePorCep(valor) {
   [enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
     if (el) el.classList.remove('field-error');
   });
+
+  // Recalcula o resumo (a taxa de delivery por área depende do bairro/cidade preenchidos aqui)
+  if (typeof buildCheckoutSummary === 'function') buildCheckoutSummary();
 
   if (typeof showToast === 'function') showToast('Dados do cliente preenchidos automaticamente ✓');
 }
