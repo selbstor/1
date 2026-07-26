@@ -2249,7 +2249,7 @@
         <div class="form-group"><label>Opção de Entrega *</label>
           <div class="radio-group" id="deliveryOptions"></div>
         </div>
-        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value); buscarClientePorTelefone(this.value)' onblur='buscarClientePorTelefone(this.value)'>
+        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value); buscarClientePorTelefone(this.value); buildCheckoutSummary()' onblur='buscarClientePorTelefone(this.value); buildCheckoutSummary()'>
         </div>
         <div class="form-group"><label>Nome completo *</label><input type="text" id="custName"
             placeholder="Seu nome completo"></div>
@@ -2269,11 +2269,11 @@
   <div style='display:grid;grid-template-columns:1fr 1fr;gap:12px'>
     <div class='form-group'>
       <label>Bairro *</label>
-      <input type='text' id='custBairro' placeholder='Bairro'>
+      <input type='text' id='custBairro' placeholder='Bairro' oninput='buildCheckoutSummary()' onblur='buildCheckoutSummary()'>
     </div>
     <div class='form-group'>
       <label>Cidade/UF *</label>
-      <input type='text' id='custCidade' placeholder='São Paulo/SP'>
+      <input type='text' id='custCidade' placeholder='São Paulo/SP' oninput='buildCheckoutSummary()' onblur='buildCheckoutSummary()'>
     </div>
   </div>
 </div>
@@ -3208,6 +3208,21 @@
       if (!cart.length) return;
       document.getElementById("cartOverlay").classList.remove("open"); document.getElementById("cartSidebar").classList.remove("open");
       document.getElementById('addressGroup').style.display = 'block';
+
+      // Limpa todos os campos do formulário sempre que o checkout for aberto — evita
+      // manter dados de um pedido anterior preenchidos por engano.
+      ['custName', 'custPhone', 'custCep', 'custEndereco', 'custBairro', 'custCidade', 'custComplemento', 'custObs'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.value = ''; el.classList.remove('field-error'); }
+      });
+      var paySelectReset = document.getElementById('paymentMethod');
+      if (paySelectReset) paySelectReset.value = '';
+      document.querySelectorAll('input[name="delivery"]').forEach(function(r) { r.checked = false; });
+      window._dddDetectadoPorCep = null;
+      _ultimoCepBuscado = '';
+      _ultimoCepBuscadoCliente = '';
+      _ultimoTelBuscado = '';
+
       setTimeout(() => {
         buildDeliveryOptions();
         buildCheckoutSummary();
@@ -3229,7 +3244,7 @@
     function buildDeliveryOptions() {
       const c = document.getElementById("deliveryOptions"); let html = "";
       if (CONFIG.retiradaLocal) html += dopt("retirada", "Retirada no Local", CONFIG.enderecoRetirada || "", "Grátis");
-      if (CONFIG.delivery) html += dopt("delivery", "Delivery", "", CONFIG.taxaDelivery > 0 ? `R$ ${fp(CONFIG.taxaDelivery)}` : "Grátis");
+      if (CONFIG.delivery) html += dopt("delivery", "Delivery", "", CONFIG.taxaDelivery > 0 ? `R$ ${fp(CONFIG.taxaDelivery)}` : "A calcular", "deliveryPriceLabel");
       if (CONFIG.entregaPadrao) html += dopt("padrao", "Entrega Padrão", "", CONFIG.taxaEntregaPadrao > 0 ? `R$ ${fp(CONFIG.taxaEntregaPadrao)}` : "Grátis");
       if (CONFIG.faixasEntrega && CONFIG.faixasEntrega.length > 0) {
         CONFIG.faixasEntrega.forEach((faixa, i) => {
@@ -3238,8 +3253,18 @@
       }
       c.innerHTML = html;
     }
-    function dopt(val, label, sub, price) {
-      return `<label class="radio-option" onclick="selectDelivery('${val}',this)"><input type="radio" name="delivery" value="${val}"><div><div class="radio-option-text">${label}</div>${sub ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:2px">${sub}</div>` : ''}</div><span class="radio-option-price">${price}</span></label>`;
+    function dopt(val, label, sub, price, priceId) {
+      return `<label class="radio-option" onclick="selectDelivery('${val}',this)"><input type="radio" name="delivery" value="${val}"><div><div class="radio-option-text">${label}</div>${sub ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:2px">${sub}</div>` : ''}</div><span class="radio-option-price"${priceId ? ` id="${priceId}"` : ''}>${price}</span></label>`;
+    }
+
+    // Atualiza o texto de preço da opção "Delivery" na lista de entregas, refletindo a
+    // taxa por área encontrada (ou "A calcular" se ainda não achou nenhuma).
+    function atualizarLabelPrecoDelivery() {
+      if (CONFIG.taxaDelivery > 0) return; // taxa fixa já definida, não precisa atualizar
+      var label = document.getElementById('deliveryPriceLabel');
+      if (!label) return;
+      var taxa = obterTaxaDeliveryPorArea();
+      label.textContent = taxa > 0 ? `R$ ${fp(taxa)}` : 'A calcular';
     }
     function selectDelivery(val, el) {
       document.querySelectorAll(".radio-option").forEach(o => o.classList.remove("selected")); el.classList.add("selected"); el.querySelector("input").checked = true;
@@ -3248,28 +3273,76 @@
     function getDeliveryFee() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return 0; if (s.value === "delivery") { if (CONFIG.taxaDelivery > 0) return CONFIG.taxaDelivery; return obterTaxaDeliveryPorArea(); } if (s.value === "padrao") return CONFIG.taxaEntregaPadrao || 0; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].taxa; } return 0; }
 
     // Quando "Taxa Delivery" está vazia na planilha de Configurações, procura a taxa
-    // específica da área do cliente (CEP + Bairro + Cidade/UF) na aba "Delivery".
+    // específica da área do cliente na aba "Delivery" — tenta primeiro a combinação
+    // completa (CEP + Bairro + Cidade/UF); se não achar, tenta isoladamente por CEP,
+    // depois por Bairro + Cidade, depois só por Cidade/UF; e por fim, se o telefone
+    // digitado bater com um cliente já cadastrado, usa o CEP/Bairro/Cidade salvos dele.
     function obterTaxaDeliveryPorArea() {
       if (!DELIVERY_AREAS || !DELIVERY_AREAS.length) return 0;
+
       var cepInput = document.getElementById('custCep');
       var bairroInput = document.getElementById('custBairro');
       var cidadeInput = document.getElementById('custCidade');
+      var phoneInput = document.getElementById('custPhone');
+
       var cep = cepInput ? cepInput.value.replace(/\D/g, '') : '';
       var bairro = bairroInput ? bairroInput.value.trim().toLowerCase() : '';
       var cidade = cidadeInput ? cidadeInput.value.trim().toLowerCase() : '';
-      if (!cep && !bairro && !cidade) return 0;
+
+      var taxaEncontrada = buscarTaxaEmAreas(cep, bairro, cidade);
+      if (taxaEncontrada !== null) return taxaEncontrada;
+
+      // Não achou com o que já está no formulário — tenta pelo telefone, usando o CEP/
+      // Bairro/Cidade salvos de um cliente já cadastrado com esse mesmo número.
+      var telLocal = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+      if (telLocal.length >= 8 && CLIENTES) {
+        for (var chave in CLIENTES) {
+          if (chave.length > telLocal.length && chave.slice(-telLocal.length) === telLocal) {
+            var clienteEncontrado = CLIENTES[chave];
+            var cepCliente = (clienteEncontrado.cep || '').replace(/\D/g, '');
+            var bairroCliente = (clienteEncontrado.bairro || '').trim().toLowerCase();
+            var cidadeCliente = (clienteEncontrado.cidade || '').trim().toLowerCase();
+            var taxaPeloCliente = buscarTaxaEmAreas(cepCliente, bairroCliente, cidadeCliente);
+            if (taxaPeloCliente !== null) return taxaPeloCliente;
+            break;
+          }
+        }
+      }
+
+      return 0;
+    }
+
+    // Procura a taxa em DELIVERY_AREAS tentando, em ordem: combinação completa (CEP +
+    // Bairro + Cidade), só CEP, Bairro + Cidade, e só Cidade/UF. Retorna null se não
+    // encontrar nenhuma correspondência (permite diferenciar "achou taxa 0" de "não achou").
+    function buscarTaxaEmAreas(cep, bairro, cidade) {
+      if (!cep && !bairro && !cidade) return null;
 
       for (var i = 0; i < DELIVERY_AREAS.length; i++) {
         var area = DELIVERY_AREAS[i];
-        if (area.cep === cep && area.bairro === bairro && area.cidade === cidade) {
-          return area.taxa;
+        if (cep && bairro && cidade && area.cep === cep && area.bairro === bairro && area.cidade === cidade) return area.taxa;
+      }
+      if (cep) {
+        for (var j = 0; j < DELIVERY_AREAS.length; j++) {
+          if (DELIVERY_AREAS[j].cep === cep) return DELIVERY_AREAS[j].taxa;
         }
       }
-      return 0;
+      if (bairro && cidade) {
+        for (var k = 0; k < DELIVERY_AREAS.length; k++) {
+          if (DELIVERY_AREAS[k].bairro === bairro && DELIVERY_AREAS[k].cidade === cidade) return DELIVERY_AREAS[k].taxa;
+        }
+      }
+      if (cidade) {
+        for (var m = 0; m < DELIVERY_AREAS.length; m++) {
+          if (DELIVERY_AREAS[m].cidade === cidade) return DELIVERY_AREAS[m].taxa;
+        }
+      }
+      return null;
     }
     function getDeliveryLabel() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return ""; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].nome; } return { retirada: "Retirada no Local", delivery: "Delivery", padrao: "Entrega Padrão" }[s.value] || ""; }
 
     function buildCheckoutSummary() {
+      atualizarLabelPrecoDelivery();
       const sub = cart.reduce((s, i) => s + i.preco * i.qty, 0);
       let disc = 0;
       if (currentCoupon) { disc = currentCoupon.tipo === "percentual" ? sub * (currentCoupon.valor / 100) : currentCoupon.valor; if (disc > sub) disc = sub; }
