@@ -2684,7 +2684,7 @@
       });
       cidadesUnicas.sort(function(a, b) { return a.localeCompare(b, 'pt-BR'); });
 
-      cidadeSelect.innerHTML = '<option value=""></option>';
+      cidadeSelect.innerHTML = '<option value=" "></option>';
       cidadesUnicas.forEach(function(cidade) {
         var opt = document.createElement('option');
         opt.value = cidade;
@@ -2705,7 +2705,7 @@
       var bairroSelect = document.getElementById('custBairro');
       if (!bairroSelect) return;
 
-      bairroSelect.innerHTML = '<option value=""></option>';
+      bairroSelect.innerHTML = '<option value=" "></option>';
 
       var cidadeLower = (cidadeSelecionada || '').trim().toLowerCase();
       if (!cidadeLower || !DELIVERY_AREAS || !DELIVERY_AREAS.length) return;
@@ -3209,7 +3209,7 @@
     function addToCart() {
       if (!currentProduct) return;
       if (lojaFechadaPorHorario) { showToast('Estabelecimento fechado no momento', true); return; }
-      if (currentProduct.variacoes && !selectedVariation) { showToast("Selecione uma opção", true); return; }
+      if (currentProduct.variacoes && !selectedVariation) { showToast(" ", true); return; }
       const qty = parseInt(document.getElementById("qtyVal").value);
       const hasPromo = currentProduct.precoPromo && currentProduct.precoPromo < currentProduct.preco;
       const price = hasPromo ? currentProduct.precoPromo : currentProduct.preco;
