@@ -2684,7 +2684,7 @@
       });
       cidadesUnicas.sort(function(a, b) { return a.localeCompare(b, 'pt-BR'); });
 
-      cidadeSelect.innerHTML = '<option value="">Selecione a cidade...</option>';
+      cidadeSelect.innerHTML = '<option value=""></option>';
       cidadesUnicas.forEach(function(cidade) {
         var opt = document.createElement('option');
         opt.value = cidade;
@@ -2705,7 +2705,7 @@
       var bairroSelect = document.getElementById('custBairro');
       if (!bairroSelect) return;
 
-      bairroSelect.innerHTML = '<option value="">Selecione o bairro...</option>';
+      bairroSelect.innerHTML = '<option value=""></option>';
 
       var cidadeLower = (cidadeSelecionada || '').trim().toLowerCase();
       if (!cidadeLower || !DELIVERY_AREAS || !DELIVERY_AREAS.length) return;
@@ -2954,7 +2954,7 @@
 
       // Payment methods for checkout
       const paySelect = document.getElementById('paymentMethod');
-      paySelect.innerHTML = '<option value="">Selecione...</option>';
+      paySelect.innerHTML = '<option value=""></option>';
       var formasPagamento = [];
       if (CONFIG.pix) formasPagamento.push('Pix');
       if (CONFIG.cartao) formasPagamento.push('Cartão de Crédito');
