@@ -14,7 +14,7 @@
         }
 
         body {
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
             color: #111827;
             min-height: 100vh;
         }
@@ -23,28 +23,36 @@
         header {
             background-color: #ffffff;
             border-bottom: 1px solid #eaeaea;
-            padding: 16px 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 14px 32px;
             position: sticky;
             top: 0;
             z-index: 100;
+            width: 100%;
+        }
+
+        .header-content {
+            max-width: 1140px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
 
         .logo {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #000000;
             text-decoration: none;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .search-container {
             position: relative;
-            width: 100%;
-            max-width: 440px;
-            margin: 0 24px;
+            flex: 1;
+            max-width: 460px;
+            margin: 0 16px;
         }
 
         .search-icon {
@@ -60,7 +68,7 @@
 
         .search-input {
             width: 100%;
-            padding: 9px 16px 9px 40px;
+            padding: 8px 16px 8px 38px;
             background-color: #f4f4f5;
             border: 1px solid #e4e4e7;
             border-radius: 9999px;
@@ -90,6 +98,7 @@
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s ease;
+            flex-shrink: 0;
         }
 
         .cart-button:hover {
@@ -102,18 +111,18 @@
             color: #18181b;
         }
 
-        /* Area Principal */
+        /* Área Principal */
         main {
-            max-width: 1200px;
+            max-width: 1140px;
             margin: 0 auto;
-            padding: 36px 48px;
+            padding: 32px 32px;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .section-title {
@@ -131,7 +140,7 @@
         /* Grid de Produtos e Card */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 260px));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 250px));
             gap: 20px;
         }
 
@@ -143,7 +152,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 160px;
+            height: 165px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
         }
 
@@ -157,7 +166,7 @@
         .product-price {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #1c5335; /* Verde idêntico ao da imagem */
+            color: #1c5335; /* Verde idêntico ao modelo */
             margin-bottom: 16px;
         }
 
@@ -190,7 +199,7 @@
             }
 
             .search-container {
-                margin: 0 10px;
+                margin: 0 8px;
             }
 
             .product-grid {
@@ -203,20 +212,22 @@
 
     <!-- Header -->
     <header>
-        <a href="#" class="logo">Minha Loja</a>
-        
-        <div class="search-container">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput">
-        </div>
+        <div class="header-content">
+            <a href="#" class="logo">Minha Loja</a>
+            
+            <div class="search-container">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput">
+            </div>
 
-        <button class="cart-button" aria-label="Carrinho">
-            <svg class="cart-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-        </button>
+            <button class="cart-button" aria-label="Carrinho">
+                <svg class="cart-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </button>
+        </div>
     </header>
 
     <!-- Conteúdo Principal -->
