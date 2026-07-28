@@ -1805,30 +1805,6 @@
       overflow-y: auto;
       animation: slideUp 0.3s ease;
     }
-    .order-confirmed-icon {
-      width: 36px;
-      height: 36px;
-      background: #ECFDF5;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-    }
-    @keyframes checkDraw {
-      0% { stroke-dashoffset: 24; }
-      100% { stroke-dashoffset: 0; }
-    }
-    .order-confirmed-icon svg {
-      width: 18px;
-      height: 18px;
-      color: #059669;
-    }
-    .order-confirmed-icon svg path {
-      stroke-dasharray: 24;
-      stroke-dashoffset: 24;
-      animation: checkDraw 0.5s ease 0.2s forwards;
-    }
     .order-confirmed-title {
       font-size: 1.3rem;
       font-weight: 700;
@@ -2252,10 +2228,10 @@
         <div id='addressGroup' style='display:none'>
   <div class='form-group' style='display:none'>
     <label>CEP</label>
-    <input type='text' id='custCep' placeholder='00000-000' maxlength='9' oninput='maskCep(this); buscarCep(this.value); buscarClientePorCep(this.value)' onblur='buscarCep(this.value); buscarClientePorCep(this.value)'>
+    <input type='text' id='custCep' placeholder='00000-000' maxlength='9' oninput='maskCep(this)' onblur='maskCep(this)'>
   </div>
   <div class='form-group'>
-    <label>Endereço/Número *</label>
+    <label>Endereço/Número*</label>
     <input type='text' id='custEndereco' placeholder=''>
   </div>
   <div class='form-group'>
@@ -2266,21 +2242,21 @@
    
    <div class='form-group'>
       <label>CIDADE *</label>
-      <select id='custCidade' onchange='onCidadeSelecionada(this.value); buildCheckoutSummary()'>
-        <option value=''></option>
+      <select id='custCidade' onchange='popularComboboxBairro(this.value); buildCheckoutSummary()'>
+        <option value=""></option>
       </select>
     </div>
 
     <div class='form-group'>
       <label>Bairro *</label>
       <select id='custBairro' onchange='buildCheckoutSummary()'>
-        <option value=''></option>
+        <option value=""></option>
       </select>
     </div>
    
   </div>
 </div>
-        <div class="form-group"><label>Forma de Pagamento *</label><select id="paymentMethod">
+        <div class="form-group"><label>Forma de Pagamento*</label><select id="paymentMethod">
             <option value=""></option>
           </select></div>
         <div class="pix-info" id="pixInfo"></div>
@@ -2332,11 +2308,6 @@
       <button id='orderConfirmedCloseX' onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
         <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
       </button>
-      <div class='order-confirmed-icon'>
-        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='currentColor'>
-          <path stroke-linecap='round' stroke-linejoin='round' d='M4.5 12.75l6 6 9-13.5'/>
-        </svg>
-      </div>
       <div class='order-confirmed-title' id='orderConfirmedTitle'>Pedido Recebido!</div>
       <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.</div>
       <button id='orderConfirmedOk' onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
@@ -2365,7 +2336,7 @@
     let CONFIG = {};
     let PRODUCTS = [];
     let CLIENTES = {}; // cadastro de clientes, indexado por telefone (só números)
-    let DELIVERY_AREAS = []; // áreas de entrega cadastradas (CEP + Bairro + Cidade/UF + Taxa)
+    let DELIVERY_AREAS = []; // áreas de entrega cadastradas (Bairro + Cidade/UF + Taxa)
     let lojaFechadaPorHorario = false; // true quando a mensagem do topo tem horário e o momento atual está fora dele
     let cart = [];
     let currentCoupon = null;
@@ -2618,11 +2589,12 @@
         const rows = parseCSV(text);
         if (!rows.length) return;
 
-        // Localiza a linha de cabeçalho procurando a coluna "CEP"
+        // Localiza a linha de cabeçalho procurando a coluna "BAIRRO" ou "CIDADE"
+        // (o CEP não é mais usado para identificar a área de entrega)
         let headerIdx = -1;
         for (let i = 0; i < rows.length; i++) {
           const rowUpper = rows[i].map(c => (c || '').toUpperCase());
-          if (rowUpper.some(c => c.includes('CEP'))) { headerIdx = i; break; }
+          if (rowUpper.some(c => c.includes('BAIRRO') || c.includes('CIDADE'))) { headerIdx = i; break; }
         }
         if (headerIdx === -1) return;
 
@@ -2630,7 +2602,6 @@
         const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
 
         const col = {
-          cep: findCol(['CEP']),
           bairro: findCol(['BAIRRO']),
           cidade: findCol(['CIDADE']),
           taxa: findCol(['TAXA'])
@@ -2639,116 +2610,25 @@
         const areas = [];
         for (let i = headerIdx + 1; i < rows.length; i++) {
           const row = rows[i];
-          const cepArea = col.cep !== -1 ? (row[col.cep] || '').replace(/\D/g, '') : '';
-          if (!cepArea) continue;
-
-          var bairroOriginal = col.bairro !== -1 ? (row[col.bairro] || '').trim() : '';
-          var cidadeOriginal = col.cidade !== -1 ? (row[col.cidade] || '').trim() : '';
+          const bairroOriginal = col.bairro !== -1 ? (row[col.bairro] || '').trim() : '';
+          const cidadeOriginal = col.cidade !== -1 ? (row[col.cidade] || '').trim() : '';
+          const bairroArea = bairroOriginal.toLowerCase();
+          const cidadeArea = cidadeOriginal.toLowerCase();
+          if (!cidadeArea) continue; // linha sem Cidade, ignora (Bairro pode vir vazio)
 
           areas.push({
-            cep: cepArea,
-            bairro: bairroOriginal.toLowerCase(),
-            cidade: cidadeOriginal.toLowerCase(),
+            bairro: bairroArea,
             bairroDisplay: bairroOriginal,
+            cidade: cidadeArea,
             cidadeDisplay: cidadeOriginal,
             taxa: col.taxa !== -1 ? parsePrecoBR(row[col.taxa] || '0') : 0
           });
         }
         DELIVERY_AREAS = areas;
-        popularComboCidade();
       } catch (err) {
         // Falha ao carregar áreas de delivery não deve travar a loja
         console.error('Erro ao carregar áreas de delivery:', err);
       }
-    }
-
-    // ============================================
-    // COMBOBOXES DE CIDADE E BAIRRO (a partir da aba "Delivery")
-    // ============================================
-
-    // Preenche o combobox de Cidade com os valores únicos da aba "Delivery" (sem duplicar).
-    // Chamado assim que o cliente termina de digitar o telefone.
-    function popularComboCidade() {
-      var cidadeSelect = document.getElementById('custCidade');
-      if (!cidadeSelect || !DELIVERY_AREAS || !DELIVERY_AREAS.length) return;
-
-      var valorAtual = cidadeSelect.value;
-
-      // Lista de cidades únicas, usando o texto original (com acentuação/maiúsculas) para exibição
-      var vistos = {};
-      var cidadesUnicas = [];
-      DELIVERY_AREAS.forEach(function(area) {
-        if (!area.cidade || vistos[area.cidade]) return;
-        vistos[area.cidade] = true;
-        cidadesUnicas.push(area.cidadeDisplay || area.cidade);
-      });
-      cidadesUnicas.sort(function(a, b) { return a.localeCompare(b, 'pt-BR'); });
-
-      cidadeSelect.innerHTML = '<option value=" "></option>';
-      cidadesUnicas.forEach(function(cidade) {
-        var opt = document.createElement('option');
-        opt.value = cidade;
-        opt.textContent = cidade;
-        cidadeSelect.appendChild(opt);
-      });
-
-      // Restaura a seleção anterior, caso ela ainda exista na lista recarregada
-      if (valorAtual) {
-        var aindaExiste = cidadesUnicas.some(function(c) { return c.toLowerCase() === valorAtual.toLowerCase(); });
-        if (aindaExiste) cidadeSelect.value = valorAtual;
-      }
-    }
-
-    // Preenche o combobox de Bairro com os bairros da aba "Delivery" que pertencem à
-    // cidade selecionada (sem duplicar).
-    function popularComboBairro(cidadeSelecionada) {
-      var bairroSelect = document.getElementById('custBairro');
-      if (!bairroSelect) return;
-
-      bairroSelect.innerHTML = '<option value=" "></option>';
-
-      var cidadeLower = (cidadeSelecionada || '').trim().toLowerCase();
-      if (!cidadeLower || !DELIVERY_AREAS || !DELIVERY_AREAS.length) return;
-
-      var vistos = {};
-      var bairrosUnicos = [];
-      DELIVERY_AREAS.forEach(function(area) {
-        if (area.cidade !== cidadeLower) return;
-        if (!area.bairro || vistos[area.bairro]) return;
-        vistos[area.bairro] = true;
-        bairrosUnicos.push(area.bairroDisplay || area.bairro);
-      });
-      bairrosUnicos.sort(function(a, b) { return a.localeCompare(b, 'pt-BR'); });
-
-      bairrosUnicos.forEach(function(bairro) {
-        var opt = document.createElement('option');
-        opt.value = bairro;
-        opt.textContent = bairro;
-        bairroSelect.appendChild(opt);
-      });
-    }
-
-    // Disparado ao selecionar uma cidade no combobox — repopula o combobox de Bairro
-    function onCidadeSelecionada(cidade) {
-      popularComboBairro(cidade);
-    }
-
-    // Garante que o select tenha uma opção com o valor informado (cria dinamicamente se
-    // ainda não existir, ex: cidade/bairro vindos do ViaCEP ou de um cliente já cadastrado
-    // que não constam na aba "Delivery") e a seleciona.
-    function definirValorSelectComOpcao(selectEl, valor) {
-      if (!selectEl || !valor) return;
-      var valorLower = valor.trim().toLowerCase();
-      var existe = Array.prototype.some.call(selectEl.options, function(opt) {
-        return opt.value.trim().toLowerCase() === valorLower;
-      });
-      if (!existe) {
-        var opt = document.createElement('option');
-        opt.value = valor;
-        opt.textContent = valor;
-        selectEl.appendChild(opt);
-      }
-      selectEl.value = valor;
     }
 
     // ============================================
@@ -3209,7 +3089,7 @@
     function addToCart() {
       if (!currentProduct) return;
       if (lojaFechadaPorHorario) { showToast('Estabelecimento fechado no momento', true); return; }
-      if (currentProduct.variacoes && !selectedVariation) { showToast(" ", true); return; }
+      if (currentProduct.variacoes && !selectedVariation) { showToast("Selecione uma opção", true); return; }
       const qty = parseInt(document.getElementById("qtyVal").value);
       const hasPromo = currentProduct.precoPromo && currentProduct.precoPromo < currentProduct.preco;
       const price = hasPromo ? currentProduct.precoPromo : currentProduct.preco;
@@ -3306,6 +3186,81 @@
     function removeCoupon() { currentCoupon = null; document.getElementById("couponApplied").classList.remove("show"); document.getElementById("couponInput").value = ""; updateTotals(); }
 
     // ============================================
+    // COMBOBOX CIDADE / BAIRRO (dados da aba "Delivery")
+    // ============================================
+
+    // Preenche o combobox de Cidade com os valores únicos (sem duplicidade) vindos da
+    // aba Delivery, e limpa o combobox de Bairro — que só é populado após a escolha da
+    // cidade (ver popularComboboxBairro).
+    function popularComboboxCidade(valorSelecionado) {
+      var cidadeSelect = document.getElementById('custCidade');
+      if (!cidadeSelect) return;
+
+      var vistos = {};
+      var cidades = [];
+      (DELIVERY_AREAS || []).forEach(function(area) {
+        if (area.cidade && !vistos[area.cidade]) {
+          vistos[area.cidade] = true;
+          cidades.push({ valor: area.cidade, texto: area.cidadeDisplay || area.cidade });
+        }
+      });
+      cidades.sort(function(a, b) { return a.texto.localeCompare(b.texto, 'pt-BR'); });
+
+      cidadeSelect.innerHTML = '';
+      cidadeSelect.appendChild(new Option('', ''));
+      cidades.forEach(function(c) {
+        cidadeSelect.appendChild(new Option(c.texto, c.valor));
+      });
+
+      // Bairro depende da cidade escolhida — começa sempre vazio
+      var bairroSelect = document.getElementById('custBairro');
+      if (bairroSelect) {
+        bairroSelect.innerHTML = '';
+        bairroSelect.appendChild(new Option('', ''));
+      }
+
+      if (valorSelecionado) {
+        var alvo = valorSelecionado.trim().toLowerCase();
+        var match = cidades.find(function(c) { return c.valor === alvo; });
+        if (match) {
+          cidadeSelect.value = match.valor;
+          popularComboboxBairro(match.valor);
+        }
+      }
+    }
+
+    // Preenche o combobox de Bairro com os valores únicos (sem duplicidade) da aba
+    // Delivery, filtrados pela cidade já escolhida. Sem cidade selecionada, fica vazio.
+    function popularComboboxBairro(cidadeValor, valorSelecionado) {
+      var bairroSelect = document.getElementById('custBairro');
+      if (!bairroSelect) return;
+
+      bairroSelect.innerHTML = '';
+      bairroSelect.appendChild(new Option('', ''));
+      if (!cidadeValor) return;
+
+      var vistos = {};
+      var bairros = [];
+      (DELIVERY_AREAS || []).forEach(function(area) {
+        if (area.cidade === cidadeValor && area.bairro && !vistos[area.bairro]) {
+          vistos[area.bairro] = true;
+          bairros.push({ valor: area.bairro, texto: area.bairroDisplay || area.bairro });
+        }
+      });
+      bairros.sort(function(a, b) { return a.texto.localeCompare(b.texto, 'pt-BR'); });
+
+      bairros.forEach(function(b) {
+        bairroSelect.appendChild(new Option(b.texto, b.valor));
+      });
+
+      if (valorSelecionado) {
+        var alvo = valorSelecionado.trim().toLowerCase();
+        var match = bairros.find(function(b) { return b.valor === alvo; });
+        if (match) bairroSelect.value = match.valor;
+      }
+    }
+
+    // ============================================
     // CHECKOUT
     // ============================================
     function openCheckout() {
@@ -3315,20 +3270,18 @@
 
       // Limpa todos os campos do formulário sempre que o checkout for aberto — evita
       // manter dados de um pedido anterior preenchidos por engano.
-      ['custName', 'custPhone', 'custCep', 'custEndereco', 'custBairro', 'custCidade', 'custComplemento', 'custObs'].forEach(function(id) {
+      ['custName', 'custPhone', 'custCep', 'custEndereco', 'custComplemento', 'custObs'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) { el.value = ''; el.classList.remove('field-error'); }
       });
-      var cidadeSelectReset = document.getElementById('custCidade');
-      if (cidadeSelectReset) cidadeSelectReset.innerHTML = '<option value="">Selecione a cidade...</option>';
-      var bairroSelectReset = document.getElementById('custBairro');
-      if (bairroSelectReset) bairroSelectReset.innerHTML = '<option value="">Selecione o bairro...</option>';
+      // Cidade e Bairro são comboboxes: recarrega a lista de cidades (a partir da aba
+      // Delivery) e limpa o de Bairro, que só será preenchido após a escolha da cidade.
+      popularComboboxCidade();
+      document.getElementById('custCidade').classList.remove('field-error');
+      document.getElementById('custBairro').classList.remove('field-error');
       var paySelectReset = document.getElementById('paymentMethod');
       if (paySelectReset) paySelectReset.value = '';
       document.querySelectorAll('input[name="delivery"]').forEach(function(r) { r.checked = false; });
-      window._dddDetectadoPorCep = null;
-      _ultimoCepBuscado = '';
-      _ultimoCepBuscadoCliente = '';
       _ultimoTelBuscado = '';
 
       setTimeout(() => {
@@ -3386,36 +3339,33 @@
     function getDeliveryFee() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return 0; if (s.value === "delivery") { if (CONFIG.taxaDelivery > 0) return CONFIG.taxaDelivery; return obterTaxaDeliveryPorArea(); } if (s.value === "padrao") return CONFIG.taxaEntregaPadrao || 0; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].taxa; } return 0; }
 
     // Quando "Taxa Delivery" está vazia na planilha de Configurações, procura a taxa
-    // específica da área do cliente na aba "Delivery" — tenta primeiro a combinação
-    // completa (CEP + Bairro + Cidade/UF); se não achar, tenta isoladamente por CEP,
-    // depois por Bairro + Cidade, depois só por Cidade/UF; e por fim, se o telefone
-    // digitado bater com um cliente já cadastrado, usa o CEP/Bairro/Cidade salvos dele.
+    // específica da área do cliente na aba "Delivery" — usando exclusivamente a
+    // combinação Bairro + Cidade/UF (o CEP é ignorado nessa busca); se não achar com o
+    // que já está no formulário, e o telefone digitado bater com um cliente já
+    // cadastrado, tenta usar o Bairro/Cidade salvos dele.
     function obterTaxaDeliveryPorArea() {
       if (!DELIVERY_AREAS || !DELIVERY_AREAS.length) return 0;
 
-      var cepInput = document.getElementById('custCep');
       var bairroInput = document.getElementById('custBairro');
       var cidadeInput = document.getElementById('custCidade');
       var phoneInput = document.getElementById('custPhone');
 
-      var cep = cepInput ? cepInput.value.replace(/\D/g, '') : '';
       var bairro = bairroInput ? bairroInput.value.trim().toLowerCase() : '';
       var cidade = cidadeInput ? cidadeInput.value.trim().toLowerCase() : '';
 
-      var taxaEncontrada = buscarTaxaEmAreas(cep, bairro, cidade);
+      var taxaEncontrada = buscarTaxaEmAreas(bairro, cidade);
       if (taxaEncontrada !== null) return taxaEncontrada;
 
-      // Não achou com o que já está no formulário — tenta pelo telefone, usando o CEP/
+      // Não achou com o que já está no formulário — tenta pelo telefone, usando o
       // Bairro/Cidade salvos de um cliente já cadastrado com esse mesmo número.
       var telLocal = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
       if (telLocal.length >= 8 && CLIENTES) {
         for (var chave in CLIENTES) {
           if (chave.length > telLocal.length && chave.slice(-telLocal.length) === telLocal) {
             var clienteEncontrado = CLIENTES[chave];
-            var cepCliente = (clienteEncontrado.cep || '').replace(/\D/g, '');
             var bairroCliente = (clienteEncontrado.bairro || '').trim().toLowerCase();
             var cidadeCliente = (clienteEncontrado.cidade || '').trim().toLowerCase();
-            var taxaPeloCliente = buscarTaxaEmAreas(cepCliente, bairroCliente, cidadeCliente);
+            var taxaPeloCliente = buscarTaxaEmAreas(bairroCliente, cidadeCliente);
             if (taxaPeloCliente !== null) return taxaPeloCliente;
             break;
           }
@@ -3425,30 +3375,14 @@
       return 0;
     }
 
-    // Procura a taxa em DELIVERY_AREAS tentando, em ordem: combinação completa (CEP +
-    // Bairro + Cidade), só CEP, Bairro + Cidade, e só Cidade/UF. Retorna null se não
-    // encontrar nenhuma correspondência (permite diferenciar "achou taxa 0" de "não achou").
-    function buscarTaxaEmAreas(cep, bairro, cidade) {
-      if (!cep && !bairro && !cidade) return null;
+    // Procura a taxa em DELIVERY_AREAS pela combinação exata Bairro + Cidade/UF.
+    // O CEP não é considerado nessa busca. Retorna null se não encontrar
+    // nenhuma correspondência (permite diferenciar "achou taxa 0" de "não achou").
+    function buscarTaxaEmAreas(bairro, cidade) {
+      if (!bairro || !cidade) return null;
 
-      for (var i = 0; i < DELIVERY_AREAS.length; i++) {
-        var area = DELIVERY_AREAS[i];
-        if (cep && bairro && cidade && area.cep === cep && area.bairro === bairro && area.cidade === cidade) return area.taxa;
-      }
-      if (cep) {
-        for (var j = 0; j < DELIVERY_AREAS.length; j++) {
-          if (DELIVERY_AREAS[j].cep === cep) return DELIVERY_AREAS[j].taxa;
-        }
-      }
-      if (bairro && cidade) {
-        for (var k = 0; k < DELIVERY_AREAS.length; k++) {
-          if (DELIVERY_AREAS[k].bairro === bairro && DELIVERY_AREAS[k].cidade === cidade) return DELIVERY_AREAS[k].taxa;
-        }
-      }
-      if (cidade) {
-        for (var m = 0; m < DELIVERY_AREAS.length; m++) {
-          if (DELIVERY_AREAS[m].cidade === cidade) return DELIVERY_AREAS[m].taxa;
-        }
+      for (var k = 0; k < DELIVERY_AREAS.length; k++) {
+        if (DELIVERY_AREAS[k].bairro === bairro && DELIVERY_AREAS[k].cidade === cidade) return DELIVERY_AREAS[k].taxa;
       }
       return null;
     }
@@ -3877,8 +3811,10 @@
       var cep = document.getElementById('custCep') ? document.getElementById('custCep').value.trim() : '';
       var endereco = document.getElementById('custEndereco') ? document.getElementById('custEndereco').value.trim() : '';
       var complemento = document.getElementById('custComplemento') ? document.getElementById('custComplemento').value.trim() : '';
-      var bairro = document.getElementById('custBairro') ? document.getElementById('custBairro').value.trim() : '';
-      var cidade = document.getElementById('custCidade') ? document.getElementById('custCidade').value.trim() : '';
+      var bairroSelectEl = document.getElementById('custBairro');
+      var cidadeSelectEl = document.getElementById('custCidade');
+      var bairro = bairroSelectEl && bairroSelectEl.value ? bairroSelectEl.options[bairroSelectEl.selectedIndex].text : '';
+      var cidade = cidadeSelectEl && cidadeSelectEl.value ? cidadeSelectEl.options[cidadeSelectEl.selectedIndex].text : '';
       const obs = document.getElementById("custObs").value.trim();
       // Clear previous error highlights
       document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('field-error'); });
@@ -4554,7 +4490,7 @@
     init();
 
 // ============================================
-// BUSCA DE CEP (ViaCEP) — única implementação
+// MÁSCARA DO CEP (autopreenchimento por CEP desativado)
 // ============================================
 
 // Aplica a máscara 00000-000 no input de CEP
@@ -4563,85 +4499,10 @@ function maskCep(input) {
   if (v.length > 8) v = v.substr(0, 8);
   if (v.length > 5) v = v.substr(0, 5) + '-' + v.substr(5);
   input.value = v;
-
-  // Reseta o controle de "último CEP buscado" quando o usuário apaga/edita o campo
-  if (v.length < 8) _ultimoCepBuscado = '';
-}
-
-// Evita repetir a mesma busca (ex: dispara no oninput e de novo no onblur)
-var _ultimoCepBuscado = '';
-
-async function buscarCep(cep) {
-  const cepInput = document.getElementById('custCep');
-  const enderecoInput = document.getElementById('custEndereco');
-  const bairroInput = document.getElementById('custBairro');
-  const cidadeInput = document.getElementById('custCidade');
-
-  // Limpa o CEP para ter apenas números
-  const cepLimpo = (cep || '').replace(/\D/g, '');
-
-  // Só busca quando o CEP estiver completo (8 dígitos)
-  if (cepLimpo.length !== 8) return;
-
-  // Evita repetir a mesma busca para o mesmo CEP
-  if (cepLimpo === _ultimoCepBuscado) return;
-  _ultimoCepBuscado = cepLimpo;
-
-  // Feedback visual de carregamento
-  const placeholderOriginal = enderecoInput.placeholder;
-  cepInput.disabled = true;
-  enderecoInput.placeholder = 'Buscando endereço...';
-
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-    const data = await response.json();
-
-    if (data.erro) {
-      cepInput.classList.add('field-error');
-      if (typeof showToast === 'function') showToast('CEP não encontrado', true);
-    } else {
-      // Preenche os campos com os dados retornados pela API
-      enderecoInput.value = data.logradouro || '';
-      var cidadeViaCep = (data.localidade && data.uf) ? `${data.localidade}/${data.uf}` : '';
-      // Garante que os comboboxes de Cidade e Bairro tenham a opção retornada pelo ViaCEP,
-      // mesmo que essa área ainda não esteja cadastrada na aba "Delivery"
-      popularComboCidade();
-      if (cidadeViaCep) definirValorSelectComOpcao(cidadeInput, cidadeViaCep);
-      popularComboBairro(cidadeInput.value);
-      if (data.bairro) definirValorSelectComOpcao(bairroInput, data.bairro);
-
-      // ViaCEP já retorna o DDD da região do CEP — guardamos pra combinar com o telefone
-      // do cliente (que só pede o número local, sem DDD)
-      if (data.ddd) { window._dddDetectadoPorCep = data.ddd; }
-
-      // Remove bordas vermelhas de erro (se houver) após o preenchimento
-      [cepInput, enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
-        el.classList.remove('field-error');
-      });
-
-      // Recalcula o resumo do pedido — a taxa de delivery por área (quando a Taxa Delivery
-      // da planilha de Configurações está vazia) depende do CEP/Bairro/Cidade preenchidos aqui
-      if (typeof buildCheckoutSummary === 'function') buildCheckoutSummary();
-
-      // Se o logradouro não vier preenchido (comum em CEPs de cidades pequenas),
-      // foca no campo de endereço para o usuário completar; senão, vai para complemento
-      if (!data.logradouro) {
-        enderecoInput.focus();
-      } else {
-        document.getElementById('custComplemento').focus();
-      }
-    }
-  } catch (error) {
-    console.error('Erro ao buscar o CEP:', error);
-    if (typeof showToast === 'function') showToast('Não foi possível buscar o CEP. Verifique sua conexão.', true);
-  } finally {
-    cepInput.disabled = false;
-    enderecoInput.placeholder = placeholderOriginal;
-  }
 }
 
 // ============================================
-// BUSCA DE CLIENTE PELO CEP (aba "Clientes")
+// BUSCA DE CLIENTE PELO TELEFONE (aba "Clientes")
 // ============================================
 
 // Evita repetir a mesma busca para o mesmo telefone (só limpa campos quando incompleto)
@@ -4665,10 +4526,6 @@ function buscarClientePorTelefone(valor) {
   var telLocal = (valor || '').replace(/\D/g, '');
   if (telLocal.length < 8) return; // ainda incompleto, a limpeza já foi tratada acima
 
-  // Assim que o telefone estiver completo, preenche o combobox de Cidade com os valores
-  // cadastrados na aba "Delivery" (sem duplicar), independente de o cliente já existir
-  popularComboCidade();
-
   var telCompleto = obterDDDDetectado() + telLocal;
   if (telCompleto === _ultimoTelBuscado) return;
   _ultimoTelBuscado = telCompleto;
@@ -4679,7 +4536,6 @@ function buscarClientePorTelefone(valor) {
   var nomeInput = document.getElementById('custName');
   var enderecoInput = document.getElementById('custEndereco');
   var complementoInput = document.getElementById('custComplemento');
-  var bairroInput = document.getElementById('custBairro');
   var cidadeInput = document.getElementById('custCidade');
   var cepInput = document.getElementById('custCep');
 
@@ -4690,11 +4546,10 @@ function buscarClientePorTelefone(valor) {
   }
   if (enderecoInput && !enderecoInput.value && cliente.endereco) enderecoInput.value = cliente.endereco;
   if (complementoInput && !complementoInput.value && cliente.complemento) complementoInput.value = cliente.complemento;
-  if (cidadeInput && !cidadeInput.value && cliente.cidade) definirValorSelectComOpcao(cidadeInput, cliente.cidade);
-  if (bairroInput && !bairroInput.value && cliente.cidade) popularComboBairro(cidadeInput.value);
-  if (bairroInput && !bairroInput.value && cliente.bairro) definirValorSelectComOpcao(bairroInput, cliente.bairro);
+  // Cidade e Bairro não são preenchidos automaticamente — o usuário sempre escolhe
+  // manualmente, primeiro a Cidade e depois o Bairro (carregado a partir dela).
 
-  [enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
+  [enderecoInput, cidadeInput].forEach(function(el) {
     if (el) el.classList.remove('field-error');
   });
 
@@ -4707,60 +4562,6 @@ function extrairTelefoneLocal(numero) {
   if (v.length === 11) return v.slice(-9);
   if (v.length === 10) return v.slice(-8);
   return v;
-}
-
-// Evita repetir a mesma busca para o mesmo CEP
-var _ultimoCepBuscadoCliente = '';
-
-function buscarClientePorCep(valor) {
-  var cepLimpo = (valor || '').replace(/\D/g, '');
-
-  var nomeInput = document.getElementById('custName');
-  var phoneInput = document.getElementById('custPhone');
-  var enderecoInput = document.getElementById('custEndereco');
-  var complementoInput = document.getElementById('custComplemento');
-  var bairroInput = document.getElementById('custBairro');
-  var cidadeInput = document.getElementById('custCidade');
-
-  // Só busca quando o CEP estiver completo (8 dígitos)
-  if (cepLimpo.length !== 8) return;
-  if (cepLimpo === _ultimoCepBuscadoCliente) return;
-  _ultimoCepBuscadoCliente = cepLimpo;
-
-  // Procura, entre os clientes cadastrados, algum com esse mesmo CEP
-  var cliente = null;
-  if (CLIENTES) {
-    for (var chave in CLIENTES) {
-      if ((CLIENTES[chave].cep || '').replace(/\D/g, '') === cepLimpo) {
-        cliente = CLIENTES[chave];
-        break;
-      }
-    }
-  }
-  if (!cliente) return; // nenhum cliente cadastrado com esse CEP
-
-  // Só preenche nome/telefone se ainda estiverem vazios — não sobrescreve o que a pessoa
-  // já digitou (o endereço em si já é preenchido pela busca normal do CEP, via ViaCEP)
-  if (nomeInput && !nomeInput.value && cliente.nome) nomeInput.value = cliente.nome;
-  if (phoneInput && !phoneInput.value && cliente.telefone) {
-    phoneInput.value = extrairTelefoneLocal(cliente.telefone);
-    maskPhone(phoneInput);
-  }
-  if (enderecoInput && !enderecoInput.value && cliente.endereco) enderecoInput.value = cliente.endereco;
-  if (complementoInput && !complementoInput.value && cliente.complemento) complementoInput.value = cliente.complemento;
-  popularComboCidade();
-  if (cidadeInput && !cidadeInput.value && cliente.cidade) definirValorSelectComOpcao(cidadeInput, cliente.cidade);
-  if (bairroInput && !bairroInput.value && cliente.cidade) popularComboBairro(cidadeInput.value);
-  if (bairroInput && !bairroInput.value && cliente.bairro) definirValorSelectComOpcao(bairroInput, cliente.bairro);
-
-  [enderecoInput, bairroInput, cidadeInput].forEach(function(el) {
-    if (el) el.classList.remove('field-error');
-  });
-
-  // Recalcula o resumo (a taxa de delivery por área depende do bairro/cidade preenchidos aqui)
-  if (typeof buildCheckoutSummary === 'function') buildCheckoutSummary();
-
-  if (typeof showToast === 'function') showToast('Dados do cliente preenchidos automaticamente ✓');
 }
   </script>
 </body>
