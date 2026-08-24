@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Carregando... — LojaFácil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carregando... — Selbstor|Achadinhos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
@@ -280,50 +280,37 @@
       flex-shrink: 0;
     }
 
-    .cart-btn {
-      position: relative;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-      color: var(--gray-700);
-    }
-
-    .cart-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: var(--primary-light);
-    }
-
-    .cart-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .cart-badge {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: var(--primary);
-      color: var(--white);
-      font-size: 0.7rem;
-      font-weight: 700;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
+    .channel-btn {
       display: none;
       align-items: center;
-      justify-content: center;
-      border: 2px solid var(--white);
+      gap: 8px;
+      background: #25D366;
+      color: var(--white);
+      padding: 10px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: var(--transition);
+      white-space: nowrap;
     }
 
-    .cart-badge.show {
+    .channel-btn.show {
       display: flex;
+    }
+
+    .channel-btn:hover {
+      filter: brightness(0.93);
+      transform: translateY(-1px);
+    }
+
+    .channel-btn.telegram {
+      background: #229ED9;
+    }
+
+    .channel-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
 
     .search-toggle {
@@ -344,46 +331,6 @@
     .cat-nav {
       background: var(--white);
       border-bottom: 1px solid var(--gray-100);
-      position: relative;
-    }
-
-    .cat-nav-arrows {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 78px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      padding-right: 6px;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0), var(--white) 45%);
-      pointer-events: none;
-    }
-
-    .cat-nav-arrow,
-    .cat-nav-arrow-left {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      cursor: pointer;
-      transition: opacity 0.2s ease;
-    }
-
-    .cat-nav-arrow.show,
-    .cat-nav-arrow-left.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .cat-nav-arrow svg,
-    .cat-nav-arrow-left svg {
-      width: 18px;
-      height: 18px;
-      color: var(--gray-500);
     }
 
     .cat-nav-inner {
@@ -405,7 +352,7 @@
     .cat-btn {
       padding: 12px 18px;
       font-size: 0.88rem;
-      font-weight: 700;
+      font-weight: 500;
       color: var(--text-muted);
       background: none;
       white-space: nowrap;
@@ -636,6 +583,8 @@
       display: flex;
       align-items: baseline;
       gap: 8px;
+      row-gap: 0;
+      flex-wrap: wrap;
       margin-bottom: 12px;
     }
 
@@ -643,12 +592,14 @@
       font-size: 1.1rem;
       font-weight: 700;
       color: var(--primary);
+      white-space: nowrap;
     }
 
     .price-old {
       font-size: 0.85rem;
       color: var(--gray-400);
       text-decoration: line-through;
+      white-space: nowrap;
     }
 
     .btn-details {
@@ -667,19 +618,6 @@
       background: var(--primary);
       border-color: var(--primary);
       color: var(--white);
-    }
-
-    .btn-details:disabled {
-      background: var(--gray-100);
-      border-color: var(--gray-200);
-      color: var(--gray-400);
-      cursor: not-allowed;
-    }
-
-    .btn-details:disabled:hover {
-      background: var(--gray-100);
-      border-color: var(--gray-200);
-      color: var(--gray-400);
     }
 
     .no-results {
@@ -770,11 +708,14 @@
       grid-template-columns: 1fr 1fr;
     }
 
+    .modal-left {
+      display: flex;
+      flex-direction: column;
+    }
+
     .modal-gallery {
-      position: relative;
       aspect-ratio: 1;
       background: var(--gray-50);
-      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
       overflow: hidden;
     }
 
@@ -785,46 +726,36 @@
     }
 
     .gallery-thumbs {
-      position: absolute;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
-      gap: 6px;
+      gap: 8px;
+      padding: 12px 16px;
+      justify-content: center;
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-200);
     }
 
     .gallery-thumb {
-      width: 48px;
-      height: 48px;
+      width: 56px;
+      height: 56px;
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid transparent;
       cursor: pointer;
-      opacity: 0.7;
-      transition: var(--transition);
+      opacity: 0.6;
+      transition: all 0.2s ease;
       background: var(--white);
-      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
     }
-
-    .gallery-thumb:hover {
-      opacity: 1;
-    }
-
-    .gallery-thumb.active {
-      border-color: var(--primary);
-      opacity: 1;
-    }
-
-    .gallery-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .gallery-thumb:hover { opacity: 0.9; }
+    .gallery-thumb.active { border-color: var(--primary); opacity: 1; }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
     .modal-details {
       padding: 32px;
       display: flex;
       flex-direction: column;
+      overflow-y: auto;
+      max-height: 100%;
     }
 
     .modal-cat {
@@ -869,93 +800,73 @@
       white-space: pre-line;
     }
 
-    .option-label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .variation-options {
+    .coupon-box {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1.5px dashed var(--primary);
+      background: var(--primary-light);
+      border-radius: var(--radius);
+      padding: 12px 14px;
       margin-bottom: 20px;
     }
 
-    .var-btn {
-      padding: 8px 18px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      font-weight: 500;
-      background: var(--white);
-      color: var(--text);
-      transition: var(--transition);
+    .coupon-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 2px;
     }
 
-    .var-btn:hover {
-      border-color: var(--primary);
+    .coupon-code {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       color: var(--primary);
     }
 
-    .var-btn.selected {
+    .coupon-copy {
       background: var(--primary);
-      border-color: var(--primary);
       color: var(--white);
-    }
-
-    .qty-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .qty-control {
-      display: flex;
-      align-items: center;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .qty-btn {
-      width: 40px;
-      height: 40px;
-      background: var(--gray-50);
-      color: var(--text);
-      font-size: 1.1rem;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      white-space: nowrap;
       transition: var(--transition);
     }
 
-    .qty-btn:hover {
-      background: var(--gray-100);
+    .coupon-copy:hover {
+      background: var(--primary-hover);
     }
 
-    .qty-val {
-      width: 48px;
-      text-align: center;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
-      background: var(--white);
-      color: var(--text);
-    }
-
-    .btn-add-cart {
+    .video-embed {
+      position: relative;
       width: 100%;
-      padding: 14px;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 20px;
+    }
+
+    .video-embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .btn-cta {
+      width: 100%;
+      padding: 15px;
       background: var(--primary);
       color: var(--white);
       border-radius: var(--radius);
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 700;
       transition: var(--transition);
       display: flex;
@@ -966,614 +877,101 @@
       z-index: 2;
     }
 
-    .btn-add-cart:hover {
+    .btn-cta:hover {
       background: var(--primary-hover);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
 
-    .btn-add-cart svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    /* ============================================
-   CART SIDEBAR
-   ============================================ */
-    .cart-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(2px);
-      z-index: 300;
+    .price-note {
       display: none;
+      font-size: 0.72rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: 10px;
     }
 
-    .cart-overlay.open {
+    .price-note.show {
       display: block;
     }
 
-    .cart-sidebar {
+    .badge-platform {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      color: var(--white);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 50px;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(2px);
+      max-width: 46%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge-limited {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: #B45309;
+      color: var(--white);
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .channel-float {
       position: fixed;
-      top: 0;
-      right: 0;
-      width: 420px;
-      max-width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      background: var(--white);
-      z-index: 301;
+      bottom: 24px;
+      left: 24px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #25D366;
+      color: var(--white);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      z-index: 60;
+      transition: all 0.3s ease;
+    }
+
+    .channel-float.show {
       display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .channel-float:hover {
+      transform: translateY(-2px);
       box-shadow: var(--shadow-xl);
     }
 
-    .cart-sidebar.open {
-      transform: translateX(0);
+    .channel-float.telegram {
+      background: #229ED9;
     }
 
-    .cart-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--gray-100);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
+    .channel-float svg {
+      width: 26px;
+      height: 26px;
     }
 
-    .cart-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    body.has-channel-float .back-to-top {
+      bottom: 88px;
     }
 
-    .cart-close {
-      background: none;
-      color: var(--gray-500);
-      padding: 4px;
-    }
-
-    .cart-close svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .cart-items {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 24px;
-      min-height: 0;
-    }
-
-    .cart-empty {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--text-light);
-    }
-
-    .cart-empty svg {
-      width: 48px;
-      height: 48px;
+    .footer-disclosure {
+      max-width: 640px;
       margin: 0 auto 12px;
-      color: var(--gray-300);
-    }
-
-    .cart-item {
-      display: flex;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--gray-100);
-    }
-
-    .cart-item:last-child {
-      border-bottom: none;
-    }
-
-    .cart-item-img {
-      width: 72px;
-      height: 72px;
-      border-radius: var(--radius);
-      overflow: hidden;
-      flex-shrink: 0;
-      background: var(--gray-50);
-    }
-
-    .cart-item-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .cart-item-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .cart-item-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .cart-item-var {
-      font-size: 0.78rem;
-      color: var(--text-light);
-      margin-bottom: 8px;
-    }
-
-    .cart-item-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .cart-item-qty {
-      display: flex;
-      align-items: center;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-    }
-
-    .cart-item-qty button {
-      width: 28px;
-      height: 28px;
-      background: var(--gray-50);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cart-item-qty span {
-      width: 32px;
-      text-align: center;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
-
-    .cart-item-price {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .cart-item-remove {
-      background: none;
-      color: var(--gray-400);
       font-size: 0.75rem;
-      padding: 2px 0;
-      margin-top: 4px;
-      text-decoration: underline;
-      transition: var(--transition);
-    }
-
-    .cart-item-remove:hover {
-      color: #E53E3E;
-    }
-
-    .cart-coupon {
-      padding: 14px 24px;
-      border-top: 1px solid var(--gray-100);
-      flex-shrink: 0;
-    }
-
-    .coupon-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .coupon-row input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 0.85rem;
-      outline: none;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .coupon-row input:focus {
-      border-color: var(--primary);
-    }
-
-    .coupon-row button {
-      padding: 10px 18px;
-      background: var(--secondary);
-      color: var(--white);
-      border-radius: var(--radius);
-      font-size: 0.82rem;
-      font-weight: 600;
-      white-space: nowrap;
-      transition: var(--transition);
-    }
-
-    .coupon-row button:hover {
-      background: var(--secondary-hover);
-    }
-
-    .coupon-msg {
-      font-size: 0.78rem;
-      margin-top: 6px;
-      display: none;
-    }
-
-    .coupon-msg.success {
-      color: var(--primary);
-      display: block;
-    }
-
-    .coupon-msg.error {
-      color: #E53E3E;
-      display: block;
-    }
-
-    .coupon-applied {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      background: var(--primary-light);
-      border-radius: var(--radius);
-      margin-top: 8px;
-    }
-
-    .coupon-applied.show {
-      display: flex;
-    }
-
-    .coupon-applied span {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .coupon-applied button {
-      background: none;
-      color: var(--primary);
-      font-size: 0.78rem;
-      text-decoration: underline;
-    }
-
-    .cart-footer {
-      padding: 20px 24px;
-      border-top: 1px solid var(--gray-100);
-      background: var(--gray-50);
-      flex-shrink: 0;
-    }
-
-    .cart-totals {
-      margin-bottom: 16px;
-    }
-
-    .cart-total-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.88rem;
-      color: var(--text-muted);
-    }
-
-    .cart-total-row.discount {
-      color: var(--primary);
-    }
-
-    .cart-total-row.total {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--gray-200);
-    }
-
-    .btn-checkout {
-      width: 100%;
-      padding: 14px;
-      background: var(--primary);
-      color: var(--white);
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      font-weight: 700;
-      transition: var(--transition);
-    }
-
-    .btn-checkout:hover {
-      background: var(--primary-hover);
-    }
-
-    /* ============================================
-   CHECKOUT MODAL
-   ============================================ */
-    .checkout-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 400;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .checkout-overlay.open {
-      display: flex;
-    }
-
-    .checkout-modal {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      max-width: 560px;
-      width: 100%;
-      max-height: 90vh;
-      max-height: 90dvh;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease;
-    }
-
-    .checkout-header {
-      padding: 24px 28px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .checkout-header h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .checkout-body {
-      padding: 20px 28px 28px;
-    }
-
-    .checkout-footer {
-      padding: 16px 28px calc(16px + env(safe-area-inset-bottom, 0px));
-      border-top: 1px solid var(--gray-200);
-      background: var(--white);
-      flex-shrink: 0;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      color: var(--text);
-      background: var(--white);
-      outline: none;
-      transition: var(--transition);
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-light);
-    }
-
-    .field-error {
-      border-color: #E53E3E !important;
-      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15) !important;
-      background: #fff5f5 !important;
-    }
-
-    .delivery-error .radio-group {
-      border: 1.5px solid #E53E3E;
-      border-radius: var(--radius);
-      padding: 6px;
-      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 70px;
-    }
-
-    .radio-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .radio-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .radio-option:hover {
-      border-color: var(--primary);
-    }
-
-    .radio-option.selected {
-      border-color: var(--primary);
-      background: var(--primary-light);
-    }
-
-    .radio-option input[type="radio"] {
-      accent-color: var(--primary);
-      width: 16px;
-      height: 16px;
-    }
-
-    .radio-option-text {
-      font-size: 0.88rem;
-      font-weight: 500;
-    }
-
-    .radio-option-price {
-      margin-left: auto;
-      font-size: 0.82rem;
-      color: var(--text-light);
-      font-weight: 500;
-    }
-
-    .checkout-summary {
-      background: var(--gray-50);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .checkout-summary h3 {
-      font-size: 0.88rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .checkout-item {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .pix-info {
-      background: var(--primary-light);
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      margin-top: 4px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-      color: var(--primary);
-      display: none;
-    }
-
-    .pix-info.show {
-      display: block;
-    }
-
-    .pix-info strong {
-      font-weight: 700;
-    }
-
-    .pix-copia-cola {
-      background: var(--primary-light);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-top: 4px;
-      margin-bottom: 12px;
-      display: none;
-    }
-
-    .pix-copia-cola.show {
-      display: block;
-    }
-
-    .pix-copia-cola-valor {
-      font-size: 0.85rem;
-      color: var(--primary);
-      margin-bottom: 8px;
-    }
-
-    .pix-copia-cola-valor strong {
-      font-size: 1rem;
-    }
-
-    .pix-copia-cola-row {
-      display: flex;
-      gap: 8px;
-      align-items: stretch;
-    }
-
-    .pix-copia-cola-input {
-      flex: 1;
-      min-width: 0;
-      font-size: 0.75rem;
-      font-family: monospace;
-      padding: 8px 10px;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      background: var(--white);
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .pix-copia-cola-btn {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .pix-copia-cola-btn:hover {
-      opacity: 0.9;
-    }
-
-    .pix-copia-cola-btn svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    .btn-whatsapp {
-      width: 100%;
-      padding: 15px;
-      background: #25D366;
-      color: var(--white);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: 700;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .btn-whatsapp:hover {
-      background: #20BD5A;
-    }
-
-    .btn-whatsapp svg {
-      width: 22px;
-      height: 22px;
+      line-height: 1.5;
+      opacity: 0.75;
     }
 
     /* ============================================
@@ -1662,39 +1060,6 @@
       font-size: 0.78rem;
       color: var(--text-light);
     }
-    .toast-btn {
-      padding: 6px 14px;
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: var(--radius);
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: background 0.2s ease;
-    }
-    .toast-btn:hover { background: var(--primary-hover); }
-
-    @keyframes cartBounce {
-      0% { transform: scale(1); }
-      25% { transform: scale(1.35); }
-      50% { transform: scale(0.9); }
-      75% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-    @keyframes badgePop {
-      0% { transform: scale(1); background: var(--primary); }
-      50% { transform: scale(1.5); background: #E53E3E; }
-      100% { transform: scale(1); background: var(--primary); }
-    }
-    .cart-btn.bounce {
-      animation: cartBounce 0.5s ease;
-    }
-    .cart-badge.pop {
-      animation: badgePop 0.4s ease;
-    }
 
     .btn-copy-link {
       display: flex;
@@ -1780,46 +1145,6 @@
     }
 
     /* ============================================
-   ORDER CONFIRMED
-   ============================================ */
-    .order-confirmed-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 500;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .order-confirmed-overlay.open { display: flex; }
-    .order-confirmed-box {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      padding: 48px 40px;
-      text-align: center;
-      max-width: 400px;
-      width: 100%;
-      max-height: 85vh;
-      overflow-y: auto;
-      animation: slideUp 0.3s ease;
-    }
-    .order-confirmed-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--secondary);
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
-    }
-    .order-confirmed-text {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 8px;
-    }
-
-    /* ============================================
    RESPONSIVE
    ============================================ */
     @media (max-width: 1024px) {
@@ -1831,16 +1156,6 @@
     @media (max-width: 768px) {
       #featuredGrid { grid-template-columns: repeat(2, 1fr) !important; }
       #featuredSection { padding: 16px; }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        font-size: 16px !important;
-      }
-
-      .coupon-row input {
-        font-size: 16px !important;
-      }
 
       .search-bar input {
         font-size: 16px !important;
@@ -1857,22 +1172,31 @@
       }
 
       .header-logo img {
-        max-height: 32px !important;
-        max-width: 32px !important;
+        max-height: 36px !important;
+        max-width: 100px !important;
       }
 
       .header-logo span {
-        font-size: 0.85rem !important;
+        font-size: 0.95rem !important;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
       }
 
       .header-actions {
         flex-shrink: 0 !important;
       }
 
-      .cart-btn {
+      .channel-btn span {
+        display: none;
+      }
+
+      .channel-btn {
         width: 40px !important;
         height: 40px !important;
+        padding: 0 !important;
+        justify-content: center;
         flex-shrink: 0 !important;
       }
 
@@ -1919,45 +1243,21 @@
       }
 
       .modal-body {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+      }
+
+      .modal-left {
+        width: 100%;
       }
 
       .modal-gallery {
-        aspect-ratio: 4/3;
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        aspect-ratio: 4/3 !important;
       }
 
-      .checkout-overlay {
-        padding: 0 !important;
-        align-items: flex-start !important;
-      }
-
-      .checkout-modal {
-        max-width: 100vw !important;
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-      }
-
-      .checkout-header {
-        padding: 16px !important;
-        flex-shrink: 0 !important;
-      }
-
-      .checkout-body {
-        padding: 16px !important;
-        flex: 1 !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        min-height: 0 !important;
-      }
-
-      .checkout-footer {
-        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-        flex-shrink: 0 !important;
+      .modal-details {
+        padding: 20px 16px !important;
+        max-height: none !important;
+        overflow-y: visible !important;
       }
 
       .modal-overlay {
@@ -1968,68 +1268,14 @@
       .modal {
         max-width: 100vw !important;
         width: 100% !important;
-        max-height: 100% !important;
-        height: 100% !important;
+        max-height: 100vh !important;
+        height: 100vh !important;
         border-radius: 0 !important;
         overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
       }
 
       .modal-details {
         padding: 20px 16px !important;
-      }
-
-      .cart-sidebar {
-        width: 100% !important;
-        max-width: 100vw !important;
-      }
-
-      .cart-sidebar.open {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        position: fixed !important;
-        top: 0 !important;
-        right: 0 !important;
-        overflow: hidden !important;
-      }
-
-      .cart-header {
-        padding: 16px !important;
-        flex-shrink: 0 !important;
-      }
-
-      .cart-items {
-        padding: 12px 16px !important;
-        flex: 1 !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        min-height: 0 !important;
-      }
-
-      .cart-coupon {
-        padding: 14px 16px !important;
-        flex-shrink: 0 !important;
-      }
-
-      .cart-footer {
-        padding: 16px !important;
-        flex-shrink: 0 !important;
-      }
-
-      .order-confirmed-overlay {
-        padding: 16px !important;
-      }
-
-      .order-confirmed-box {
-        padding: 36px 24px !important;
-        max-width: 100% !important;
-        border-radius: var(--radius-lg) !important;
-      }
-
-      .cart-total-row.total {
-        font-size: 1rem;
       }
 
       .banner {
@@ -2082,7 +1328,7 @@
   <!-- Loading -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-spinner"></div>
-    <div class="loading-text">Carregando loja...</div>
+    <div class="loading-text">Carregando achadinhos...</div>
   </div>
 
   <!-- Error -->
@@ -2105,7 +1351,7 @@
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
         </svg>
-        <input type="text" placeholder="Buscar produtos..." id="searchInput" oninput='filterProducts(); document.getElementById("searchClear").classList.toggle("show", this.value.length > 0);'>
+        <input type="text" placeholder="Buscar achadinhos..." id="searchInput" oninput='filterProducts(); document.getElementById("searchClear").classList.toggle("show", this.value.length > 0);'>
         <button type="button" class="search-clear" id="searchClear" onclick="clearSearch()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--gray-200);border:none;width:20px;height:20px;border-radius:50%;font-size:0.7rem;color:var(--gray-600);cursor:pointer;align-items:center;justify-content:center;padding:0;line-height:1">✕</button>
       </div>
       <div class="header-actions">
@@ -2116,23 +1362,12 @@
               d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
         </button>
-        <button class="cart-btn" onclick="openCart()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-          </svg>
-          <span class="cart-badge" id="cartBadge">0</span>
-        </button>
+        <a class="channel-btn" id="channelBtn" href="#" target="_blank" rel="noopener noreferrer"></a>
       </div>
     </div>
   </header>
   <nav class="cat-nav" style="display:none" id="catNavWrap">
     <div class="cat-nav-inner" id="catNav"></div>
-    <div class="cat-nav-arrows">
-      <div class="cat-nav-arrow-left" id="catNavArrowLeft" onclick="scrollCatNavStart()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></div>
-      <div class="cat-nav-arrow" id="catNavArrow" onclick="scrollCatNav()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></div>
-    </div>
   </nav>
   <div class="subcat-bar" id="subcatBar"></div>
   <section class="banner" id="bannerSection"></section>
@@ -2142,7 +1377,7 @@
       <div class='products-grid' id='featuredGrid'></div>
     </div>
     <div class="section-header">
-      <h2 class="section-title" id="sectionTitle">Todos os Produtos</h2>
+      <h2 class="section-title" id="sectionTitle">Todos os Achadinhos</h2>
       <span class="product-count" id="productCount"></span>
     </div>
     <div class="products-grid" id="productsGrid"></div>
@@ -2156,7 +1391,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg></button>
       <div class="modal-body">
-        <div class="modal-gallery"><img id="modalMainImg" src="" alt="">
+        <div class="modal-left">
+          <div class="modal-gallery"><img id="modalMainImg" src="" alt=""></div>
           <div class="gallery-thumbs" id="galleryThumbs"></div>
         </div>
         <div class="modal-details">
@@ -2164,127 +1400,12 @@
           <h2 class="modal-name" id="modalName"></h2>
           <div class="modal-price" id="modalPrice"></div>
           <p class="modal-desc" id="modalDesc"></p>
-          <div id="modalVariations"></div>
-          <div class="qty-row">
-            <div class="option-label">Quantidade</div>
-            <div class="qty-control">
-              <button class="qty-btn" onclick="changeQty(-1)">−</button>
-              <input class="qty-val" id="qtyVal" value="1" readonly>
-              <button class="qty-btn" onclick="changeQty(1)">+</button>
-            </div>
-          </div>
-          <button class="btn-add-cart" id="btnAddCart" onclick="addToCart()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-            </svg>
-            Adicionar ao Carrinho
-          </button>
+          <div id="modalCoupon"></div>
+          <div id="modalVideo"></div>
+          <button class="btn-cta" id="modalCta" onclick="ctaClick()">Ver oferta →</button>
+          <div class="price-note" id="modalPriceNote"></div>
           <button class='btn-copy-link' id='btnCopyLink' onclick='copyProductLink()'><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0-12.814a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0 12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z'/></svg><span id='copyLinkText'>Compartilhar</span></button>
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-  <aside class="cart-sidebar" id="cartSidebar">
-    <div class="cart-header">
-      <h3 class="cart-title">Carrinho</h3><button class="cart-close" onclick="closeCart()"><svg
-          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg></button>
-    </div>
-    <div class="cart-items" id="cartItems"></div>
-    <div class="cart-coupon" id="cartCoupon">
-      <div class="coupon-row"><input type="text" placeholder="Cupom de desconto" id="couponInput"><button
-          onclick="applyCoupon()">Aplicar</button></div>
-      <div class="coupon-msg" id="couponMsg"></div>
-      <div class="coupon-applied" id="couponApplied"><span id="couponAppliedText"></span><button
-          onclick="removeCoupon()">Remover</button></div>
-    </div>
-    <div class="cart-footer" id="cartFooter">
-      <div class="cart-totals">
-        <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">R$ 0,00</span></div>
-        <div class="cart-total-row discount" id="cartDiscountRow" style="display:none"><span
-            id="cartDiscountLabel"></span><span id="cartDiscount"></span></div>
-        <div class="cart-total-row total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div>
-      </div><button class="btn-checkout" onclick="openCheckout()">Finalizar Pedido</button>
-    </div>
-  </aside>
-
-  <!-- Checkout -->
-  <div class="checkout-overlay" id="checkoutOverlay">
-    <div class="checkout-modal">
-      <div class="checkout-header">
-        <h2>Finalizar Pedido</h2><button class="modal-close" onclick="closeCheckout()"><svg
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg></button>
-      </div>
-      <div class="checkout-body">
-        <div class="form-group"><label>Telefone *</label><input type='tel' id='custPhone' placeholder='99999-9999' maxlength='10' oninput='maskPhone(this); limparCamposSeTelefoneIncompleto(this.value); buscarClientePorTelefone(this.value); buildCheckoutSummary()' onblur='buscarClientePorTelefone(this.value); buildCheckoutSummary()'>
-        </div>
-        <div class="form-group"><label>NOME *</label><input type="text" id="custName"></div>
-        <div id='addressGroup' style='display:none'>
-  <div class='form-group' style='display:none'>
-    <label>CEP</label>
-    <input type='text' id='custCep' placeholder='00000-000' maxlength='9' oninput='maskCep(this)' onblur='maskCep(this)'>
-  </div>
-  <div class='form-group'>
-    <label>Endereço/Número*</label>
-    <input type='text' id='custEndereco' placeholder=''>
-  </div>
-  <div class='form-group'>
-    <label>Complemento</label>
-    <input type='text' id='custComplemento' placeholder=''>
-  </div>
-  <div style='display:grid;grid-template-columns:1fr 1fr;gap:12px'>
-   
-   <div class='form-group'>
-      <label>CIDADE *</label>
-      <select id='custCidade' onchange='popularComboboxBairro(this.value); buildCheckoutSummary()'>
-        <option value=""></option>
-      </select>
-    </div>
-
-    <div class='form-group'>
-      <label>Bairro *</label>
-      <select id='custBairro' onchange='buildCheckoutSummary()'>
-        <option value=""></option>
-      </select>
-    </div>
-   
-  </div>
-</div>
-        <div class="form-group"><label>Forma de Pagamento*</label><select id="paymentMethod">
-            <option value=""></option>
-          </select></div>
-        <div class="pix-info" id="pixInfo"></div>
-        <div class="pix-copia-cola" id="pixCopiaCola">
-          <div class="pix-copia-cola-valor">Pix no valor de <strong id="pixCopiaColaValor">R$ 0,00</strong></div>
-          <div class="pix-copia-cola-row">
-            <input type="text" class="pix-copia-cola-input" id="pixCopiaColaCodigo" readonly onclick="this.select()">
-            <button type="button" class="pix-copia-cola-btn" id="pixCopiaColaBtn" onclick="copiarCodigoPix()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              Copiar
-            </button>
-          </div>
-        </div>
-        <div class="form-group"><label>Opção de Entrega *</label>
-          <div class="radio-group" id="deliveryOptions"></div>
-        </div>
-        <div class="form-group"><label>Observações</label><textarea id="custObs"
-            placeholder=""></textarea></div>
-        <div class="checkout-summary" id="checkoutSummary"></div>
-      </div>
-      <div class="checkout-footer">
-        <button class="btn-whatsapp" id="btnEnviarPedido" onclick="sendWhatsApp()">
-          <svg id="btnEnviarPedidoIcone" viewBox="0 0 24 24" fill="currentColor" style="display:none">
-            <path
-              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-          </svg>
-          <span id="btnEnviarPedidoTexto">Enviar Pedido</span>
-        </button>
       </div>
     </div>
   </div>
@@ -2293,26 +1414,18 @@
   <footer class="footer" style="display:none" id="siteFooter">
   <div class="footer-name" id="footerName"></div>
   <div class="footer-socials" id="footerSocials"></div>
+  <div class="footer-disclosure" id="footerDisclosure"></div>
+  <div class="footer-disclosure" id="footerAvisoPrecos"></div>
   <div class="footer-credit">
-    Feito com <a href="https://planiloja.com.br/" target="_blank" rel="noopener noreferrer">Planiloja</a>
+    Feito com <a href="https://selbstor.com/" target="_blank" rel="noopener noreferrer">Selbstor | Achadinhos</a>
   </div>
 </footer>
-
 
   <button class='back-to-top' id='backToTop' onclick='window.scrollTo({top:0,behavior:"smooth"})'>
     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M4.5 15.75l7.5-7.5 7.5 7.5'/></svg>
   </button>
 
-  <div class='order-confirmed-overlay' id='orderConfirmed'>
-    <div class='order-confirmed-box' style='position:relative'>
-      <button id='orderConfirmedCloseX' onclick='closeOrderConfirmed()' style='position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;transition:color 0.2s ease' onmouseover='this.style.color="var(--gray-700)"' onmouseout='this.style.color="var(--gray-400)"'>
-        <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
-      </button>
-      <div class='order-confirmed-title' id='orderConfirmedTitle'>Pedido Recebido!</div>
-      <div class='order-confirmed-text' id='orderConfirmedText'>Seu pedido foi enviado! Ao abrir o WhatsApp, a mensagem já estará pronta — é só tocar em <strong>Enviar</strong> para concluir e falar com a loja.</div>
-      <button id='orderConfirmedOk' onclick='closeOrderConfirmed()' style='margin-top:20px;padding:12px 32px;background:var(--primary);color:var(--white);border:none;border-radius:var(--radius);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all 0.2s ease'>OK</button>
-    </div>
-  </div>
+  <a class='channel-float' id='channelFloat' href='#' target='_blank' rel='noopener noreferrer' title='Canal de Ofertas'></a>
 
   <!-- Toast -->
   <div class="toast" id="toast">
@@ -2321,29 +1434,22 @@
       <div class="toast-title" id="toastTitle"></div>
       <div class="toast-subtitle" id="toastSubtitle"></div>
     </div>
-    <button class="toast-btn" onclick="openCart()">Ver Carrinho</button>
   </div>
 
   <!-- Config (external file) -->
-  <script src="config.js"></script>
+  <script>document.write('<script src="config.js?_t=' + Date.now() + '"><\/script>');</script>
 
   <script>
     // ============================================
-    // APP ENGINE — LojaFácil
+    // APP ENGINE — Planiloja Achadinhos
     // ============================================
 
     // State
     let CONFIG = {};
     let PRODUCTS = [];
-    let CLIENTES = {}; // cadastro de clientes, indexado por telefone (só números)
-    let DELIVERY_AREAS = []; // áreas de entrega cadastradas (Bairro + Cidade/UF + Taxa)
-    let lojaFechadaPorHorario = false; // true quando a mensagem do topo tem horário e o momento atual está fora dele
-    let cart = [];
-    let currentCoupon = null;
     let activeCategory = "Todos";
     let activeSubcategory = null;
     let currentProduct = null;
-    let selectedVariation = null;
 
     // ============================================
     // CSV PARSER
@@ -2380,323 +1486,129 @@
     // LOAD CONFIG FROM SHEETS
     // ============================================
     async function loadConfig() {
-      const res = await fetch(LOJAFACIL.planilha_configuracoes + '&_t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch(ACHADINHOS.planilha_configuracoes + '&_t=' + Date.now(), { cache: 'no-store' });
       const text = await res.text();
       const rows = parseCSV(text);
 
       const cfg = {};
-      cfg.faixasEntrega = [];
-      const cupons = [];
-      let section = '';
-      let inCoupons = false;
 
       for (const row of rows) {
         if (!row[0] && !row[1]) continue;
         const field = (row[0] || '').replace(/[⚙️📋🎨🚚🏷️💳💡]/g, '').trim().toUpperCase();
         const val = (row[1] || '').trim();
-        const val2 = (row[2] || '').trim();
-        const val3 = (row[3] || '').trim();
 
-        // Skip headers and section titles
-        if (field === 'CAMPO' || (field === 'VALOR' && !inCoupons) || field === 'INSTRUÇÕES' || field === '') continue;
-        if (field.includes('CONFIGURAÇÕES DA LOJA') || field.includes('PREENCHA')) continue;
-        if (field.includes('DADOS DA LOJA') || field.includes('PERSONALIZAÇÃO') || field.includes('OPÇÕES DE ENTREGA') || field.includes('CUPONS') || field.includes('DESCONTO') || field.includes('FORMAS DE PAGAMENTO')) {
-          section = (field.includes('CUPONS') || field.includes('DESCONTO')) ? 'CUPONS' : field;
-          inCoupons = false;
-          continue;
-        }
+        if (field === 'CAMPO' || field === 'VALOR' || field === 'INSTRUÇÕES' || field === '') continue;
+        if (field.includes('CONFIGURAÇÕES') || field.includes('PREENCHA')) continue;
+        if (field.includes('DADOS DA LOJA') || field.includes('PERSONALIZAÇÃO') || field.includes('CANAL DE OFERTAS') || field.includes('AVISOS')) continue;
 
-        // Map fields
         if (field === 'NOME DA LOJA') cfg.storeName = val;
         else if (field === 'LOGO (URL)') cfg.logo = val;
-        else if (field === 'WHATSAPP') cfg.whatsapp = val;
-        else if (field === 'ENVIAR WHATSAPP' || field === 'ENVIAR WHTSAPP') cfg.enviarWhatsapp = val.toUpperCase() === 'SIM';
         else if (field === 'INSTAGRAM') cfg.instagram = val;
         else if (field === 'FACEBOOK') cfg.facebook = val;
+        else if (field === 'TIKTOK') cfg.tiktok = val;
         else if (field === 'PIXEL FACEBOOK') cfg.pixelFacebook = val;
         else if (field === 'GOOGLE ANALYTICS') cfg.googleAnalytics = val;
         else if (field === 'GOOGLE ADS') cfg.googleAds = val;
-        else if (field === 'TIKTOK') cfg.tiktok = val;
-        else if (field === 'MENSAGEM PEDIDO') cfg.msgPedido = val;
         else if (field === 'COR PRIMÁRIA' || field === 'COR PRIMARIA') cfg.corPrimaria = val;
         else if (field === 'BANNER (URL)') cfg.bannerUrl = val;
         else if (field === 'BANNER LINK') cfg.bannerLink = val;
         else if (field === 'BANNER TAG') cfg.bannerTag = val;
         else if (field === 'BANNER TÍTULO' || field === 'BANNER TITULO') cfg.bannerTitulo = val;
         else if (field === 'BANNER SUBTÍTULO' || field === 'BANNER SUBTITULO') cfg.bannerSubtitulo = val;
-        else if (field === 'TITULO DO SITE' || field === 'TITULO DA PAGINA') cfg.tituloSite = val;
+        else if (field === 'TITULO DO SITE' || field === 'TÍTULO DO SITE' || field === 'TITULO DA PAGINA') cfg.tituloSite = val;
         else if (field === 'DESCRICAO DO SITE' || field === 'DESCRIÇÃO DO SITE' || field === 'META DESCRICAO' || field === 'META DESCRIÇÃO') cfg.descricaoSite = val;
         else if (field === 'LOJA ATIVA') cfg.lojaAtiva = val.toUpperCase() !== 'NÃO' && val.toUpperCase() !== 'NAO';
         else if (field === 'MENSAGEM MANUTENCAO' || field === 'MENSAGEM MANUTENÇÃO' || field === 'MENSAGEM MANUTENÇAO') cfg.msgManutencao = val;
-        else if (field === 'RETIRADA NO LOCAL') cfg.retiradaLocal = val.toUpperCase() === 'SIM';
-        else if (field === 'ENDEREÇO RETIRADA' || field === 'ENDERECO RETIRADA') cfg.enderecoRetirada = val;
+        else if (field === 'MENSAGEM TOPO' || field === 'BARRA TOPO') cfg.mensagemTopo = val;
+        else if (field === 'COR BARRA TOPO' || field === 'COR MENSAGEM TOPO') cfg.corBarraTopo = val;
         else if (field === 'CNPJ') cfg.cnpj = val;
         else if (field === 'ENDERECO' || field === 'ENDEREÇO' || field === 'ENDERECO DA LOJA' || field === 'ENDEREÇO DA LOJA') cfg.endereco = val;
         else if (field === 'EMAIL' || field === 'EMAIL DE CONTATO') cfg.email = val;
-        else if (field === 'DELIVERY') cfg.delivery = val.toUpperCase() === 'SIM';
-        else if (field === 'TAXA DELIVERY') cfg.taxaDelivery = parsePrecoBR(val);
-        else if (field === 'ENTREGA PADRÃO' || field === 'ENTREGA PADRAO') cfg.entregaPadrao = val.toUpperCase() === 'SIM';
-        else if (field === 'TAXA ENTREGA PADRÃO' || field === 'TAXA ENTREGA PADRAO') cfg.taxaEntregaPadrao = parsePrecoBR(val);
-        else if (field === 'PIX') cfg.pix = val.toUpperCase() === 'SIM';
-        else if (field === 'CHAVE PIX') cfg.chavePix = val;
-        else if (field === 'CIDADE PIX') cfg.cidadePix = val;
-        else if (field === 'CARTÃO (NA ENTREGA)' || field === 'CARTAO (NA ENTREGA)' || field === 'CARTÃO' || field === 'CARTAO' || field === 'CARTÃO DE CRÉDITO' || field === 'CARTAO DE CREDITO') { cfg.cartao = val.toUpperCase() === 'SIM'; cfg.cartaoNome = (row[0] || '').replace(/[⚙️📋🎨🚚🏷️💳💡]/g, '').trim(); }
-        else if (field === 'DINHEIRO') cfg.dinheiro = val.toUpperCase() === 'SIM';
-        else if (field === 'TRANSFERÊNCIA' || field === 'TRANSFERENCIA' || field === 'CARTÃO DE DÉBITO' || field === 'CARTAO DE DEBITO') cfg.transferencia = val.toUpperCase() === 'SIM';
-        else if (field === 'MENSAGEM TOPO' || field === 'BARRA TOPO') cfg.mensagemTopo = val;
-        else if (field === 'COR BARRA TOPO' || field === 'COR MENSAGEM TOPO') cfg.corBarraTopo = val;
-        else if (field.match(/^FAIXA (DE )?ENTREGA (\d)$/)) {
-          const idx = parseInt(field.match(/(\d)/)[0]) - 1;
-          if (!cfg.faixasEntrega[idx]) cfg.faixasEntrega[idx] = {};
-          cfg.faixasEntrega[idx].ativo = val.toUpperCase() === 'SIM';
-        }
-        else if (field.match(/^NOME FAIXA (\d)$/)) {
-          const idx = parseInt(field.match(/(\d)/)[0]) - 1;
-          if (!cfg.faixasEntrega[idx]) cfg.faixasEntrega[idx] = {};
-          cfg.faixasEntrega[idx].nome = val;
-        }
-        else if (field.match(/^TAXA FAIXA (\d)$/)) {
-          const idx = parseInt(field.match(/(\d)/)[0]) - 1;
-          if (!cfg.faixasEntrega[idx]) cfg.faixasEntrega[idx] = {};
-          cfg.faixasEntrega[idx].taxa = parsePrecoBR(val);
-        }
-        // Coupons (row format: Código | PROMO10 | FRETE | BEMVINDO)
-        else if (field === 'CÓDIGO' || field === 'CODIGO') {
-          inCoupons = true;
-          const codes = [val, val2, val3].filter(Boolean);
-          codes.forEach((code, i) => { cupons[i] = cupons[i] || {}; cupons[i].codigo = code; });
-        }
-        else if (field === 'TIPO' && inCoupons) {
-          [val, val2, val3].forEach((v, i) => { if (v && cupons[i]) cupons[i].tipo = v; });
-        }
-        else if (field === 'VALOR' && inCoupons) {
-          [val, val2, val3].forEach((v, i) => { if (v && cupons[i]) cupons[i].valor = parsePrecoBR(v); });
-        }
-        else if (field === 'ATIVO' && inCoupons) {
-          [val, val2, val3].forEach((v, i) => { if (v && cupons[i]) cupons[i].ativo = v.toUpperCase() === 'SIM'; });
-          inCoupons = false;
-        }
+        else if (field === 'CANAL WHATSAPP') cfg.canalWhatsapp = val;
+        else if (field === 'CANAL TELEGRAM') cfg.canalTelegram = val;
+        else if (field === 'BOTÃO CANAL FLUTUANTE' || field === 'BOTAO CANAL FLUTUANTE') cfg.botaoCanalFlutuante = val.toUpperCase() === 'SIM';
+        else if (field === 'TEXTO DISCLOSURE') cfg.textoDisclosure = val;
+        else if (field === 'AVISO PREÇOS' || field === 'AVISO PRECOS') cfg.avisoPrecos = val;
       }
 
-      cfg.faixasEntrega = (cfg.faixasEntrega || []).filter(f => f && f.ativo && f.nome);
-      cfg.cupons = cupons.filter(c => c.codigo);
+      if (!cfg.textoDisclosure) cfg.textoDisclosure = 'Este site participa de programas de afiliados e pode receber comissão pelas compras realizadas nos links, sem custo adicional para você.';
+      if (!cfg.avisoPrecos) cfg.avisoPrecos = 'Preços e disponibilidade sujeitos a alteração. Confirme na loja parceira.';
       CONFIG = cfg;
     }
 
     // ============================================
-    // LOAD PRODUCTS FROM SHEETS
+    // LOAD CATÁLOGO FROM SHEETS
     // ============================================
-    async function loadProducts() {
-      const res = await fetch(LOJAFACIL.planilha_produtos + '&_t=' + Date.now(), { cache: 'no-store' });
+    async function loadCatalogo() {
+      const res = await fetch(ACHADINHOS.planilha_catalogo + '&_t=' + Date.now(), { cache: 'no-store' });
       const text = await res.text();
       const rows = parseCSV(text);
 
       const products = [];
       for (const row of rows) {
         const first = (row[0] || '').trim().toUpperCase();
-        // Skip headers, instructions, title rows
         if (!first || first === 'ATIVO' || first === 'ATIVO *' || first === 'SIM OU NÃO' || first.includes('CATÁLOGO') || first.includes('CATALOGO') || first.includes('CADA LINHA') || first.includes('DICAS')) continue;
-
-        const ativo = first === 'SIM';
-        if (!ativo) continue;
+        if (first !== 'SIM') continue;
 
         products.push({
           ativo: true,
-          categoria: (row[1] || '').trim(),
-          subcategoria: (row[2] || '').trim(),
-          nome: (row[3] || '').trim(),
-          descricao: (row[4] || '').trim(),
-          preco: parsePrecoBR(row[5]),
-          precoPromo: row[6] ? (parsePrecoBR(row[6]) || null) : null,
-          variacoes: (row[7] || '').trim(),
-          qtdMaxima: parseInt(row[12]) || 99,
-          ordem: parseInt(row[13]) || 9999,
-          destaque: row.length > 14 && (row[14] || '').trim().toUpperCase() === 'SIM',
-          img1: fixImg((row[8] || '').trim()),
-          img2: fixImg((row[9] || '').trim()),
-          img3: fixImg((row[10] || '').trim()),
-          img4: fixImg((row[11] || '').trim()),
+          tipo: ((row[1] || '').trim().toUpperCase() === 'DIGITAL') ? 'DIGITAL' : 'FISICO',
+          plataforma: (row[2] || '').trim(),
+          categoria: (row[3] || '').trim(),
+          subcategoria: (row[4] || '').trim(),
+          nome: (row[5] || '').trim(),
+          descricao: (row[6] || '').trim(),
+          preco: parsePrecoBR(row[7]),
+          precoPromo: row[8] ? (parsePrecoBR(row[8]) || null) : null,
+          cupom: (row[9] || '').trim(),
+          validade: parseDataBR(row[10]),
+          linkAfiliado: (row[11] || '').trim(),
+          textoBotao: (row[12] || '').trim(),
+          video: (row[13] || '').trim(),
+          img1: fixImg((row[14] || '').trim()),
+          img2: fixImg((row[15] || '').trim()),
+          img3: fixImg((row[16] || '').trim()),
+          img4: fixImg((row[17] || '').trim()),
+          ordem: parseInt(row[18]) || 9999,
+          destaque: row.length > 19 && (row[19] || '').trim().toUpperCase() === 'SIM',
         });
       }
-      PRODUCTS = products.filter(p => p.nome && p.preco > 0);
+      PRODUCTS = products.filter(p => p.nome && p.linkAfiliado && ofertaValida(p));
     }
 
-    // ============================================
-    // LOAD CLIENTES FROM SHEETS (aba "Clientes")
-    // ============================================
-    async function loadClientes() {
-      try {
-        if (!LOJAFACIL.planilha_clientes) return; // aba não configurada, ignora silenciosamente
-
-        const res = await fetch(LOJAFACIL.planilha_clientes + '&_t=' + Date.now(), { cache: 'no-store' });
-        const text = await res.text();
-        const rows = parseCSV(text);
-        if (!rows.length) return;
-
-        // Localiza a linha de cabeçalho procurando a coluna "TELEFONE"
-        let headerIdx = -1;
-        for (let i = 0; i < rows.length; i++) {
-          const rowUpper = rows[i].map(c => (c || '').toUpperCase());
-          if (rowUpper.some(c => c.includes('TELEFONE'))) { headerIdx = i; break; }
-        }
-        if (headerIdx === -1) return;
-
-        const headers = rows[headerIdx].map(c => (c || '').trim().toUpperCase());
-        const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
-
-        const col = {
-          telefone: findCol(['TELEFONE']),
-          nome: findCol(['NOME']),
-          cep: findCol(['CEP']),
-          endereco: findCol(['ENDEREÇO', 'ENDERECO']),
-          complemento: findCol(['COMPLEMENTO']),
-          bairro: findCol(['BAIRRO']),
-          cidade: findCol(['CIDADE'])
-        };
-
-        const clientes = {};
-        for (let i = headerIdx + 1; i < rows.length; i++) {
-          const row = rows[i];
-          const telLimpo = (col.telefone !== -1 ? (row[col.telefone] || '') : '').replace(/\D/g, '');
-          if (!telLimpo) continue;
-
-          clientes[telLimpo] = {
-            telefone: telLimpo,
-            nome: col.nome !== -1 ? (row[col.nome] || '').trim() : '',
-            cep: col.cep !== -1 ? (row[col.cep] || '').trim() : '',
-            endereco: col.endereco !== -1 ? (row[col.endereco] || '').trim() : '',
-            complemento: col.complemento !== -1 ? (row[col.complemento] || '').trim() : '',
-            bairro: col.bairro !== -1 ? (row[col.bairro] || '').trim() : '',
-            cidade: col.cidade !== -1 ? (row[col.cidade] || '').trim() : ''
-          };
-        }
-        CLIENTES = clientes;
-      } catch (err) {
-        // Falha ao carregar clientes não deve travar a loja
-        console.error('Erro ao carregar clientes:', err);
-      }
+    function parseDataBR(val) {
+      var s = (val || '').trim();
+      if (!s) return null;
+      var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (!m) return null;
+      var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10), 23, 59, 59);
+      return isNaN(d.getTime()) ? null : d;
     }
 
-    // ============================================
-    // LOAD DELIVERY AREAS FROM SHEETS (aba "Delivery")
-    // ============================================
-    async function loadDeliveryAreas() {
-      try {
-        if (!LOJAFACIL.planilha_delivery) return; // aba não configurada, ignora silenciosamente
+    function ofertaValida(p) {
+      if (!p.validade) return true;
+      return new Date() <= p.validade;
+    }
 
-        const res = await fetch(LOJAFACIL.planilha_delivery + '&_t=' + Date.now(), { cache: 'no-store' });
-        const text = await res.text();
-        const rows = parseCSV(text);
-        if (!rows.length) return;
-
-        // Localiza a linha de cabeçalho procurando a coluna "BAIRRO" ou "CIDADE"
-        // (o CEP não é mais usado para identificar a área de entrega)
-        let headerIdx = -1;
-        for (let i = 0; i < rows.length; i++) {
-          const rowUpper = rows[i].map(c => (c || '').toUpperCase());
-          if (rowUpper.some(c => c.includes('BAIRRO') || c.includes('CIDADE'))) { headerIdx = i; break; }
-        }
-        if (headerIdx === -1) return;
-
-        const headers = rows[headerIdx].map(c => (c || '').trim().toUpperCase());
-        const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
-
-        const col = {
-          bairro: findCol(['BAIRRO']),
-          cidade: findCol(['CIDADE']),
-          taxa: findCol(['TAXA'])
-        };
-
-        const areas = [];
-        for (let i = headerIdx + 1; i < rows.length; i++) {
-          const row = rows[i];
-          const bairroOriginal = col.bairro !== -1 ? (row[col.bairro] || '').trim() : '';
-          const cidadeOriginal = col.cidade !== -1 ? (row[col.cidade] || '').trim() : '';
-          const bairroArea = bairroOriginal.toLowerCase();
-          const cidadeArea = cidadeOriginal.toLowerCase();
-          if (!cidadeArea) continue; // linha sem Cidade, ignora (Bairro pode vir vazio)
-
-          areas.push({
-            bairro: bairroArea,
-            bairroDisplay: bairroOriginal,
-            cidade: cidadeArea,
-            cidadeDisplay: cidadeOriginal,
-            taxa: col.taxa !== -1 ? parsePrecoBR(row[col.taxa] || '0') : 0
-          });
-        }
-        DELIVERY_AREAS = areas;
-      } catch (err) {
-        // Falha ao carregar áreas de delivery não deve travar a loja
-        console.error('Erro ao carregar áreas de delivery:', err);
-      }
+    function ofertaExpiraEmBreve(p) {
+      if (!p.validade) return false;
+      var diff = p.validade.getTime() - Date.now();
+      return diff > 0 && diff <= 48 * 60 * 60 * 1000;
     }
 
     // ============================================
     // APPLY CONFIG TO UI
     // ============================================
-    // ============================================
-    // HORÁRIO DE FUNCIONAMENTO (a partir da "Mensagem Topo")
-    // ============================================
-    // Procura por padrões "HH:MM às HH:MM" (aceita também "as", "à" ou "-" no lugar de "às")
-    // dentro do texto da mensagem do topo. Pode haver mais de um intervalo (ex: separados por "/").
-    // Retorna true se a loja deve ser considerada ABERTA agora, ou se a mensagem não tem nenhum
-    // horário reconhecível (nesse caso não restringe nada).
-    // Extrai apenas o trecho de horário da mensagem do topo, removendo o rótulo
-    // ("Horários de Funcionamento:") e a parte de "Pedido Mínimo", para usar na
-    // mensagem "FECHADO - <horário>" exibida quando a loja está fechada.
-    function extrairTextoHorario(mensagem) {
-      if (!mensagem) return '';
-      var texto = mensagem.replace(/pedido\s*m[ií]nimo[^0-9]*[\d.,]+/gi, '');
-      // Mantém o rótulo "Horários de Funcionamento", mas em caixa alta
-      texto = texto.replace(/hor[áa]rios?\s+de\s+funcionamento\s*:?/gi, function(m) { return m.toUpperCase(); });
-      texto = texto.replace(/[\r\n]+/g, ' ');
-      texto = texto.replace(/\s{2,}/g, ' '); // colapsa espaços duplos
-      texto = texto.replace(/^[\s\-]+|[\s\-]+$/g, ''); // remove hífens/espaços sobrando nas pontas
-      return texto.trim();
-    }
-
-    function verificarHorarioFuncionamento(mensagem) {
-      if (!mensagem) return true;
-
-      // Remove qualquer trecho de "Pedido Mínimo" da mensagem — só o horário de
-      // funcionamento deve ser considerado na checagem abaixo.
-      var mensagemHorario = mensagem.replace(/pedido\s*m[ií]nimo[^0-9]*[\d.,]+/gi, '');
-
-      var regexHorario = /(\d{1,2}):(\d{2})\s*(?:às|as|à|-)\s*(\d{1,2}):(\d{2})/gi;
-      var intervalos = [];
-      var match;
-      while ((match = regexHorario.exec(mensagemHorario)) !== null) {
-        var inicio = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-        var fim = parseInt(match[3], 10) * 60 + parseInt(match[4], 10);
-        intervalos.push({ inicio: inicio, fim: fim });
-      }
-
-      if (!intervalos.length) return true; // mensagem não tem horário, não restringe nada
-
-      var agora = new Date();
-      var minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-
-      return intervalos.some(function(faixa) {
-        if (faixa.fim < faixa.inicio) {
-          // Intervalo que passa da meia-noite (ex: 20:00 às 04:00)
-          return minutosAgora >= faixa.inicio || minutosAgora <= faixa.fim;
-        }
-        return minutosAgora >= faixa.inicio && minutosAgora <= faixa.fim;
-      });
-    }
-
     function applyConfig() {
-      // Title
-      document.title = CONFIG.tituloSite || (CONFIG.storeName ? CONFIG.storeName + ' — Loja Online' : 'Loja Online');
+      document.title = CONFIG.tituloSite || (CONFIG.storeName ? CONFIG.storeName + ' — Achadinhos' : 'Achadinhos');
       if (CONFIG.descricaoSite) {
         var metaDesc = document.querySelector('meta[name="description"]');
         if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = 'description'; document.head.appendChild(metaDesc); }
         metaDesc.content = CONFIG.descricaoSite;
       }
-      // Open Graph para compartilhamento em redes sociais
       var ogTitle = document.querySelector('meta[property="og:title"]');
       if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
-      ogTitle.content = CONFIG.tituloSite || CONFIG.storeName || 'Loja Online';
+      ogTitle.content = CONFIG.tituloSite || CONFIG.storeName || 'Achadinhos';
       if (CONFIG.descricaoSite) {
         var ogDesc = document.querySelector('meta[property="og:description"]');
         if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
@@ -2713,7 +1625,6 @@
       document.getElementById('headerName').textContent = CONFIG.storeName || 'Minha Loja';
       document.getElementById('footerName').textContent = CONFIG.storeName || 'Minha Loja';
 
-      // Logo
       if (CONFIG.logo) {
         const logo = document.getElementById('headerLogo');
         logo.src = fixImg(CONFIG.logo);
@@ -2730,8 +1641,6 @@
         favicon.href = fixImg(CONFIG.logo);
       }
 
-      // Colors
-      // Resolve primary color (name or hex)
       if (CONFIG.corPrimaria) {
         var primaryHex = nameToHex(CONFIG.corPrimaria) || CONFIG.corPrimaria;
         document.documentElement.style.setProperty('--primary', primaryHex);
@@ -2742,7 +1651,6 @@
         document.documentElement.style.setProperty('--primary-rgb', r + ', ' + g + ', ' + b);
         document.documentElement.style.setProperty('--primary-light', 'rgba(' + r + ', ' + g + ', ' + b + ', 0.08)');
         document.documentElement.style.setProperty('--primary-hover', 'rgb(' + Math.max(0,r-20) + ', ' + Math.max(0,g-20) + ', ' + Math.max(0,b-20) + ')');
-        // Auto-generate secondary (dark version of primary)
         var secondaryHex = darkenColor(primaryHex, 0.18);
         document.documentElement.style.setProperty('--secondary', secondaryHex);
         var sr = parseInt(secondaryHex.replace('#','').substr(0,2), 16);
@@ -2753,7 +1661,6 @@
         CONFIG.corSecundaria = secondaryHex;
       }
 
-      // Banner
       if (CONFIG.bannerUrl) {
         const banner = document.getElementById('bannerSection');
         const hasLink = CONFIG.bannerLink;
@@ -2783,10 +1690,10 @@
         banner.classList.add('show');
       }
 
-      // Footer socials
       const socials = document.getElementById('footerSocials');
       let socialsHTML = '';
-      if (CONFIG.whatsapp) socialsHTML += '<a href="https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent('Olá! Vim pelo site e gostaria de tirar uma dúvida.') + '" target="_blank" title="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>';
+      if (CONFIG.canalWhatsapp) socialsHTML += '<a href="' + CONFIG.canalWhatsapp + '" target="_blank" title="Canal de Ofertas no WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>';
+      if (CONFIG.canalTelegram) socialsHTML += '<a href="' + CONFIG.canalTelegram + '" target="_blank" title="Canal no Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg></a>';
       if (CONFIG.instagram) socialsHTML += `<a href="https://instagram.com/${CONFIG.instagram.replace('@', '')}" target="_blank" title="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>`;
       if (CONFIG.facebook) socialsHTML += `<a href="https://${CONFIG.facebook.replace('https://', '')}" target="_blank" title="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>`;
       if (CONFIG.tiktok) socialsHTML += `<a href="https://tiktok.com/${CONFIG.tiktok.replace('@', '')}" target="_blank" title="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></a>`;
@@ -2832,53 +1739,14 @@
         }
       });
 
-      // Payment methods for checkout
-      const paySelect = document.getElementById('paymentMethod');
-      paySelect.innerHTML = '<option value=""></option>';
-      var formasPagamento = [];
-      if (CONFIG.pix) formasPagamento.push('Pix');
-      if (CONFIG.cartao) formasPagamento.push('Cartão de Crédito');
-      if (CONFIG.dinheiro) formasPagamento.push('Dinheiro');
-      if (CONFIG.transferencia) formasPagamento.push('Cartão de Débito');
-      // Ordem fixa definida pela loja
-      var ordemPagamento = ['Dinheiro', 'Pix', 'Cartão de Crédito', 'Cartão de Débito'];
-      formasPagamento.sort(function(a, b) { return ordemPagamento.indexOf(a) - ordemPagamento.indexOf(b); });
-      formasPagamento.forEach(function(nome) {
-        paySelect.innerHTML += '<option value="' + nome + '">' + nome + '</option>';
-      });
+      setupChannel();
 
-      // Clear field errors on input
-      ['custName','custPhone','custEndereco','custBairro','custCidade','custCep','custComplemento'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('input', function() { this.classList.remove('field-error'); });
-          el.addEventListener('change', function() { this.classList.remove('field-error'); });
-        }
-      });
-      paySelect.addEventListener('change', function() { this.classList.remove('field-error'); });
+      document.getElementById('footerDisclosure').textContent = CONFIG.textoDisclosure || '';
+      document.getElementById('footerAvisoPrecos').textContent = CONFIG.avisoPrecos || '';
 
-      // Pix info
-      if (CONFIG.chavePix) {
-        document.getElementById('pixInfo').innerHTML = `Chave Pix: <strong>${CONFIG.chavePix}</strong>`;
-      }
-      paySelect.addEventListener('change', function () {
-        document.getElementById('pixInfo').classList.toggle('show', this.value === 'Pix' && CONFIG.pix);
-        buildCheckoutSummary();
-      });
-
-      // Show UI
       installPixels();
-
-      // Verifica se a "Mensagem Topo" tem horário de funcionamento e se o momento atual está dentro dele
-      lojaFechadaPorHorario = !verificarHorarioFuncionamento(CONFIG.mensagemTopo);
-
-      var topBar = document.getElementById('topBar');
-      if (lojaFechadaPorHorario) {
-        var horarioTexto = extrairTextoHorario(CONFIG.mensagemTopo);
-        topBar.textContent = horarioTexto ? ('FECHADO - ' + horarioTexto) : 'FECHADO';
-        topBar.style.background = CONFIG.corBarraTopo || '#B3261E';
-        topBar.classList.add('show');
-      } else if (CONFIG.mensagemTopo) {
+      if (CONFIG.mensagemTopo) {
+        var topBar = document.getElementById('topBar');
         topBar.textContent = CONFIG.mensagemTopo;
         if (CONFIG.corBarraTopo) {
           topBar.style.background = CONFIG.corBarraTopo;
@@ -2889,35 +1757,6 @@
       document.getElementById('catNavWrap').style.display = '';
       document.getElementById('mainContent').style.display = '';
       document.getElementById('siteFooter').style.display = '';
-
-      // Texto e ícone do botão de enviar pedido variam conforme o campo "Enviar Whatsapp"
-      var btnEnviarPedidoTextoEl = document.getElementById('btnEnviarPedidoTexto');
-      var btnEnviarPedidoIconeEl = document.getElementById('btnEnviarPedidoIcone');
-      if (btnEnviarPedidoTextoEl) {
-        btnEnviarPedidoTextoEl.textContent = CONFIG.enviarWhatsapp ? 'Enviar o pedido para o WhatsApp' : 'Enviar Pedido';
-      }
-      if (btnEnviarPedidoIconeEl) {
-        btnEnviarPedidoIconeEl.style.display = CONFIG.enviarWhatsapp ? '' : 'none';
-      }
-
-      // Força o navegador a recalcular o layout logo depois de exibir esses containers.
-      // Corrige um bug conhecido do Safari (iOS/macOS): quando um elemento com
-      // "position: sticky" (o cabeçalho, no nosso caso) passa de escondido pra visível
-      // DEPOIS da primeira renderização da página, o Safari às vezes não recalcula a
-      // posição/zoom corretamente sozinho — só quando algo força um recálculo (como o
-      // usuário pinçando a tela pra ajustar o zoom). Disparamos esse recálculo aqui mesmo,
-      // sem precisar que a pessoa faça isso manualmente.
-      void document.body.offsetHeight; // força um reflow síncrono
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          window.scrollTo(0, 0);
-          window.dispatchEvent(new Event('resize'));
-          // Rechecagem explícita: garante que as setas de rolagem da barra de categorias
-          // fiquem com o estado certo depois desse recálculo forçado (no Safari, medidas
-          // lidas bem nesse momento podem vir erradas/zeradas se não recalcularmos de novo).
-          if (typeof checkCatNavOverflow === 'function') checkCatNavOverflow();
-        });
-      });
     }
 
     // ============================================
@@ -2931,30 +1770,8 @@
     }
     function buildCategoryNav() {
       document.getElementById("catNav").innerHTML = getCategories().map(c =>
-        `<button class="cat-btn ${c === activeCategory ? 'active' : ''}" onclick="selectCategory('${c.replace(/'/g, "\\'")}')">${c === "Todos" ? "TODOS" : c}</button>`
+        `<button class="cat-btn ${c === activeCategory ? 'active' : ''}" onclick="selectCategory('${c.replace(/'/g, "\\'")}')">${c}</button>`
       ).join("");
-      checkCatNavOverflow();
-    }
-    function checkCatNavOverflow() {
-      var track = document.getElementById('catNav');
-      var arrow = document.getElementById('catNavArrow');
-      var arrowLeft = document.getElementById('catNavArrowLeft');
-      if (!track || !arrow || !arrowLeft) return;
-      var hasOverflow = track.scrollWidth > track.clientWidth + 2;
-      var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-      var atStart = track.scrollLeft <= 2;
-      arrow.classList.toggle('show', hasOverflow && !atEnd);
-      arrowLeft.classList.toggle('show', hasOverflow && !atStart);
-    }
-    function scrollCatNav() {
-      var track = document.getElementById('catNav');
-      if (!track) return;
-      track.scrollBy({ left: Math.round(track.clientWidth * 0.7), behavior: 'smooth' });
-    }
-    function scrollCatNavStart() {
-      var track = document.getElementById('catNav');
-      if (!track) return;
-      track.scrollTo({ left: 0, behavior: 'smooth' });
     }
     function selectCategory(cat) {
       activeCategory = cat; activeSubcategory = null;
@@ -2982,6 +1799,29 @@
     }
     function filterProducts() { renderProducts(); }
 
+    function productCardHTML(p) {
+      var idx = PRODUCTS.indexOf(p);
+      var hasPromo = p.precoPromo && p.precoPromo > 0 && p.preco > 0 && p.precoPromo < p.preco;
+      var priceHTML = '';
+      if (p.preco > 0) {
+        var prefixo = p.tipo !== 'DIGITAL' ? '<span style="font-size:0.72rem;font-weight:500;color:var(--text-muted)">a partir de </span>' : '';
+        priceHTML = '<div class="product-price"><span class="price-current">' + prefixo + 'R$ ' + fp(hasPromo ? p.precoPromo : p.preco) + '</span>' + (hasPromo ? '<span class="price-old">R$ ' + fp(p.preco) + '</span>' : '') + '</div>';
+      }
+      return '<div class="product-card" onclick="openProductModal(' + idx + ')">' +
+        '<div class="product-img-wrap"><img src="' + p.img1 + '" alt="' + p.nome + '" loading="lazy" onerror="handleImgError(this)">' +
+        (hasPromo ? '<span class="badge-promo">-' + Math.round((1 - p.precoPromo / p.preco) * 100) + '%</span>' : '') +
+        (p.plataforma ? '<span class="badge-platform">' + p.plataforma + '</span>' : '') +
+        (ofertaExpiraEmBreve(p) ? '<span class="badge-limited">Oferta por tempo limitado</span>' : '') +
+        '</div>' +
+        '<div class="product-info">' +
+        '<div class="product-cat">' + p.categoria + (p.subcategoria ? ' · ' + p.subcategoria : '') + '</div>' +
+        '<div class="product-name">' + p.nome + '</div>' +
+        priceHTML +
+        // 🔥 ALTERAÇÃO AQUI: Botão transformado em link direto para o link de afiliado
+        '<a href="' + p.linkAfiliado + '" target="_blank" rel="noopener noreferrer" class="btn-details" style="display:flex;align-items:center;justify-content:center;text-decoration:none;" onclick="event.stopPropagation(); registrarClique(PRODUCTS[' + idx + ']);">COMPRAR</a>' +
+        '</div></div>';
+    }
+
     function renderProducts() {
       var featuredSection = document.getElementById('featuredSection');
       var featuredGrid = document.getElementById('featuredGrid');
@@ -2991,40 +1831,18 @@
         featured.sort(function(a, b) { return a.ordem - b.ordem; });
         if (featured.length > 0) {
           featuredSection.style.display = 'block';
-          featuredGrid.innerHTML = featured.map(function(p) {
-            var idx = PRODUCTS.indexOf(p);
-            var hasPromo = p.precoPromo && p.precoPromo < p.preco;
-            return '<div class="product-card" onclick="openProductModal(' + idx + ')"><div class="product-img-wrap"><img src="' + p.img1 + '" alt="' + p.nome + '" loading="lazy" onerror="handleImgError(this)">' + (hasPromo ? '<span class="badge-promo">-' + Math.round((1 - p.precoPromo / p.preco) * 100) + '%</span>' : '') + '</div><div class="product-info"><div class="product-cat">' + p.categoria + (p.subcategoria ? ' . ' + p.subcategoria : '') + '</div><div class="product-name">' + p.nome + '</div><div class="product-price"><span class="price-current">R$ ' + fp(hasPromo ? p.precoPromo : p.preco) + '</span>' + (hasPromo ? '<span class="price-old">R$ ' + fp(p.preco) + '</span>' : '') + '</div><button class="btn-details"' + (lojaFechadaPorHorario ? ' disabled' : '') + '>' + (lojaFechadaPorHorario ? 'FECHADO' : 'COMPRAR') + '</button></div></div>';
-          }).join('');
+          featuredGrid.innerHTML = featured.map(productCardHTML).join('');
         } else { featuredSection.style.display = 'none'; }
       } else { featuredSection.style.display = 'none'; }
       const prods = getFilteredProducts();
-      document.getElementById("sectionTitle").textContent = activeCategory === "Todos" ? "Todos os Produtos" : activeCategory;
-      document.getElementById("productCount").textContent = `${prods.length} produto${prods.length !== 1 ? 's' : ''}`;
+      document.getElementById("sectionTitle").textContent = activeCategory === "Todos" ? "Todos os Achadinhos" : activeCategory;
+      document.getElementById("productCount").textContent = `${prods.length} oferta${prods.length !== 1 ? 's' : ''}`;
       const grid = document.getElementById("productsGrid");
       if (!prods.length) {
-        grid.innerHTML = `<div class="no-results"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg><p>Nenhum produto encontrado</p></div>`;
+        grid.innerHTML = `<div class="no-results"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg><p>Nenhum achadinho encontrado</p></div>`;
         return;
       }
-      grid.innerHTML = prods.map(p => {
-        const idx = PRODUCTS.indexOf(p);
-        const hasPromo = p.precoPromo && p.precoPromo < p.preco;
-        return `<div class="product-card" onclick="openProductModal(${idx})">
-      <div class="product-img-wrap">
-        <img src="${p.img1}" alt="${p.nome}" loading="lazy" onerror="handleImgError(this)">
-        ${hasPromo ? '<span class="badge-promo">-' + Math.round((1 - p.precoPromo / p.preco) * 100) + '%</span>' : ''}
-      </div>
-      <div class="product-info">
-        <div class="product-cat">${p.categoria}${p.subcategoria ? ' · ' + p.subcategoria : ''}</div>
-        <div class="product-name">${p.nome}</div>
-        <div class="product-price">
-          <span class="price-current">R$ ${fp(hasPromo ? p.precoPromo : p.preco)}</span>
-          ${hasPromo ? `<span class="price-old">R$ ${fp(p.preco)}</span>` : ''}
-        </div>
-        <button class="btn-details"${lojaFechadaPorHorario ? ' disabled' : ''}>${lojaFechadaPorHorario ? 'FECHADO' : 'COMPRAR'}</button>
-      </div>
-    </div>`;
-      }).join("");
+      grid.innerHTML = prods.map(productCardHTML).join("");
     }
 
     // ============================================
@@ -3034,1122 +1852,175 @@
       var toastEl = document.getElementById('toast');
       toastEl.classList.remove('show');
       clearTimeout(window._toastTimer);
-      currentProduct = PRODUCTS[idx]; selectedVariation = null;
-      document.getElementById("qtyVal").value = 1;
-      document.getElementById("qtyVal").setAttribute('data-max', currentProduct.qtdMaxima);
-      // Reseta a rolagem do modal, para não abrir o produto novo já rolado na posição
-      // em que o produto anterior tinha ficado (o que escondia nome/preço/descrição)
-      var modalBodyEl = document.querySelector('#productModal .modal-body');
-      if (modalBodyEl) modalBodyEl.scrollTop = 0;
-      var modalEl = document.querySelector('#productModal .modal');
-      if (modalEl) modalEl.scrollTop = 0;
+      currentProduct = PRODUCTS[idx];
       const imgs = [currentProduct.img1, currentProduct.img2, currentProduct.img3, currentProduct.img4].filter(Boolean);
       document.getElementById("modalMainImg").src = imgs[0] || '';
       document.getElementById('modalMainImg').onerror = function() { handleImgError(this); };
       document.getElementById("galleryThumbs").innerHTML = imgs.length > 1 ? imgs.map((img, i) =>
         `<div class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)"><img src="${img}" alt=""></div>`
       ).join("") : "";
-      document.getElementById("modalCat").textContent = currentProduct.categoria + (currentProduct.subcategoria ? ' · ' + currentProduct.subcategoria : '');
+      var catParts = [];
+      if (currentProduct.plataforma) catParts.push(currentProduct.plataforma);
+      if (currentProduct.tipo === 'DIGITAL') catParts.push('Digital');
+      var catText = currentProduct.categoria + (currentProduct.subcategoria ? ' · ' + currentProduct.subcategoria : '');
+      if (catText) catParts.push(catText);
+      document.getElementById("modalCat").textContent = catParts.join(' · ');
       document.getElementById("modalName").textContent = currentProduct.nome;
-      const hasPromo = currentProduct.precoPromo && currentProduct.precoPromo < currentProduct.preco;
-      document.getElementById("modalPrice").innerHTML = `<span class="price-current">R$ ${fp(hasPromo ? currentProduct.precoPromo : currentProduct.preco)}</span>${hasPromo ? `<span class="price-old">R$ ${fp(currentProduct.preco)}</span>` : ''}`;
+      const hasPromo = currentProduct.precoPromo && currentProduct.precoPromo > 0 && currentProduct.preco > 0 && currentProduct.precoPromo < currentProduct.preco;
+      var priceEl = document.getElementById('modalPrice');
+      if (currentProduct.preco > 0) {
+        var prefixo = currentProduct.tipo !== 'DIGITAL' ? '<span style="font-size:0.85rem;font-weight:500;color:var(--text-muted)">a partir de </span>' : '';
+        priceEl.style.display = '';
+        priceEl.innerHTML = prefixo + '<span class="price-current">R$ ' + fp(hasPromo ? currentProduct.precoPromo : currentProduct.preco) + '</span>' + (hasPromo ? '<span class="price-old">R$ ' + fp(currentProduct.preco) + '</span>' : '');
+      } else {
+        priceEl.style.display = 'none';
+        priceEl.innerHTML = '';
+      }
       document.getElementById("modalDesc").textContent = currentProduct.descricao;
-      const varDiv = document.getElementById("modalVariations");
-      if (currentProduct.variacoes) {
-        const vars = currentProduct.variacoes.split(",").map(v => v.trim()).filter(Boolean);
-        varDiv.innerHTML = `<div class="option-label">Opções</div><div class="variation-options">${vars.map(v => `<button class="var-btn" onclick="selectVariation('${v.replace(/'/g, "\\'")}', this)">${v}</button>`).join("")}</div>`;
-      } else { varDiv.innerHTML = ""; }
+      document.getElementById('modalCoupon').innerHTML = currentProduct.cupom
+        ? '<div class="coupon-box"><div><div class="coupon-label">Cupom de desconto</div><div class="coupon-code">' + currentProduct.cupom + '</div></div><button class="coupon-copy" id="btnCopyCoupon" onclick="copyCoupon()">Copiar cupom</button></div>'
+        : '';
+      var embedUrl = ytEmbed(currentProduct.video);
+      document.getElementById('modalVideo').innerHTML = embedUrl
+        ? '<div class="video-embed"><iframe src="' + embedUrl + '" title="Vídeo do produto" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>'
+        : '';
+      document.getElementById('modalCta').textContent = ctaLabel(currentProduct);
+      var note = document.getElementById('modalPriceNote');
+      note.textContent = CONFIG.avisoPrecos || '';
+      note.classList.toggle('show', currentProduct.preco > 0);
       document.getElementById("productModal").classList.add("open");
       document.body.style.overflow = "hidden";
       document.body.classList.add('modal-open');
-
-      var btnAddCart = document.getElementById('btnAddCart');
-      if (btnAddCart) {
-        btnAddCart.disabled = !!lojaFechadaPorHorario;
-        btnAddCart.style.opacity = lojaFechadaPorHorario ? '0.5' : '';
-        btnAddCart.style.cursor = lojaFechadaPorHorario ? 'not-allowed' : '';
-      }
-
       trackEvent('ViewContent', { name: currentProduct.nome, value: hasPromo ? currentProduct.precoPromo : currentProduct.preco });
     }
     function closeProductModal() {
-      document.getElementById('productModal').classList.remove('open');
-      if (!document.querySelector('.cart-overlay.open') && !document.querySelector('.checkout-overlay.open') && !document.querySelector('.order-confirmed-overlay.open')) {
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-open');
-      }
+      document.getElementById('productModal').classList.remove("open");
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     }
     function switchImage(src, el) { document.getElementById("modalMainImg").src = src; document.querySelectorAll(".gallery-thumb").forEach(t => t.classList.remove("active")); el.classList.add("active"); }
-    function selectVariation(v, el) { selectedVariation = v; document.querySelectorAll(".var-btn").forEach(b => b.classList.remove("selected")); el.classList.add("selected"); }
-    function changeQty(d) { const el = document.getElementById("qtyVal"); let v = parseInt(el.value) + d; const max = parseInt(el.getAttribute('data-max')) || 99; el.value = Math.max(1, Math.min(max, v)); }
+    
+    // ============================================
+    // AÇÕES DE AFILIADO (CTA, CUPOM, VÍDEO, CANAL)
+    // ============================================
+    function ctaLabel(p) {
+      if (p.textoBotao) return p.textoBotao;
+      if (p.tipo === 'DIGITAL') return 'Quero conhecer →';
+      return p.plataforma ? 'Ver oferta na ' + p.plataforma + ' →' : 'Ver oferta →';
+    }
 
-    // ============================================
-    // CART
-    // ============================================
-    function addToCart() {
+    function ctaClick() {
       if (!currentProduct) return;
-      if (lojaFechadaPorHorario) { showToast('Estabelecimento fechado no momento', true); return; }
-      if (currentProduct.variacoes && !selectedVariation) { showToast("Selecione uma opção", true); return; }
-      const qty = parseInt(document.getElementById("qtyVal").value);
-      const hasPromo = currentProduct.precoPromo && currentProduct.precoPromo < currentProduct.preco;
-      const price = hasPromo ? currentProduct.precoPromo : currentProduct.preco;
-      const max = currentProduct.qtdMaxima;
-      const existingCheck = cart.find(i => i.nome === currentProduct.nome && i.variacao === selectedVariation);
-      const currentInCart = existingCheck ? existingCheck.qty : 0;
-      if (currentInCart + qty > max) {
-        showToast('Máximo de ' + max + ' unidades para este produto', true);
-        return;
-      }
-      if (existingCheck) existingCheck.qty += qty;
-      else cart.push({ nome: currentProduct.nome, variacao: selectedVariation, preco: price, img: currentProduct.img1, qty, qtdMaxima: currentProduct.qtdMaxima });
-      closeProductModal(); renderCart(); showCartToast(currentProduct.nome, currentProduct.img1, price * qty);
-      var cartBtn = document.querySelector('.cart-btn');
-      cartBtn.classList.remove('bounce');
-      void cartBtn.offsetWidth;
-      cartBtn.classList.add('bounce');
-      var cartBadgeEl = document.getElementById('cartBadge');
-      cartBadgeEl.classList.remove('pop');
-      void cartBadgeEl.offsetWidth;
-      cartBadgeEl.classList.add('pop');
-      trackEvent('AddToCart', { name: currentProduct.nome, value: price * qty });
-    }
-    function removeFromCart(i) { cart.splice(i, 1); if (!cart.length) removeCoupon(); renderCart(); }
-    function updateCartQty(i, d) {
-      const maxQty = PRODUCTS.find(p => p.nome === cart[i].nome)?.qtdMaxima || 99;
-      if (d > 0 && cart[i].qty >= maxQty) {
-        showToast('Máximo de ' + maxQty + ' unidades para este produto', true);
-        return;
-      }
-      cart[i].qty += d; if (cart[i].qty < 1) cart.splice(i, 1); renderCart();
+      var hasPromo = currentProduct.precoPromo && currentProduct.precoPromo > 0 && currentProduct.preco > 0 && currentProduct.precoPromo < currentProduct.preco;
+      registrarClique(currentProduct);
+      trackEvent('ClickOferta', { name: currentProduct.nome, value: hasPromo ? currentProduct.precoPromo : currentProduct.preco });
+      try {
+        salvarClique(currentProduct.nome, currentProduct.categoria, currentProduct.plataforma);
+      } catch(err) {}
+      window.open(currentProduct.linkAfiliado, '_blank');
     }
 
-    function renderCart() {
-      const badge = document.getElementById("cartBadge");
-      const total = cart.reduce((s, i) => s + i.qty, 0);
-      badge.textContent = total; badge.classList.toggle("show", total > 0);
-      const el = document.getElementById("cartItems");
-      if (!cart.length) {
-        el.innerHTML = `<div class="cart-empty"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg><p>Seu carrinho está vazio</p></div>`;
-        document.getElementById("cartCoupon").style.display = "none";
-        document.getElementById("cartFooter").style.display = "none"; return;
-      }
-      document.getElementById("cartCoupon").style.display = "block";
-      document.getElementById("cartFooter").style.display = "block";
-      el.innerHTML = cart.map((item, i) => `<div class="cart-item"><div class="cart-item-img"><img src="${item.img}" alt=""></div><div class="cart-item-info"><div class="cart-item-name">${item.nome}</div>${item.variacao ? `<div class="cart-item-var">${item.variacao}</div>` : ''}<div class="cart-item-bottom"><div class="cart-item-qty"><button onclick="updateCartQty(${i},-1)">−</button><span>${item.qty}</span><button onclick="updateCartQty(${i},1)">+</button></div><div class="cart-item-price">R$ ${fp(item.preco * item.qty)}</div></div><button class="cart-item-remove" onclick="removeFromCart(${i})">Remover</button></div></div>`).join("");
-      updateTotals();
-    }
-
-    function updateTotals() {
-      const sub = cart.reduce((s, i) => s + i.preco * i.qty, 0);
-      let disc = 0;
-      if (currentCoupon) { disc = currentCoupon.tipo === "percentual" ? sub * (currentCoupon.valor / 100) : currentCoupon.valor; if (disc > sub) disc = sub; }
-      document.getElementById("cartSubtotal").textContent = `R$ ${fp(sub)}`;
-      document.getElementById("cartTotal").textContent = `R$ ${fp(sub - disc)}`;
-      const dr = document.getElementById("cartDiscountRow");
-      if (disc > 0) { dr.style.display = "flex"; document.getElementById("cartDiscountLabel").textContent = `Cupom ${currentCoupon.codigo}`; document.getElementById("cartDiscount").textContent = `- R$ ${fp(disc)}`; }
-      else { dr.style.display = "none"; }
-      var checkoutBtn = document.querySelector('.btn-checkout');
-      if (checkoutBtn) {
-        var totalItems = cart.reduce(function(s, i) { return s + i.qty; }, 0);
-        checkoutBtn.textContent = 'Finalizar Pedido (' + totalItems + (totalItems === 1 ? ' item' : ' itens') + ')';
-      }
-    }
-
-    function openCart() { document.getElementById("cartOverlay").classList.add("open"); document.getElementById("cartSidebar").classList.add("open"); document.body.style.overflow = "hidden"; document.body.classList.add('modal-open'); }
-    function closeCart() {
-      document.getElementById('cartOverlay').classList.remove('open');
-      document.getElementById('cartSidebar').classList.remove('open');
-      if (!document.querySelector('.modal-overlay.open') && !document.querySelector('.checkout-overlay.open') && !document.querySelector('.order-confirmed-overlay.open')) {
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-open');
-      }
-    }
-
-    // ============================================
-    // COUPONS
-    // ============================================
-    function applyCoupon() {
-      const code = document.getElementById("couponInput").value.trim().toUpperCase();
-      const msg = document.getElementById("couponMsg");
-      if (!code) return;
-      const coupon = (CONFIG.cupons || []).find(c => c.codigo && c.codigo.toUpperCase() === code && c.ativo);
-      if (coupon) {
-        currentCoupon = coupon;
-        msg.textContent = "Cupom aplicado com sucesso!"; msg.className = "coupon-msg success";
-        document.getElementById("couponAppliedText").textContent = `${coupon.codigo} (${coupon.tipo === 'percentual' ? coupon.valor + '%' : 'R$ ' + fp(coupon.valor)} OFF)`;
-        document.getElementById("couponApplied").classList.add("show");
-        document.getElementById("couponInput").value = "";
-      } else { msg.textContent = "Cupom inválido ou expirado"; msg.className = "coupon-msg error"; }
-      setTimeout(() => { msg.className = "coupon-msg"; }, 3000);
-      updateTotals();
-    }
-    function removeCoupon() { currentCoupon = null; document.getElementById("couponApplied").classList.remove("show"); document.getElementById("couponInput").value = ""; updateTotals(); }
-
-    // ============================================
-    // COMBOBOX CIDADE / BAIRRO (dados da aba "Delivery")
-    // ============================================
-
-    // Preenche o combobox de Cidade com os valores únicos (sem duplicidade) vindos da
-    // aba Delivery, e limpa o combobox de Bairro — que só é populado após a escolha da
-    // cidade (ver popularComboboxBairro).
-    function popularComboboxCidade(valorSelecionado) {
-      var cidadeSelect = document.getElementById('custCidade');
-      if (!cidadeSelect) return;
-
-      var vistos = {};
-      var cidades = [];
-      (DELIVERY_AREAS || []).forEach(function(area) {
-        if (area.cidade && !vistos[area.cidade]) {
-          vistos[area.cidade] = true;
-          cidades.push({ valor: area.cidade, texto: area.cidadeDisplay || area.cidade });
+    function copyCoupon() {
+      if (!currentProduct || !currentProduct.cupom) return;
+      var code = currentProduct.cupom;
+      function done() {
+        var btn = document.getElementById('btnCopyCoupon');
+        if (btn) {
+          btn.textContent = 'Copiado!';
+          setTimeout(function() { btn.textContent = 'Copiar cupom'; }, 2500);
         }
-      });
-      cidades.sort(function(a, b) { return a.texto.localeCompare(b.texto, 'pt-BR'); });
-
-      cidadeSelect.innerHTML = '';
-      cidadeSelect.appendChild(new Option('', ''));
-      cidades.forEach(function(c) {
-        cidadeSelect.appendChild(new Option(c.texto, c.valor));
-      });
-
-      // Bairro depende da cidade escolhida — começa sempre vazio
-      var bairroSelect = document.getElementById('custBairro');
-      if (bairroSelect) {
-        bairroSelect.innerHTML = '';
-        bairroSelect.appendChild(new Option('', ''));
+        trackEvent('CopiaCupom', { name: currentProduct.nome });
       }
-
-      if (valorSelecionado) {
-        var alvo = valorSelecionado.trim().toLowerCase();
-        var match = cidades.find(function(c) { return c.valor === alvo; });
-        if (match) {
-          cidadeSelect.value = match.valor;
-          popularComboboxBairro(match.valor);
-        }
-      }
-    }
-
-    // Preenche o combobox de Bairro com os valores únicos (sem duplicidade) da aba
-    // Delivery, filtrados pela cidade já escolhida. Sem cidade selecionada, fica vazio.
-    function popularComboboxBairro(cidadeValor, valorSelecionado) {
-      var bairroSelect = document.getElementById('custBairro');
-      if (!bairroSelect) return;
-
-      bairroSelect.innerHTML = '';
-      bairroSelect.appendChild(new Option('', ''));
-      if (!cidadeValor) return;
-
-      var vistos = {};
-      var bairros = [];
-      (DELIVERY_AREAS || []).forEach(function(area) {
-        if (area.cidade === cidadeValor && area.bairro && !vistos[area.bairro]) {
-          vistos[area.bairro] = true;
-          bairros.push({ valor: area.bairro, texto: area.bairroDisplay || area.bairro });
-        }
-      });
-      bairros.sort(function(a, b) { return a.texto.localeCompare(b.texto, 'pt-BR'); });
-
-      bairros.forEach(function(b) {
-        bairroSelect.appendChild(new Option(b.texto, b.valor));
-      });
-
-      if (valorSelecionado) {
-        var alvo = valorSelecionado.trim().toLowerCase();
-        var match = bairros.find(function(b) { return b.valor === alvo; });
-        if (match) bairroSelect.value = match.valor;
-      }
-    }
-
-    // ============================================
-    // CHECKOUT
-    // ============================================
-    function openCheckout() {
-      if (!cart.length) return;
-      document.getElementById("cartOverlay").classList.remove("open"); document.getElementById("cartSidebar").classList.remove("open");
-      document.getElementById('addressGroup').style.display = 'block';
-
-      // Limpa todos os campos do formulário sempre que o checkout for aberto — evita
-      // manter dados de um pedido anterior preenchidos por engano.
-      ['custName', 'custPhone', 'custCep', 'custEndereco', 'custComplemento', 'custObs'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) { el.value = ''; el.classList.remove('field-error'); }
-      });
-      // Cidade e Bairro são comboboxes: recarrega a lista de cidades (a partir da aba
-      // Delivery) e limpa o de Bairro, que só será preenchido após a escolha da cidade.
-      popularComboboxCidade();
-      document.getElementById('custCidade').classList.remove('field-error');
-      document.getElementById('custBairro').classList.remove('field-error');
-      var paySelectReset = document.getElementById('paymentMethod');
-      if (paySelectReset) paySelectReset.value = '';
-      document.querySelectorAll('input[name="delivery"]').forEach(function(r) { r.checked = false; });
-      _ultimoTelBuscado = '';
-
-      setTimeout(() => {
-        buildDeliveryOptions();
-        buildCheckoutSummary();
-        document.getElementById("checkoutOverlay").classList.add("open");
-        document.body.style.overflow = "hidden";
-        document.querySelector('.checkout-body').scrollTop = 0;
-        document.body.classList.add('modal-open');
-        trackEvent('InitiateCheckout', { value: cart.reduce((s, i) => s + i.preco * i.qty, 0) });
-      }, 200);
-    }
-    function closeCheckout() {
-      document.getElementById('checkoutOverlay').classList.remove('open');
-      if (!document.querySelector('.modal-overlay.open') && !document.querySelector('.cart-overlay.open') && !document.querySelector('.order-confirmed-overlay.open')) {
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-open');
-      }
-    }
-
-    function buildDeliveryOptions() {
-      const c = document.getElementById("deliveryOptions"); let html = "";
-      if (CONFIG.retiradaLocal) html += dopt("retirada", "Retirada no Local", CONFIG.enderecoRetirada || "", "Grátis");
-      if (CONFIG.delivery) html += dopt("delivery", "Delivery", "", CONFIG.taxaDelivery > 0 ? `R$ ${fp(CONFIG.taxaDelivery)}` : "", "deliveryPriceLabel");
-      if (CONFIG.entregaPadrao) html += dopt("padrao", "Entrega Padrão", "", CONFIG.taxaEntregaPadrao > 0 ? `R$ ${fp(CONFIG.taxaEntregaPadrao)}` : "Grátis");
-      if (CONFIG.faixasEntrega && CONFIG.faixasEntrega.length > 0) {
-        CONFIG.faixasEntrega.forEach((faixa, i) => {
-          html += dopt('faixa_' + i, faixa.nome, '', faixa.taxa > 0 ? 'R$ ' + fp(faixa.taxa) : 'Grátis');
-        });
-      }
-      c.innerHTML = html;
-    }
-    function dopt(val, label, sub, price, priceId) {
-      return `<label class="radio-option" onclick="selectDelivery('${val}',this)"><input type="radio" name="delivery" value="${val}"><div><div class="radio-option-text">${label}</div>${sub ? `<div style="font-size:0.75rem;color:var(--text-light);margin-top:2px">${sub}</div>` : ''}</div><span class="radio-option-price"${priceId ? ` id="${priceId}"` : ''}>${price}</span></label>`;
-    }
-
-    // Atualiza o texto de preço da opção "Delivery" na lista de entregas — mas só depois
-    // que essa opção realmente for escolhida (antes disso, fica sem nenhum valor visível).
-    function atualizarLabelPrecoDelivery() {
-      if (CONFIG.taxaDelivery > 0) return; // taxa fixa já definida, não precisa atualizar
-      var label = document.getElementById('deliveryPriceLabel');
-      if (!label) return;
-      var selecionado = document.querySelector('input[name="delivery"]:checked');
-      if (!selecionado || selecionado.value !== 'delivery') {
-        label.textContent = '';
-        return;
-      }
-      var taxa = obterTaxaDeliveryPorArea();
-      label.textContent = taxa > 0 ? `R$ ${fp(taxa)}` : 'A calcular';
-    }
-    function selectDelivery(val, el) {
-      document.querySelectorAll(".radio-option").forEach(o => o.classList.remove("selected")); el.classList.add("selected"); el.querySelector("input").checked = true;
-      document.getElementById("addressGroup").style.display = val !== "retirada" ? "block" : "none"; buildCheckoutSummary();
-    }
-    function getDeliveryFee() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return 0; if (s.value === "delivery") { if (CONFIG.taxaDelivery > 0) return CONFIG.taxaDelivery; return obterTaxaDeliveryPorArea(); } if (s.value === "padrao") return CONFIG.taxaEntregaPadrao || 0; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].taxa; } return 0; }
-
-    // Quando "Taxa Delivery" está vazia na planilha de Configurações, procura a taxa
-    // específica da área do cliente na aba "Delivery" — usando exclusivamente a
-    // combinação Bairro + Cidade/UF (o CEP é ignorado nessa busca); se não achar com o
-    // que já está no formulário, e o telefone digitado bater com um cliente já
-    // cadastrado, tenta usar o Bairro/Cidade salvos dele.
-    function obterTaxaDeliveryPorArea() {
-      if (!DELIVERY_AREAS || !DELIVERY_AREAS.length) return 0;
-
-      var bairroInput = document.getElementById('custBairro');
-      var cidadeInput = document.getElementById('custCidade');
-      var phoneInput = document.getElementById('custPhone');
-
-      var bairro = bairroInput ? bairroInput.value.trim().toLowerCase() : '';
-      var cidade = cidadeInput ? cidadeInput.value.trim().toLowerCase() : '';
-
-      var taxaEncontrada = buscarTaxaEmAreas(bairro, cidade);
-      if (taxaEncontrada !== null) return taxaEncontrada;
-
-      // Não achou com o que já está no formulário — tenta pelo telefone, usando o
-      // Bairro/Cidade salvos de um cliente já cadastrado com esse mesmo número.
-      var telLocal = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-      if (telLocal.length >= 8 && CLIENTES) {
-        for (var chave in CLIENTES) {
-          if (chave.length > telLocal.length && chave.slice(-telLocal.length) === telLocal) {
-            var clienteEncontrado = CLIENTES[chave];
-            var bairroCliente = (clienteEncontrado.bairro || '').trim().toLowerCase();
-            var cidadeCliente = (clienteEncontrado.cidade || '').trim().toLowerCase();
-            var taxaPeloCliente = buscarTaxaEmAreas(bairroCliente, cidadeCliente);
-            if (taxaPeloCliente !== null) return taxaPeloCliente;
-            break;
-          }
-        }
-      }
-
-      return 0;
-    }
-
-    // Procura a taxa em DELIVERY_AREAS pela combinação exata Bairro + Cidade/UF.
-    // O CEP não é considerado nessa busca. Retorna null se não encontrar
-    // nenhuma correspondência (permite diferenciar "achou taxa 0" de "não achou").
-    function buscarTaxaEmAreas(bairro, cidade) {
-      if (!bairro || !cidade) return null;
-
-      for (var k = 0; k < DELIVERY_AREAS.length; k++) {
-        if (DELIVERY_AREAS[k].bairro === bairro && DELIVERY_AREAS[k].cidade === cidade) return DELIVERY_AREAS[k].taxa;
-      }
-      return null;
-    }
-    function getDeliveryLabel() { const s = document.querySelector('input[name="delivery"]:checked'); if (!s) return ""; if (s.value.startsWith('faixa_')) { const idx = parseInt(s.value.replace('faixa_', '')); if (CONFIG.faixasEntrega && CONFIG.faixasEntrega[idx]) return CONFIG.faixasEntrega[idx].nome; } return { retirada: "Retirada no Local", delivery: "Delivery", padrao: "Entrega Padrão" }[s.value] || ""; }
-
-    function buildCheckoutSummary() {
-      atualizarLabelPrecoDelivery();
-      const sub = cart.reduce((s, i) => s + i.preco * i.qty, 0);
-      let disc = 0;
-      if (currentCoupon) { disc = currentCoupon.tipo === "percentual" ? sub * (currentCoupon.valor / 100) : currentCoupon.valor; if (disc > sub) disc = sub; }
-      const fee = getDeliveryFee(); const total = sub - disc + fee;
-      let html = `<h3>Resumo do Pedido</h3>`;
-      cart.forEach(i => { html += `<div class="checkout-item"><span>${i.qty}x ${i.nome}${i.variacao ? ' (' + i.variacao + ')' : ''}</span><span>R$ ${fp(i.preco * i.qty)}</span></div>`; });
-      html += `<div class="checkout-item" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--gray-200)"><span>Subtotal</span><span>R$ ${fp(sub)}</span></div>`;
-      if (disc > 0) html += `<div class="checkout-item" style="color:var(--primary)"><span>Cupom ${currentCoupon.codigo}</span><span>- R$ ${fp(disc)}</span></div>`;
-      if (getDeliveryLabel()) html += `<div class="checkout-item"><span>${getDeliveryLabel()}</span><span>${fee > 0 ? 'R$ ' + fp(fee) : 'Grátis'}</span></div>`;
-      html += `<div class="checkout-item" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--gray-200);font-weight:700;color:var(--text);font-size:1rem"><span>Total</span><span>R$ ${fp(total)}</span></div>`;
-      document.getElementById("checkoutSummary").innerHTML = html;
-      atualizarPixCopiaCola(total);
-    }
-
-    // ============================================
-    // PIX COPIA E COLA (BR Code / EMV)
-    // ============================================
-
-    // Monta um campo no formato TLV (Tag-Length-Value) exigido pelo padrão BR Code
-    function pixTLV(id, valor) {
-      var len = String(valor.length).padStart(2, '0');
-      return id + len + valor;
-    }
-
-    // Calcula o CRC16-CCITT (polinômio 0x1021, valor inicial 0xFFFF) exigido no final do código Pix
-    function pixCRC16(str) {
-      var crc = 0xFFFF;
-      for (var i = 0; i < str.length; i++) {
-        crc ^= (str.charCodeAt(i) << 8);
-        for (var j = 0; j < 8; j++) {
-          if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021);
-          else crc = (crc << 1);
-          crc &= 0xFFFF;
-        }
-      }
-      return crc.toString(16).toUpperCase().padStart(4, '0');
-    }
-
-    // Remove acentos e caracteres especiais (exigido pelo padrão Pix, que só aceita ASCII simples)
-    function pixSanitizar(texto, tamanhoMax) {
-      var limpo = (texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      limpo = limpo.replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase().trim();
-      return limpo.substring(0, tamanhoMax) || 'LOJA';
-    }
-
-    // Gera o código "Pix Copia e Cola" completo com o valor do pedido
-    function gerarPixCopiaCola(chave, nomeLoja, cidade, valor) {
-      var nome = pixSanitizar(nomeLoja, 25);
-      var cid = pixSanitizar(cidade || 'MACEIO', 15);
-      var valorStr = Number(valor).toFixed(2);
-
-      var merchantAccountInfo = pixTLV('00', 'br.gov.bcb.pix') + pixTLV('01', chave);
-
-      var payload = '';
-      payload += pixTLV('00', '01');                 // Payload Format Indicator
-      payload += pixTLV('01', '12');                 // Point of Initiation Method (com valor definido)
-      payload += pixTLV('26', merchantAccountInfo);  // Informações da conta Pix
-      payload += pixTLV('52', '0000');                // Merchant Category Code
-      payload += pixTLV('53', '986');                 // Moeda (BRL)
-      payload += pixTLV('54', valorStr);              // Valor da transação
-      payload += pixTLV('58', 'BR');                  // País
-      payload += pixTLV('59', nome);                  // Nome do recebedor
-      payload += pixTLV('60', cid);                   // Cidade do recebedor
-      payload += pixTLV('62', pixTLV('05', '***'));   // Identificador da transação (txid genérico)
-      payload += '6304';                              // Prefixo do CRC16
-      payload += pixCRC16(payload);
-
-      return payload;
-    }
-
-    // Atualiza (ou esconde) o bloco de código Pix conforme a forma de pagamento e o total do pedido
-    function atualizarPixCopiaCola(total) {
-      var bloco = document.getElementById('pixCopiaCola');
-      var paySelect = document.getElementById('paymentMethod');
-      if (!bloco || !paySelect) return;
-
-      var deveMostrar = CONFIG.pix && CONFIG.chavePix && paySelect.value === 'Pix' && total > 0;
-      bloco.classList.toggle('show', !!deveMostrar);
-      if (!deveMostrar) return;
-
-      var codigo = gerarPixCopiaCola(CONFIG.chavePix, CONFIG.storeName || 'LOJA', CONFIG.cidadePix, total);
-      document.getElementById('pixCopiaColaCodigo').value = codigo;
-      document.getElementById('pixCopiaColaValor').textContent = 'R$ ' + fp(total);
-    }
-
-    // Copia o código Pix para a área de transferência
-    function copiarCodigoPix() {
-      var input = document.getElementById('pixCopiaColaCodigo');
-      var btn = document.getElementById('pixCopiaColaBtn');
-      if (!input || !input.value) return;
-
-      var restaurarBotao = function() {
-        setTimeout(function() {
-          if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar';
-        }, 2000);
-      };
-
-      var mostrarSucesso = function() {
-        if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Copiado!';
-        if (typeof showToast === 'function') showToast('Código Pix copiado ✓');
-        restaurarBotao();
-      };
-
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(input.value).then(mostrarSucesso).catch(function() {
-          input.select();
-          document.execCommand('copy');
-          mostrarSucesso();
-        });
-      } else {
-        input.select();
+      navigator.clipboard.writeText(code).then(done).catch(function() {
+        var t = document.createElement('textarea');
+        t.value = code;
+        document.body.appendChild(t);
+        t.select();
         document.execCommand('copy');
-        mostrarSucesso();
-      }
+        document.body.removeChild(t);
+        done();
+      });
     }
 
-    // ============================================
-    // WHATSAPP SEND
-    // ============================================
-    // ============================================
-    // ABERTURA DO WHATSAPP (tenta o app nativo antes do WhatsApp Web)
-    // ============================================
-    // Detecta se o site está sendo acessado de dentro de um navegador in-app
-    // (Instagram, Facebook, TikTok, Line, WeChat...), que costuma bloquear links
-    // que tentam abrir outros aplicativos por segurança.
-    function detectarNavegadorInApp() {
-      var ua = navigator.userAgent || '';
-      return /Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Line\/|MicroMessenger/i.test(ua);
+    function ytEmbed(url) {
+      if (!url) return '';
+      var m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+      return m ? 'https://www.youtube.com/embed/' + m[1] : '';
     }
 
-    // Copia um texto para a área de transferência (usado no fallback do navegador in-app)
-    function copiarTextoParaClipboard(texto) {
+    function registrarClique(p) {
+      if (typeof ACHADINHOS === 'undefined' || !ACHADINHOS.registrar_cliques) return;
       try {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(texto);
-        } else {
-          var temp = document.createElement('textarea');
-          temp.value = texto;
-          temp.style.position = 'fixed';
-          temp.style.opacity = '0';
-          document.body.appendChild(temp);
-          temp.select();
-          document.execCommand('copy');
-          document.body.removeChild(temp);
-        }
-      } catch (err) { /* se falhar, só não copia — não é crítico */ }
-    }
-
-    // Mostra um aviso explicando como sair do navegador in-app para concluir pelo WhatsApp
-    function avisarNavegadorInApp() {
-      if (typeof showToast === 'function') {
-        showToast('Mensagem do pedido copiada! Toque em ⋮ e escolha "Abrir no navegador" para enviar pelo WhatsApp.', true);
-        // Esse aviso é mais longo que o normal, então damos mais tempo pra pessoa ler
-        clearTimeout(window._toastTimer);
-        window._toastTimer = setTimeout(function () {
-          var el = document.getElementById('toast');
-          if (el) { el.classList.remove('show'); el.style.zIndex = ''; }
-        }, 8000);
-      }
-    }
-
-    // Detecta se o dispositivo é Android (usamos um esquema de link diferente nele)
-    function detectarAndroid() {
-      return /Android/i.test(navigator.userAgent || '');
-    }
-
-    // Detecta iOS/iPadOS de forma geral (qualquer navegador — Safari, Chrome, Firefox...).
-    // A Apple exige que todo navegador no iOS use o motor do Safari (WebKit) por baixo dos
-    // panos, então o mesmo problema de "aba pré-aberta fica bloqueada" do Safari também
-    // acontece no Chrome/Firefox/Edge quando rodam no iPhone/iPad.
-    function detectarIOS() {
-      var ua = navigator.userAgent || '';
-      if (/iPhone|iPad|iPod/i.test(ua)) return true;
-      // Detecta iPhone/iPad no modo "Solicitar Site de Desktop" do Safari: nesse modo, o
-      // user agent finge ser um Mac ("Macintosh"), mas o aparelho continua sendo touch —
-      // algo que um Mac de verdade nunca é (por isso usamos isso pra diferenciar).
-      if (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return true;
-      return false;
-    }
-
-    // Tenta abrir diretamente o aplicativo do WhatsApp (celular ou desktop, se instalado)
-    // usando o protocolo "whatsapp://". Se o app não assumir o controle da aba em pouco
-    // tempo (ou seja, se não estiver instalado), cai automaticamente no link tradicional
-    // (wa.me), que abre o WhatsApp Web no navegador.
-    //
-    // Em navegadores in-app (Instagram, Facebook, TikTok...), que costumam bloquear esse
-    // tipo de redirecionamento por segurança, nem tentamos o protocolo do app: copiamos a
-    // mensagem do pedido e orientamos a pessoa a abrir no navegador externo.
-    // Detecta se o navegador é o Brave (ele expõe navigator.brave.isBrave() como Promise).
-    // O Brave mostra uma tela própria de confirmação de segurança ao tentar abrir links
-    // de protocolo de app (whatsapp://, intent://...), então evitamos tentar isso nele.
-    async function detectarBrave() {
-      try {
-        if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
-          return await navigator.brave.isBrave();
-        }
+        var utms = [];
+        var params = new URLSearchParams(window.location.search);
+        params.forEach(function(v, k) { if (k.toLowerCase().indexOf('utm_') === 0) utms.push(k + '=' + v); });
+        var origem = [document.referrer, utms.join('&')].filter(Boolean).join(' | ');
+        var dados = {
+          dataHora: new Date().toLocaleString('pt-BR'),
+          produto: p.nome,
+          plataforma: p.plataforma,
+          tipo: p.tipo,
+          categoria: p.categoria,
+          origem: origem
+        };
+        var url = ACHADINHOS.registrar_cliques + '?data=' + encodeURIComponent(JSON.stringify(dados));
+        fetch(url, { mode: 'no-cors' });
       } catch (err) {
-        // se a checagem falhar por algum motivo, assume que não é Brave
+        console.log('Erro ao registrar clique:', err);
       }
-      return false;
     }
 
-    // Detecta o Microsoft Edge (identificador "EdgiOS" no user agent, no iPhone/iPad)
-    function detectarEdge() {
-      return /EdgiOS|EdgA/i.test(navigator.userAgent || '');
+    function getChannelUrl() {
+      return CONFIG.canalWhatsapp || CONFIG.canalTelegram || '';
     }
 
-    // Mostra um aviso na tela pedindo pra pessoa confirmar/permitir quando o navegador
-    // perguntar se pode abrir o WhatsApp — usado no Brave e nos demais navegadores desktop.
-    function avisarConfirmacaoAbrirApp(mensagemTexto) {
-      if (typeof showToast !== 'function') return;
-      showToast(mensagemTexto, true);
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(function () {
-        var el = document.getElementById('toast');
-        if (el) { el.classList.remove('show'); el.style.zIndex = ''; }
-      }, 6000);
-    }
-
-    async function abrirWhatsApp(waWindow, telefone, mensagem) {
-      var textoCodificado = encodeURIComponent(mensagem);
-      var urlWeb = 'https://wa.me/' + telefone + '?text=' + textoCodificado;
-      var ehAndroid = detectarAndroid();
-      var ehIOS = detectarIOS();
-      var ehBrave = await detectarBrave();
-
-      // Navegador in-app (Instagram, Facebook, TikTok...): copia a mensagem e orienta a
-      // pessoa a abrir no navegador externo, em vez de tentar qualquer link de app.
-      if (detectarNavegadorInApp()) {
-        copiarTextoParaClipboard(mensagem);
-        avisarNavegadorInApp();
-        try {
-          if (waWindow && !waWindow.closed) { waWindow.location.href = urlWeb; }
-          else { window.location.href = urlWeb; }
-        } catch (err) { /* segue mesmo assim, o aviso já orienta a pessoa */ }
-        return;
+    function setupChannel() {
+      var url = getChannelUrl();
+      if (!url) return;
+      var isTelegram = !CONFIG.canalWhatsapp && !!CONFIG.canalTelegram;
+      var iconWa = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+      var iconTg = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>';
+      var icon = isTelegram ? iconTg : iconWa;
+      var btn = document.getElementById('channelBtn');
+      btn.href = url;
+      btn.innerHTML = icon + '<span>Canal de Ofertas</span>';
+      btn.classList.toggle('telegram', isTelegram);
+      btn.classList.add('show');
+      if (CONFIG.botaoCanalFlutuante) {
+        var f = document.getElementById('channelFloat');
+        f.href = url;
+        f.innerHTML = icon;
+        f.classList.toggle('telegram', isTelegram);
+        f.classList.add('show');
+        document.body.classList.add('has-channel-float');
       }
-
-      if (ehIOS) {
-        // Em qualquer navegador no iOS/iPadOS (Safari, Chrome, Firefox, Brave...) navegamos
-        // direto na aba ATUAL, sem pré-abrir popup: o WebKit (motor usado por todos eles no
-        // iOS, por exigência da Apple) bloqueia silenciosamente a navegação de uma aba aberta
-        // via window.open() se ela ficar tempo demais sem ser redirecionada — o que acontece
-        // aqui, já que esperamos a confirmação do pedido antes de abrir o WhatsApp.
-        if (ehBrave) {
-          avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-          await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-        }
-
-        // Tenta o protocolo do app (whatsapp://), com temporizador de segurança próprio
-        // (não existe "intent://" com fallback embutido no iOS). Fazemos isso mesmo no
-        // Brave — apesar de disparar a tela própria de confirmação dele — porque, ao
-        // contrário de navegar direto pro wa.me, essa tentativa não troca o conteúdo da
-        // aba: se o app abrir, a aba continua na loja, sem precisar voltar manualmente.
-        var urlAppIOS = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
-        var appAssumiuControleIOS = false;
-        function marcarAppAssumiuControleIOS() { appAssumiuControleIOS = true; }
-        document.addEventListener('visibilitychange', function () {
-          if (document.hidden) marcarAppAssumiuControleIOS();
-        });
-        window.addEventListener('pagehide', marcarAppAssumiuControleIOS);
-        window.addEventListener('blur', marcarAppAssumiuControleIOS);
-
-        try {
-          window.location.href = urlAppIOS;
-        } catch (err) {
-          window.location.href = urlWeb;
-          return;
-        }
-
-        // Brave e Edge no iOS parecem demorar mais pra processar essa tentativa (ou nem
-        // dispararem nada) — damos um tempo um pouco maior de segurança pra eles.
-        var tempoFallbackIOS = (ehBrave || detectarEdge()) ? 2000 : 1200;
-        setTimeout(function () {
-          if (appAssumiuControleIOS) return; // o app abriu, não precisa do fallback
-          window.location.href = urlWeb;
-        }, tempoFallbackIOS);
-        return;
-      }
-
-      if (ehAndroid) {
-        // No Android navegamos direto na aba ATUAL (sem usar a aba em branco pré-aberta):
-        // uma aba criada via window.open() parece ficar marcada pelo Chrome como "aberta
-        // por script" durante toda a sua vida, o que impede o app do WhatsApp de abrir
-        // mesmo depois (inclusive em um clique genuíno dentro dela).
-        if (ehBrave) {
-          // No Brave, tentar whatsapp:///intent:// dispara a tela própria de confirmação
-          // dele; vamos direto pro wa.me, que cuida do redirecionamento pro app depois.
-          avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-          await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-          try { window.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-          return;
-        }
-
-        if (detectarEdge()) {
-          // O Edge no Android parece demorar mais pra processar a tentativa de abrir o
-          // app — em vez de confiar só no fallback embutido do "intent://" (que pode
-          // disparar cedo demais), usamos nosso próprio temporizador, bem mais generoso.
-          var urlIntentEdge = 'intent://send?phone=' + telefone + '&text=' + textoCodificado +
-            '#Intent;scheme=whatsapp;package=com.whatsapp;end';
-          var appAssumiuControleEdgeAndroid = false;
-          function marcarAppAssumiuControleEdgeAndroid() { appAssumiuControleEdgeAndroid = true; }
-          document.addEventListener('visibilitychange', function () {
-            if (document.hidden) marcarAppAssumiuControleEdgeAndroid();
-          });
-          window.addEventListener('pagehide', marcarAppAssumiuControleEdgeAndroid);
-          window.addEventListener('blur', marcarAppAssumiuControleEdgeAndroid);
-
-          try {
-            window.location.href = urlIntentEdge;
-          } catch (err) {
-            window.location.href = urlWeb;
-            return;
-          }
-
-          setTimeout(function () {
-            if (appAssumiuControleEdgeAndroid) return;
-            window.location.href = urlWeb;
-          }, 3000);
-          return;
-        }
-
-        // O esquema "intent://" já tem um fallback embutido (S.browser_fallback_url) caso
-        // o app não esteja instalado, então nem precisamos do temporizador de segurança aqui.
-        var urlIntent = 'intent://send?phone=' + telefone + '&text=' + textoCodificado +
-          '#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=' + encodeURIComponent(urlWeb) + ';end';
-        try {
-          window.location.href = urlIntent;
-        } catch (err) {
-          window.location.href = urlWeb;
-        }
-        return;
-      }
-
-      // Desktop (Chrome, Firefox, Edge, Brave...): mantém a aba pré-aberta (evita bloqueio
-      // de pop-up) e tenta o protocolo "whatsapp://", com fallback por temporizador para o
-      // WhatsApp Web. No Brave, pulamos direto pro wa.me (ele mostra sua própria tela de
-      // confirmação para qualquer link de app, então nem tentamos o protocolo primeiro).
-      var win = (waWindow && !waWindow.closed) ? waWindow : window.open('', '_blank');
-      if (!win) { window.open(urlWeb, '_blank'); return; } // navegador bloqueou até a aba em branco
-
-      if (ehBrave) {
-        avisarConfirmacaoAbrirApp('Seu navegador (Brave) vai pedir uma confirmação de segurança — toque em "Permitir" para abrir o WhatsApp.');
-        await new Promise(function (resolve) { setTimeout(resolve, 1800); });
-
-        // Assim que o WhatsApp assumir a tela (a aba perde o foco/fica oculta), fechamos
-        // essa aba automaticamente — ela não precisa continuar aberta depois disso.
-        try {
-          win.addEventListener('blur', function () { try { win.close(); } catch (e) {} });
-          win.addEventListener('pagehide', function () { try { win.close(); } catch (e) {} });
-          if (win.document) {
-            win.document.addEventListener('visibilitychange', function () {
-              if (win.document.hidden) { try { win.close(); } catch (e) {} }
-            });
-          }
-        } catch (err) {
-          // se não conseguir "ouvir" a aba, ela só fica aberta em segundo plano — sem problema
-        }
-
-        try { win.location.href = urlWeb; } catch (err) { window.open(urlWeb, '_blank'); }
-        return;
-      }
-
-      var urlApp = 'whatsapp://send?phone=' + telefone + '&text=' + textoCodificado;
-      var appAssumiuControle = false;
-      function marcarAppAssumiuControle() {
-        appAssumiuControle = true;
-        // O WhatsApp assumiu a tela — fecha essa aba automaticamente, ela não precisa
-        // continuar aberta em segundo plano depois que o app abriu.
-        try { win.close(); } catch (e) {}
-      }
-
-      // Se o app abrir por cima da aba, ela perde o foco/fica oculta — usamos isso
-      // como sinal de que o app assumiu e cancelamos o fallback para o WhatsApp Web
-      try {
-        win.addEventListener('blur', marcarAppAssumiuControle);
-        win.addEventListener('pagehide', marcarAppAssumiuControle);
-        if (win.document) {
-          win.document.addEventListener('visibilitychange', function () {
-            if (win.document.hidden) marcarAppAssumiuControle();
-          });
-        }
-      } catch (err) {
-        // Alguns navegadores podem bloquear o acesso ao document da aba; segue só com o timeout
-      }
-
-      // Alguns navegadores desktop mostram uma confirmação nativa antes de abrir o app;
-      // avisamos a pessoa com antecedência pra ela não estranhar.
-      avisarConfirmacaoAbrirApp('Seu navegador pode pedir uma confirmação para abrir o WhatsApp — é só permitir.');
-      await new Promise(function (resolve) { setTimeout(resolve, 1500); });
-
-      try {
-        win.location.href = urlApp;
-      } catch (err) {
-        // Alguns navegadores lançam erro ao tentar navegar para um protocolo desconhecido
-      }
-
-      setTimeout(function () {
-        if (appAssumiuControle) return; // o app abriu, não precisa do fallback
-        try {
-          if (!win.closed) { win.location.href = urlWeb; }
-          else { window.open(urlWeb, '_blank'); }
-        } catch (err) {
-          window.open(urlWeb, '_blank');
-        }
-      }, 1200);
-    }
-
-    async function sendWhatsApp() {
-      const name = document.getElementById("custName").value.trim();
-      const phone = document.getElementById("custPhone").value.trim();
-      // O formulário só pede o número local (sem DDD) — combina com o DDD detectado pelo
-      // CEP do cliente (ou o da loja, se não tiver CEP informado ainda)
-      const phoneComDDD = formatarTelefoneExibicao(obterDDDDetectado() + phone.replace(/\D/g, ''));
-      // Versão só com números (sem parênteses/espaço/hífen), pra gravar nas planilhas
-      const phoneApenasNumeros = obterDDDDetectado() + phone.replace(/\D/g, '');
-      const del = document.querySelector('input[name="delivery"]:checked');
-      const pay = document.getElementById("paymentMethod").value;
-      var cep = document.getElementById('custCep') ? document.getElementById('custCep').value.trim() : '';
-      var endereco = document.getElementById('custEndereco') ? document.getElementById('custEndereco').value.trim() : '';
-      var complemento = document.getElementById('custComplemento') ? document.getElementById('custComplemento').value.trim() : '';
-      var bairroSelectEl = document.getElementById('custBairro');
-      var cidadeSelectEl = document.getElementById('custCidade');
-      var bairro = bairroSelectEl && bairroSelectEl.value ? bairroSelectEl.options[bairroSelectEl.selectedIndex].text : '';
-      var cidade = cidadeSelectEl && cidadeSelectEl.value ? cidadeSelectEl.options[cidadeSelectEl.selectedIndex].text : '';
-      const obs = document.getElementById("custObs").value.trim();
-      // Clear previous error highlights
-      document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('field-error'); });
-      document.querySelectorAll('.delivery-error').forEach(function(el) { el.classList.remove('delivery-error'); });
-
-      var hasError = false;
-      var firstError = null;
-      function markError(el) { el.classList.add('field-error'); if (!firstError) firstError = el; hasError = true; }
-
-      if (!del) { var dg = document.querySelector('.form-group:has(#deliveryOptions)') || document.getElementById('deliveryOptions').closest('.form-group'); if (dg) { dg.classList.add('delivery-error'); if (!firstError) firstError = dg; } hasError = true; }
-      var phoneDigitos = phone.replace(/\D/g, '');
-      var phoneMuitoCurto = phone && phoneDigitos.length < 9;
-      if (!phone || phoneMuitoCurto) markError(document.getElementById('custPhone'));
-      if (!name) markError(document.getElementById('custName'));
-      if (!pay) markError(document.getElementById('paymentMethod'));
-
-      if (hasError) {
-        showToast(phoneMuitoCurto ? "Telefone precisa ter 9 dígitos" : "Preencha todos os campos obrigatórios", true);
-        if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus && firstError.querySelector && (firstError.querySelector('input,select,textarea') || firstError).focus(); }
-        return;
-      }
-
-      if (del.value !== 'retirada' && (!endereco || !bairro || !cidade)) {
-        if (!endereco) markError(document.getElementById('custEndereco'));
-        if (!bairro) markError(document.getElementById('custBairro'));
-        if (!cidade) markError(document.getElementById('custCidade'));
-        showToast('Preencha os campos de endereço', true);
-        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-
-      // Abre a aba do WhatsApp em branco JÁ AQUI, ainda dentro do clique do usuário.
-      // Isso evita que o navegador bloqueie o pop-up depois do "await" mais abaixo.
-      // A aba só será direcionada para o link do WhatsApp quando a mensagem estiver pronta.
-      //
-      // Se "Enviar Whatsapp" estiver desativado nas Configurações, nem abrimos essa aba —
-      // ela só faz sentido quando o pedido realmente vai ser redirecionado pro WhatsApp.
-      //
-      // EXCEÇÃO: no Android e em qualquer navegador no iOS/iPadOS, uma aba criada via
-      // window.open() parece ficar marcada como "aberta por script" e, depois de um tempo
-      // (principalmente no iOS, que é mais rígido nisso por usar o motor do Safari), o
-      // navegador bloqueia silenciosamente qualquer tentativa de navegá-la mais tarde. Por
-      // isso, nessas plataformas navegamos direto na aba atual mais adiante, sem pré-abrir
-      // nada aqui.
-      var waWindow = (!CONFIG.enviarWhatsapp || detectarAndroid() || detectarIOS()) ? null : window.open('', '_blank');
-
-      // Em vez de deixar a aba em branco (about:blank) enquanto aguardamos a confirmação
-      // do pedido, escrevemos uma pequena página avisando o que está acontecendo.
-      if (waWindow) {
-        try {
-          waWindow.document.open();
-          waWindow.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecionando para o WhatsApp...</title>
-<style>
-  html,body{height:100%;margin:0}
-  body{display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px;box-sizing:border-box}
-  .box{max-width:420px;text-align:center}
-  .spinner{width:48px;height:48px;border:5px solid rgba(42,92,63,0.15);border-top-color:#2A5C3F;border-radius:50%;margin:0 auto 24px;animation:spin 0.8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  h1{font-size:1.5rem;color:#1B1B1B;margin:0 0 16px;line-height:1.3}
-  p{font-size:1.15rem;color:#4A4A47;line-height:1.55;margin:0 0 12px}
-  strong{color:#2A5C3F}
-</style>
-</head>
-<body>
-  <div class="box">
-    <div class="spinner"></div>
-    <h1>Enviando seu pedido para o WhatsApp...</h1>
-    <p>Se o navegador pedir uma confirmação de segurança, toque em <strong>Permitir</strong> (ou "Abrir") para continuar.</p>
-    <p>Essa janela vai atualizar sozinha em instantes.</p>
-  </div>
-</body>
-</html>`);
-          waWindow.document.close();
-        } catch (err) {
-          // se falhar por algum motivo, a aba só fica em branco até ser redirecionada — sem problema
-        }
-      }
-
-      // Trava o botão para evitar cliques duplicados enquanto aguarda o servidor
-      var btnEnviar = document.getElementById('btnEnviarPedido');
-      var btnEnviarTexto = document.getElementById('btnEnviarPedidoTexto');
-      var textoOriginalBtn = btnEnviarTexto ? btnEnviarTexto.textContent : '';
-      if (btnEnviar) btnEnviar.disabled = true;
-      if (btnEnviarTexto) btnEnviarTexto.textContent = 'Enviando pedido...';
-
-      const sub = cart.reduce((s, i) => s + i.preco * i.qty, 0);
-      let disc = 0;
-      if (currentCoupon) { disc = currentCoupon.tipo === "percentual" ? sub * (currentCoupon.valor / 100) : currentCoupon.valor; if (disc > sub) disc = sub; }
-      const fee = getDeliveryFee(); const total = sub - disc + fee;
-
-      // Gera um número de pedido provisório (usado apenas se o servidor não responder a tempo)
-      // (o sufixo evita duplicidade caso dois pedidos sejam feitos no mesmo segundo)
-      var agora = new Date();
-      var pad = function(n) { return String(n).padStart(2, '0'); };
-      var sufixo = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-      var numeroPedido = String(agora.getFullYear()).slice(-2) + pad(agora.getMonth() + 1) + pad(agora.getDate()) + '-' + pad(agora.getHours()) + pad(agora.getMinutes()) + pad(agora.getSeconds()) + '-' + sufixo;
-
-      trackEvent('Purchase', { value: total });
-      var itensList = cart.map(function(i) { return i.qty + 'x ' + i.nome + (i.variacao ? ' (' + i.variacao + ')' : '') + ' - R$ ' + fp(i.preco * i.qty); }).join(' | ');
-      var dadosPedido = {
-        numeroPedido: numeroPedido,
-        dataHora: new Date().toLocaleString('pt-BR'),
-        nome: name,
-        telefone: phoneApenasNumeros,
-        cep: typeof cep !== 'undefined' ? cep.replace(/\D/g, '') : '',
-        endereco: typeof endereco !== 'undefined' ? endereco : '',
-        bairro: typeof bairro !== 'undefined' ? bairro : '',
-        cidade: typeof cidade !== 'undefined' ? cidade : '',
-        complemento: typeof complemento !== 'undefined' ? complemento : '',
-        entrega: getDeliveryLabel(),
-        pagamento: pay,
-        itens: itensList,
-        subtotal: 'R$ ' + fp(sub),
-        desconto: disc > 0 ? 'R$ ' + fp(disc) : '',
-        frete: fee > 0 ? 'R$ ' + fp(fee) : 'Grátis',
-        total: 'R$ ' + fp(total),
-        cupom: currentCoupon ? currentCoupon.codigo : '',
-        observacoes: obs
-      };
-
-      // Converte a mensagem (formatada estilo WhatsApp, com *negrito* e quebras de linha)
-      // para HTML, pra poder exibi-la diretamente na tela de confirmação do site.
-      function converterMensagemParaHtml(texto) {
-        var escapado = (texto || '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-        escapado = escapado.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
-        escapado = escapado.replace(/\n/g, '<br>');
-        return escapado;
-      }
-
-      function montarMensagem(numeroParaMensagem, incluirNumeroPedido) {
-        let m = "*" + (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "*\n━━━━━━━━━━━━━━━\n";
-        if (incluirNumeroPedido) m += `Nº do Pedido: #${numeroParaMensagem}\n`;
-        m += `Data/Hora: ${dadosPedido.dataHora.replace(',', ' -')}\n`;
-        m += "*DADOS DO CLIENTE:*\n";
-        m += `Nome: ${name}\nTel: ${phoneComDDD}\n`;
-        if (del.value !== 'retirada') {
-          m += 'Endereço:\n';
-          if (cep) m += 'CEP: ' + cep + '\n';
-          m += endereco + '\n';
-          if (complemento) m += complemento + '\n';
-          m += bairro + ' - ' + cidade + '\n';
-        }
-        m += `Entrega: ${getDeliveryLabel()}\nPagamento: ${pay}\n`;
-        if (obs) m += `Obs: ${obs}\n`;
-        m += "━━━━━━━━━━━━━━━\n";
-        m += "*ITENS DO PEDIDO:*\n";
-        cart.forEach(i => { m += `${i.qty}x ${i.nome}${i.variacao ? ' (' + i.variacao + ')' : ''} — R$ ${fp(i.preco * i.qty)}\n`; });
-        m += "━━━━━━━━━━━━━━━\n";
-        m += `Subtotal: R$ ${fp(sub)}\n`;
-        if (disc > 0) m += `Cupom ${currentCoupon.codigo}: -R$ ${fp(disc)}\n`;
-        if (getDeliveryLabel()) m += `${getDeliveryLabel()}: ${fee > 0 ? 'R$ ' + fp(fee) : 'Grátis'}\n`;
-        m += `*TOTAL: R$ ${fp(total)}*\n`;
-        return m;
-      }
-
-      function mostrarConfirmacao(numeroParaExibir, incluirNumero) {
-        // Monta a mensagem completa ANTES de esvaziar o carrinho — a função usa o
-        // carrinho atual pra listar os itens do pedido.
-        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroParaExibir, incluirNumero));
-
-        closeCheckout();
-        cart = [];
-        currentCoupon = null;
-        renderCart();
-        var orderConfirmedTitle = document.getElementById('orderConfirmedTitle');
-        if (orderConfirmedTitle) {
-          orderConfirmedTitle.innerHTML = 'Pedido Recebido!';
-        }
-        var orderConfirmedText = document.getElementById('orderConfirmedText');
-        if (orderConfirmedText) {
-          orderConfirmedText.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Verifique a mensagem no seu WhatsApp, clique em <strong>Enviar</strong> para concluir ou mais informações através do telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
-        }
-        document.getElementById('orderConfirmed').classList.add('open');
-      }
-
-      // Se a loja tiver desativado o envio pro WhatsApp (campo "Enviar Whatsapp" vazio ou
-      // "Não" na aba Configurações), só salva o pedido na planilha e mostra uma confirmação
-      // simples — sem tentar abrir o WhatsApp de forma alguma.
-      if (!CONFIG.enviarWhatsapp) {
-        var resultadoSemWhats = await salvarPedidoEObterNumero(dadosPedido).catch(function () { return null; });
-        var numeroPedidoFinalSemWhats = (resultadoSemWhats && resultadoSemWhats.numeroPedido) ? resultadoSemWhats.numeroPedido : numeroPedido;
-
-        // Monta a mensagem ANTES de esvaziar o carrinho — a função usa o carrinho atual
-        // pra listar os itens, então precisa rodar antes do "cart = []" abaixo.
-        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroPedidoFinalSemWhats, true));
-
-        closeCheckout();
-        cart = [];
-        currentCoupon = null;
-        renderCart();
-
-        var orderConfirmedTitleSemWhats = document.getElementById('orderConfirmedTitle');
-        if (orderConfirmedTitleSemWhats) orderConfirmedTitleSemWhats.innerHTML = 'Pedido Recebido!';
-        var orderConfirmedTextSemWhats = document.getElementById('orderConfirmedText');
-        if (orderConfirmedTextSemWhats) {
-          orderConfirmedTextSemWhats.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Maiores informações pelo telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
-        }
-        document.getElementById('orderConfirmed').classList.add('open');
-
-        if (btnEnviar) btnEnviar.disabled = false;
-        if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
-        var btnFecharXSemWhats = document.getElementById('orderConfirmedCloseX');
-        var btnFecharOkSemWhats = document.getElementById('orderConfirmedOk');
-        if (btnFecharXSemWhats) { btnFecharXSemWhats.disabled = false; btnFecharXSemWhats.style.opacity = ''; btnFecharXSemWhats.style.cursor = ''; }
-        if (btnFecharOkSemWhats) { btnFecharOkSemWhats.disabled = false; btnFecharOkSemWhats.style.opacity = ''; btnFecharOkSemWhats.style.cursor = ''; btnFecharOkSemWhats.textContent = 'OK'; }
-        return;
-      }
-
-      // Detecta o Safari de verdade (app da Apple) o quanto antes — nele, precisamos abrir
-      // o WhatsApp IMEDIATAMENTE (antes de esperar a resposta do servidor), porque qualquer
-      // espera faz o Safari ignorar silenciosamente a tentativa de abrir o app. Nesse caso
-      // específico, usamos o número provisório na mensagem (pode divergir do número
-      // sequencial da planilha) — é a única forma de garantir que o WhatsApp abra sozinho.
-      // Testamos e confirmamos que Brave, Chrome e Edge no iPhone NÃO têm esse problema
-      // (mostram sua própria tela de confirmação), então só o Safari precisa desse atalho.
-      var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
-        /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
-
-      if (ehSafariReal) {
-        var msgSafari = montarMensagem(numeroPedido, false);
-        var textoCodificadoSafari = encodeURIComponent(msgSafari);
-        var urlWebSafari = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + textoCodificadoSafari;
-        var urlAppSafari = 'whatsapp://send?phone=' + CONFIG.whatsapp + '&text=' + textoCodificadoSafari;
-
-        var appAssumiuControleSafariDireto = false;
-        function marcarAppAssumiuControleSafariDireto() { appAssumiuControleSafariDireto = true; }
-        document.addEventListener('visibilitychange', function () {
-          if (document.hidden) marcarAppAssumiuControleSafariDireto();
-        });
-        window.addEventListener('pagehide', marcarAppAssumiuControleSafariDireto);
-        window.addEventListener('blur', marcarAppAssumiuControleSafariDireto);
-
-        // Dispara a abertura do WhatsApp JÁ, sem esperar nada — é a única forma confiável
-        // de abrir o app no Safari, já que qualquer atraso faz ele ignorar a tentativa.
-        try {
-          window.location.href = urlAppSafari;
-        } catch (err) {
-          window.location.href = urlWebSafari;
-        }
-        setTimeout(function () {
-          if (appAssumiuControleSafariDireto) return;
-          window.location.href = urlWebSafari;
-        }, 1200);
-
-        mostrarConfirmacao(numeroPedido, false);
-
-        var btnFecharX = document.getElementById('orderConfirmedCloseX');
-        var btnFecharOk = document.getElementById('orderConfirmedOk');
-        if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
-        if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
-        if (btnEnviar) btnEnviar.disabled = false;
-        if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
-
-        // Salva o pedido na planilha em segundo plano — sem bloquear o redirecionamento.
-        // Nesse caso o número que aparece no WhatsApp pode não bater com o "Nº Pedido"
-        // sequencial da planilha (é a troca aceita para garantir a abertura automática).
-        salvarPedidoEObterNumero(dadosPedido).catch(function () {});
-        return;
-      }
-
-      // Demais navegadores (Brave, Chrome, Edge no iOS; Android; Desktop): mantém o fluxo
-      // que espera a confirmação do servidor, garantindo que o número bata com a planilha.
-
-      // Salva na planilha e tenta obter o número OFICIAL do pedido (o mesmo que vai na coluna "Nº Pedido").
-      // Se o servidor não responder a tempo (ou der erro), usamos o número provisório para não travar o pedido.
-      var resultado = await salvarPedidoEObterNumero(dadosPedido);
-      var numeroPedidoFinal = (resultado && resultado.numeroPedido) ? resultado.numeroPedido : numeroPedido;
-      let msg = montarMensagem(numeroPedidoFinal, true);
-
-      // Mostra a confirmação ANTES de abrir o WhatsApp — em alguns celulares/navegadores
-      // a página pode navegar direto para o app ou para o wa.me logo em seguida, então é
-      // importante que o cliente já veja o aviso antes disso acontecer.
-      mostrarConfirmacao(numeroPedidoFinal, true);
-
-      // Trava os botões de fechar (X e OK) enquanto o redirecionamento pro WhatsApp ainda
-      // não aconteceu — se o cliente fechar essa tela antes da hora, o redirecionamento
-      // pode não chegar a ocorrer. Só libera depois que o processo realmente for disparado.
-      var btnFecharX = document.getElementById('orderConfirmedCloseX');
-      var btnFecharOk = document.getElementById('orderConfirmedOk');
-      if (btnFecharX) { btnFecharX.disabled = true; btnFecharX.style.opacity = '0.3'; btnFecharX.style.cursor = 'not-allowed'; }
-      if (btnFecharOk) { btnFecharOk.disabled = true; btnFecharOk.style.opacity = '0.6'; btnFecharOk.style.cursor = 'not-allowed'; btnFecharOk.textContent = 'Aguarde...'; }
-
-      if (btnEnviar) btnEnviar.disabled = false;
-      if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
-
-      // Dá um tempinho pro cliente realmente ver a mensagem completa do pedido antes da
-      // tela trocar pro WhatsApp (o app costuma abrir muito rápido, sem esse atraso a
-      // confirmação mal aparece na tela). O Safari de verdade já foi tratado à parte acima
-      // (ele precisa de abertura imediata), então aqui sempre é seguro usar o tempo maior.
-      await new Promise(function (resolve) { setTimeout(resolve, 7000); });
-
-      // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
-      // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
-      await abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
-
-      // Redirecionamento já disparado — libera os botões de fechar
-      if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
-      if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
     }
 
     // ============================================
     // HELPERS
     // ============================================
-    document.addEventListener('focusout', function(e) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-        setTimeout(function() {
-          var checkoutBody = document.querySelector('.checkout-body');
-          var cartItems = document.querySelector('.cart-items');
-          if (checkoutBody) {
-            checkoutBody.style.overflow = '';
-            checkoutBody.style.overflowY = 'auto';
-          }
-          if (cartItems) {
-            cartItems.style.overflow = '';
-            cartItems.style.overflowY = 'auto';
-          }
+    function salvarClique(produto, categoria, plataforma) {
+      if (!ACHADINHOS.registrar_cliques) return;
 
-          // Corrige um bug conhecido do teclado no iOS Safari (a página/formulário pode
-          // ficar "desajustado" visualmente depois que o teclado fecha) forçando um
-          // recálculo leve do layout — sem mexer na posição de rolagem nem travar o
-          // overflow do body, que era o que causava o desajuste no formulário de checkout.
-          requestAnimationFrame(function () {
-            window.dispatchEvent(new Event('resize'));
-          });
-        }, 100);
+      if (!window._cliquesRegistrados) window._cliquesRegistrados = {};
+      var chave = produto + '_' + plataforma;
+      var agora = Date.now();
+      if (window._cliquesRegistrados[chave] && (agora - window._cliquesRegistrados[chave]) < 300000) {
+        return;
       }
-    });
+      window._cliquesRegistrados[chave] = agora;
+
+      try {
+        var dados = {
+          dataHora: new Date().toLocaleString('pt-BR'),
+          produto: produto,
+          categoria: categoria,
+          plataforma: plataforma
+        };
+        var img = new Image();
+        img.src = ACHADINHOS.registrar_cliques + '?data=' + encodeURIComponent(JSON.stringify(dados));
+      } catch (err) {}
+    }
     function clearSearch() {
       var input = document.getElementById('searchInput');
       input.value = '';
@@ -4198,68 +2069,6 @@
       var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
       return luminance > 0.55;
     }
-    async function salvarPedidoEObterNumero(dadosPedido) {
-      if (!LOJAFACIL.salvar_pedidos) {
-        console.warn('LOJAFACIL.salvar_pedidos não está configurado — usando número provisório.');
-        return null;
-      }
-      try {
-        var controller = new AbortController();
-        // Timeout de segurança: o Apps Script pode levar até ~15s em caso de pedidos simultâneos (LockService)
-        var timeoutId = setTimeout(function() { controller.abort(); }, 12000);
-
-
-        var response = await fetch(LOJAFACIL.salvar_pedidos, {
-          method: 'POST',
-          // IMPORTANTE: usar text/plain (não application/json) evita o preflight CORS (OPTIONS),
-          // que o Apps Script não trata. O doPost já faz JSON.parse(e.postData.contents) normalmente.
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(dadosPedido),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        var data = await response.json();
-        return data; // { status: 'ok', numeroPedido: N, ... }
-      } catch (err) {
-        console.error('Erro ao salvar pedido / obter número oficial:', err);
-        return null;
-      }
-    }
-    function closeOrderConfirmed() {
-      document.getElementById('orderConfirmed').classList.remove('open');
-      document.body.style.overflow = '';
-      document.body.classList.remove('modal-open');
-    }
-    // Formata o telefone da loja (guardado com código do país, ex: 5582999999999)
-    // para exibição legível, ex: (82) 99999-9999
-    function formatarTelefoneExibicao(numero) {
-      var v = (numero || '').replace(/\D/g, '');
-      if (v.length > 11 && v.indexOf('55') === 0) v = v.substring(2); // remove o código do país (55)
-      if (v.length === 11) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 5) + '-' + v.substr(7);
-      if (v.length === 10) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 4) + '-' + v.substr(6);
-      return numero || '';
-    }
-
-    // Retorna o DDD detectado a partir do CEP digitado (via ViaCEP). Se o cliente ainda não
-    // informou CEP (ex: retirada, sem endereço) ou a busca falhar, usa o DDD do WhatsApp da
-    // loja como alternativa, pra sempre ter algum DDD disponível.
-    function obterDDDDetectado() {
-      if (window._dddDetectadoPorCep) return window._dddDetectadoPorCep;
-      var v = (CONFIG.whatsapp || '').replace(/\D/g, '');
-      if (v.length > 11 && v.indexOf('55') === 0) v = v.substring(2); // remove o código do país (55)
-      return v.substring(0, 2);
-    }
-
-    function maskPhone(input) {
-      var v = input.value.replace(/\D/g, '');
-      if (v.length > 9) v = v.substr(0, 9);
-      if (v.length > 4) {
-        var corte = v.length > 8 ? 5 : 4; // 9 dígitos (celular) corta em 5, 8 dígitos (fixo) corta em 4
-        v = v.substr(0, corte) + '-' + v.substr(corte);
-      }
-      input.value = v;
-    }
     function handleImgError(img) {
       var parent = img.parentElement;
       var div = document.createElement('div');
@@ -4285,7 +2094,7 @@
         txt.textContent = 'Link Copiado!';
         setTimeout(function() {
           btn.classList.remove('copied');
-          txt.textContent = 'Copiar Link do Produto';
+          txt.textContent = 'Compartilhar';
         }, 2500);
       }).catch(function() {
         var textarea = document.createElement('textarea');
@@ -4300,18 +2109,16 @@
         txt.textContent = 'Link Copiado!';
         setTimeout(function() {
           btn.classList.remove('copied');
-          txt.textContent = 'Copiar Link do Produto';
+          txt.textContent = 'Compartilhar';
         }, 2500);
       });
     }
     function installPixels() {
-      // Facebook Pixel
       if (CONFIG.pixelFacebook) {
         const fb = document.createElement('script');
         fb.textContent = "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','" + CONFIG.pixelFacebook + "');fbq('track','PageView');";
         document.head.appendChild(fb);
       }
-      // Google Analytics
       if (CONFIG.googleAnalytics) {
         const gaScript = document.createElement('script');
         gaScript.async = true;
@@ -4321,7 +2128,6 @@
         gaInit.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + CONFIG.googleAnalytics + "');";
         document.head.appendChild(gaInit);
       }
-      // Google Ads
       if (CONFIG.googleAds) {
         if (!CONFIG.googleAnalytics) {
           const adsScript = document.createElement('script');
@@ -4340,23 +2146,18 @@
     }
 
     function trackEvent(eventName, data) {
-      // Facebook
       if (CONFIG.pixelFacebook && typeof fbq !== 'undefined') {
         if (eventName === 'ViewContent') fbq('track', 'ViewContent', { content_name: data.name, value: data.value, currency: 'BRL' });
-        else if (eventName === 'AddToCart') fbq('track', 'AddToCart', { content_name: data.name, value: data.value, currency: 'BRL' });
-        else if (eventName === 'InitiateCheckout') fbq('track', 'InitiateCheckout', { value: data.value, currency: 'BRL' });
-        else if (eventName === 'Purchase') fbq('track', 'Purchase', { value: data.value, currency: 'BRL' });
+        else if (eventName === 'ClickOferta') fbq('track', 'Lead', { content_name: data.name, value: data.value, currency: 'BRL' });
+        else if (eventName === 'CopiaCupom') fbq('trackCustom', 'CopiaCupom', { content_name: data.name });
       }
-      // Google Analytics
       if (CONFIG.googleAnalytics && typeof gtag !== 'undefined') {
         if (eventName === 'ViewContent') gtag('event', 'view_item', { currency: 'BRL', value: data.value });
-        else if (eventName === 'AddToCart') gtag('event', 'add_to_cart', { currency: 'BRL', value: data.value });
-        else if (eventName === 'InitiateCheckout') gtag('event', 'begin_checkout', { currency: 'BRL', value: data.value });
-        else if (eventName === 'Purchase') gtag('event', 'purchase', { currency: 'BRL', value: data.value, transaction_id: Date.now().toString() });
+        else if (eventName === 'ClickOferta') gtag('event', 'click_oferta', { item_name: data.name, currency: 'BRL', value: data.value });
+        else if (eventName === 'CopiaCupom') gtag('event', 'copy_coupon', { item_name: data.name });
       }
-      // Google Ads
       if (CONFIG.googleAds && typeof gtag !== 'undefined') {
-        if (eventName === 'Purchase') gtag('event', 'conversion', { send_to: CONFIG.googleAds, value: data.value, currency: 'BRL' });
+        if (eventName === 'ClickOferta') gtag('event', 'conversion', { send_to: CONFIG.googleAds, value: data.value, currency: 'BRL' });
       }
     }
 
@@ -4377,13 +2178,10 @@
     }
     function fixImg(url) {
       if (!url) return '';
-      // https://drive.google.com/file/d/XXXXX/view... → direct link
       let m = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
       if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-      // https://drive.google.com/open?id=XXXXX → direct link
       m = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
       if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-      // https://drive.google.com/uc?id=XXXXX → direct link
       m = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
       if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
       return url;
@@ -4392,9 +2190,7 @@
     function parsePrecoBR(val) {
       var s = (val || '').trim();
       if (!s) return 0;
-      // Se tem vírgula: formato BR (ex: 1.299,90 ou 146,90)
       if (s.indexOf(',') !== -1) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-      // Sem vírgula: ponto é decimal (ex: 146.90) ou inteiro (ex: 146)
       return parseFloat(s) || 0;
     }
     function showToast(text, priority) {
@@ -4402,7 +2198,6 @@
       document.getElementById('toastImg').style.display = 'none';
       document.getElementById('toastTitle').textContent = text;
       document.getElementById('toastSubtitle').textContent = '';
-      document.querySelector('.toast-btn').style.display = 'none';
       if (priority) {
         el.style.zIndex = '600';
       } else {
@@ -4411,18 +2206,6 @@
       el.classList.add('show');
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(function() { el.classList.remove('show'); el.style.zIndex = ''; }, 3000);
-    }
-    function showCartToast(name, img, price) {
-      var el = document.getElementById('toast');
-      var toastImg = document.getElementById('toastImg');
-      if (img) { toastImg.src = img; toastImg.style.display = 'block'; }
-      else { toastImg.style.display = 'none'; }
-      document.getElementById('toastTitle').textContent = name;
-      document.getElementById('toastSubtitle').textContent = 'Adicionado ao carrinho · R$ ' + fp(price);
-      document.querySelector('.toast-btn').style.display = 'block';
-      el.classList.add('show');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(function() { el.classList.remove('show'); }, 4000);
     }
     function toggleMobileSearch() { document.getElementById("searchBar").classList.toggle("mobile-open"); }
 
@@ -4434,40 +2217,20 @@
       }
     });
 
-    window.addEventListener('resize', function() { checkCatNavOverflow(); });
-    (function() {
-      var catNav = document.getElementById('catNav');
-      if (catNav) catNav.addEventListener('scroll', checkCatNavOverflow);
-    })();
-
     // ============================================
     // INIT
     // ============================================
-    // Calcula a altura real da área visível da tela (via visualViewport quando disponível),
-    // que é mais confiável que "100vh"/"100dvh" em navegadores como o Chrome no iPhone —
-    // onde a barra de endereço/menu pode deixar parte do conteúdo (como o botão de enviar
-    // pedido) escondida abaixo da área realmente visível.
-    // Nota: chegamos a usar uma variável CSS calculada via JS (--vh-real) pra controlar a
-    // altura do checkout e do modal de produto no mobile, mas isso conflitava com o teclado
-    // virtual do Safari (e a barra de "Preencher Automaticamente"), deixando parte do fundo
-    // da página visível atrás do formulário. Trocamos por uma abordagem mais simples e
-    // robusta: os overlays já usam "position:fixed; inset:0" (cobrem a tela toda de forma
-    // confiável, sem cálculo nenhum), e os modais internos usam "height:100%" pra preencher
-    // esse espaço — o próprio navegador cuida de ajustar isso quando o teclado abre/fecha.
-
     async function init() {
       try {
-        await Promise.all([loadConfig(), loadProducts(), loadClientes(), loadDeliveryAreas()]);
+        await Promise.all([loadConfig(), loadCatalogo()]);
         if (CONFIG.lojaAtiva === false) {
           document.getElementById('loadingScreen').classList.add('hidden');
-          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px"><div style="text-align:center;max-width:480px"><div style="width:64px;height:64px;background:rgba(42,92,63,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' fill=\'none\' viewBox=\'0 0 24 24\' stroke-width=\'1.5\' stroke=\'#2A5C3F\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg></div><h1 style="font-family:var(--font);font-size:1.5rem;font-weight:700;color:#1B1B1B;margin-bottom:8px">' + (CONFIG.storeName || 'Nossa Loja') + '</h1><p style="font-family:var(--font);font-size:1rem;color:#6B6760;line-height:1.6;margin-bottom:24px">' + (CONFIG.msgManutencao || 'Estamos temporariamente fechados. Volte em breve!') + '</p>' + (CONFIG.whatsapp ? '<a href="https://wa.me/' + CONFIG.whatsapp + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:white;border-radius:8px;font-family:var(--font);font-size:0.9rem;font-weight:600;text-decoration:none"><svg viewBox=\'0 0 24 24\' width=\'20\' height=\'20\' fill=\'currentColor\'><path d=\'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\'/></svg>Fale Conosco</a>' : '') + '</div></div>';
+          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px"><div style="text-align:center;max-width:480px"><div style="width:64px;height:64px;background:rgba(42,92,63,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' fill=\'none\' viewBox=\'0 0 24 24\' stroke-width=\'1.5\' stroke=\'#2A5C3F\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg></div><h1 style="font-family:var(--font);font-size:1.5rem;font-weight:700;color:#1B1B1B;margin-bottom:8px">' + (CONFIG.storeName || 'Nossa Loja') + '</h1><p style="font-family:var(--font);font-size:1rem;color:#6B6760;line-height:1.6;margin-bottom:24px">' + (CONFIG.msgManutencao || 'Estamos temporariamente fechados. Volte em breve!') + '</p>' + (getChannelUrl() ? '<a href="' + getChannelUrl() + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:white;border-radius:8px;font-family:var(--font);font-size:0.9rem;font-weight:600;text-decoration:none"><svg viewBox=\'0 0 24 24\' width=\'20\' height=\'20\' fill=\'currentColor\'><path d=\'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\'/></svg>Entrar no Canal de Ofertas</a>' : '') + '</div></div>';
           return;
         }
         applyConfig();
         buildCategoryNav();
         renderProducts();
-        renderCart();
-        // Check for direct product link
         var urlParams = new URLSearchParams(window.location.search);
         var productSlug = urlParams.get('produto');
         if (productSlug) {
@@ -4481,89 +2244,13 @@
         document.getElementById("loadingScreen").classList.add("hidden");
         setTimeout(() => document.getElementById("loadingScreen").remove(), 500);
       } catch (err) {
-        console.error("LojaFácil Error:", err);
+        console.error("Planiloja Achadinhos Error:", err);
         document.getElementById("loadingScreen").style.display = "none";
         document.getElementById("errorScreen").classList.add("show");
       }
     }
 
     init();
-
-// ============================================
-// MÁSCARA DO CEP (autopreenchimento por CEP desativado)
-// ============================================
-
-// Aplica a máscara 00000-000 no input de CEP
-function maskCep(input) {
-  var v = input.value.replace(/\D/g, '');
-  if (v.length > 8) v = v.substr(0, 8);
-  if (v.length > 5) v = v.substr(0, 5) + '-' + v.substr(5);
-  input.value = v;
-}
-
-// ============================================
-// BUSCA DE CLIENTE PELO TELEFONE (aba "Clientes")
-// ============================================
-
-// Evita repetir a mesma busca para o mesmo telefone (só limpa campos quando incompleto)
-var _ultimoTelBuscado = '';
-
-// Quando o telefone é apagado/fica incompleto, limpa os demais campos preenchidos
-// automaticamente (nome, endereço...), pra não deixar dados de um cliente anterior.
-function limparCamposSeTelefoneIncompleto(valor) {
-  var telLocal = (valor || '').replace(/\D/g, '');
-  if (telLocal.length >= 8) return; // telefone completo, não mexe em nada
-
-  _ultimoTelBuscado = '';
-  var nomeInput = document.getElementById('custName');
-  if (nomeInput) nomeInput.value = '';
-}
-
-// Busca o cliente pelo telefone completo (DDD detectado + número local digitado). Usar o
-// DDD garante uma correspondência exata — evita confundir clientes de regiões diferentes
-// que, por coincidência, tenham o mesmo número local.
-function buscarClientePorTelefone(valor) {
-  var telLocal = (valor || '').replace(/\D/g, '');
-  if (telLocal.length < 8) return; // ainda incompleto, a limpeza já foi tratada acima
-
-  var telCompleto = obterDDDDetectado() + telLocal;
-  if (telCompleto === _ultimoTelBuscado) return;
-  _ultimoTelBuscado = telCompleto;
-
-  var cliente = CLIENTES && CLIENTES[telCompleto];
-  if (!cliente) return; // cliente novo (ou DDD ainda não detectado corretamente), não faz nada
-
-  var nomeInput = document.getElementById('custName');
-  var enderecoInput = document.getElementById('custEndereco');
-  var complementoInput = document.getElementById('custComplemento');
-  var cidadeInput = document.getElementById('custCidade');
-  var cepInput = document.getElementById('custCep');
-
-  if (nomeInput && cliente.nome) nomeInput.value = cliente.nome;
-  if (cepInput && !cepInput.value && cliente.cep) {
-    cepInput.value = cliente.cep;
-    maskCep(cepInput);
-  }
-  if (enderecoInput && !enderecoInput.value && cliente.endereco) enderecoInput.value = cliente.endereco;
-  if (complementoInput && !complementoInput.value && cliente.complemento) complementoInput.value = cliente.complemento;
-  // Cidade e Bairro não são preenchidos automaticamente — o usuário sempre escolhe
-  // manualmente, primeiro a Cidade e depois o Bairro (carregado a partir dela).
-
-  [enderecoInput, cidadeInput].forEach(function(el) {
-    if (el) el.classList.remove('field-error');
-  });
-
-  if (typeof showToast === 'function') showToast('Dados do cliente preenchidos automaticamente ✓');
-}
-
-// Extrai só o número local (sem DDD) de um telefone salvo com DDD (10 ou 11 dígitos)
-function extrairTelefoneLocal(numero) {
-  var v = (numero || '').replace(/\D/g, '');
-  if (v.length === 11) return v.slice(-9);
-  if (v.length === 10) return v.slice(-8);
-  return v;
-}
   </script>
 </body>
-
 </html>
