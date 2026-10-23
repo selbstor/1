@@ -3920,6 +3920,7 @@
       trackEvent('Purchase', { value: total });
       var itensList = cart.map(function(i) { return i.qty + 'x ' + i.nome + (i.variacao ? ' (' + i.variacao + ')' : '') + ' - R$ ' + fp(i.preco * i.qty); }).join(' | ');
       var dadosPedido = {
+        urlLoja: window.location.origin + window.location.pathname,
         numeroPedido: numeroPedido,
         dataHora: new Date().toLocaleString('pt-BR'),
         nome: name,
