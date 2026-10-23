@@ -66,13 +66,13 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR - FORÇADO A APARECER SEMPRE */
+    /* BOTÃO COMPRAR NOS CARDS: Padrão claro e Laranja no HOVER */
     .btn-buy-card { 
       width: 100% !important; 
       padding: 10px !important; 
-      background: var(--primary) !important; 
-      color: #ffffff !important; 
-      border: none !important; 
+      background: var(--gray-50) !important; 
+      color: var(--text) !important; 
+      border: 1px solid var(--gray-200) !important; 
       border-radius: 8px !important; 
       font-weight: 700 !important; 
       cursor: pointer !important; 
@@ -83,17 +83,21 @@
       opacity: 1 !important; 
       visibility: visible !important; 
       margin-top: auto !important;
-      position: static !important;
-      transform: none !important;
+      transition: all 0.2s ease !important;
     }
-    .btn-buy-card:hover { background: var(--primary-hover) !important; }
+    .product-card:hover .btn-buy-card,
+    .btn-buy-card:hover { 
+      background: var(--primary) !important; 
+      color: #ffffff !important; 
+      border-color: var(--primary) !important; 
+    }
 
     /* MODAL DE PRODUTO */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.open { display: flex; }
     .modal-product { background: white; border-radius: var(--radius); max-width: 800px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; position: relative; max-height: 90vh; }
-    .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gray-200); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
-    .modal-gallery { background: var(--gray-50); display: flex; flex-direction: column; }
+    .modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gray-200); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 1rem; }
+    .modal-gallery { background: var(--gray-50); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .modal-main-img { aspect-ratio: 1; width: 100%; object-fit: cover; }
     .modal-thumbs { display: flex; gap: 8px; padding: 10px; justify-content: center; }
     .modal-thumb { width: 48px; height: 48px; border-radius: 6px; overflow: hidden; border: 2px solid transparent; cursor: pointer; }
@@ -109,8 +113,29 @@
     .option-btn { padding: 6px 14px; border: 1px solid var(--gray-200); border-radius: 6px; background: white; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
     .option-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(229, 90, 27, 0.08); }
     .qty-selector { display: flex; align-items: center; border: 1px solid var(--gray-200); border-radius: 6px; width: fit-content; margin-bottom: 20px; }
-    .qty-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1rem; }
-    .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; }
+    .qty-btn { width: 36px; height: 36px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1.1rem; }
+    .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; font-size: 1rem; }
+
+    /* BOTÃO "ADICIONAR AO CARRINHO" NO MODAL */
+    .btn-add-modal {
+      width: 100% !important;
+      padding: 14px !important;
+      background: var(--primary) !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      font-weight: 700 !important;
+      font-size: 0.95rem !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      transition: background 0.2s ease !important;
+    }
+    .btn-add-modal:hover {
+      background: var(--primary-hover) !important;
+    }
 
     /* DRAWER DO CARRINHO */
     .cart-drawer { position: fixed; top: 0; right: -420px; width: 100%; max-width: 400px; height: 100vh; background: white; z-index: 300; box-shadow: -4px 0 24px rgba(0,0,0,0.15); transition: right 0.3s ease; display: flex; flex-direction: column; }
@@ -206,8 +231,11 @@
           <button class="qty-btn" onclick="adjustQty(1)">+</button>
         </div>
 
-        <button class="btn-buy-card" onclick="addCurrentToCart()" style="padding:14px; font-size:0.9rem;">🛒 Adicionar ao Carrinho</button>
-        <div style="text-align:center; margin-top:12px;">
+        <button class="btn-add-modal" onclick="addCurrentToCart()">
+          🛍️ Adicionar ao Carrinho
+        </button>
+        
+        <div style="text-align:center; margin-top:14px;">
           <button onclick="shareProduct()" style="background:none; border:none; color:var(--gray-600); cursor:pointer; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">🔗 Compartilhar</button>
         </div>
       </div>
