@@ -43,7 +43,6 @@
     .cart-trigger { background: var(--white); border: 1.5px solid var(--gray-200); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
     .cart-trigger svg { width: 20px; height: 20px; }
     
-    /* BADGE DO CARRINHO NA BARRA SUPERIOR */
     .cart-badge { 
       position: absolute; 
       top: -4px; 
@@ -68,7 +67,7 @@
     .cat-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
     /* GRID DE PRODUTOS */
-    .main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 80px; }
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 80px; min-height: 60vh; }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .section-title { font-size: 1.25rem; font-weight: 700; }
     .product-count { font-size: 0.85rem; color: var(--gray-600); }
@@ -83,7 +82,6 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR NOS CARDS (Sempre Laranja Sólido) */
     .btn-buy-card { 
       width: 100% !important; 
       padding: 10px !important; 
@@ -103,6 +101,16 @@
     .btn-buy-card:hover { 
       background-color: var(--primary-hover) !important; 
     }
+
+    /* RODAPÉ DINÂMICO */
+    .footer { background: #1B120C; color: #D4CECC; padding: 40px 20px 30px; text-align: center; margin-top: 60px; font-size: 0.88rem; }
+    .footer-title { font-weight: 700; font-size: 1.1rem; color: #FFFFFF; margin-bottom: 16px; letter-spacing: 0.05em; }
+    .footer-socials { display: flex; justify-content: center; gap: 14px; margin-bottom: 20px; }
+    .footer-socials a { width: 36px; height: 36px; background: rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: 0.2s; }
+    .footer-socials a:hover { background: var(--primary); }
+    .footer-info { margin-bottom: 8px; color: #A8A29E; }
+    .footer-info a { color: #A8A29E; text-decoration: underline; }
+    .footer-copy { font-size: 0.78rem; color: #78716C; margin-top: 20px; }
 
     /* MODAL DE PRODUTO */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -129,7 +137,6 @@
     .qty-btn { width: 36px; height: 36px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1.1rem; }
     .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; background: transparent; font-size: 0.95rem; }
 
-    /* BOTÃO ADICIONAR AO CARRINHO NO MODAL */
     .btn-add-modal {
       width: 100%;
       padding: 14px;
@@ -251,6 +258,17 @@
     <div class="products-grid" id="productsGrid"></div>
   </main>
 
+  <!-- RODAPÉ DINÂMICO -->
+  <footer class="footer">
+    <div class="footer-title" id="footerStoreName">SELBSTOR | ACHADINHOS</div>
+    <div class="footer-socials" id="footerSocials">
+      <!-- Ícones sociais injetados via script se preenchidos -->
+    </div>
+    <div class="footer-info" id="footerAddress"></div>
+    <div class="footer-info" id="footerEmail"></div>
+    <div class="footer-copy">Feito com Planiloja</div>
+  </footer>
+
   <!-- MODAL DE PRODUTO -->
   <div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeProductModal()">
     <div class="modal-product">
@@ -363,15 +381,46 @@
     }
 
     function applyConfig() {
-      document.title = CONFIG.tituloSite || CONFIG.storeName || 'SELBSTOR | ACHADINHOS';
-      document.getElementById('headerName').textContent = CONFIG.storeName || 'SELBSTOR | ACHADINHOS';
+      const storeName = CONFIG.storeName || CONFIG.tituloSite || 'SELBSTOR | ACHADINHOS';
+      document.title = storeName;
+      document.getElementById('headerName').textContent = storeName;
+      document.getElementById('footerStoreName').textContent = storeName;
+
       if (CONFIG.logo) {
         const logo = document.getElementById('headerLogo');
         logo.src = CONFIG.logo;
         logo.style.display = 'block';
       }
+
+      // Preencher Rodapé dinamicamente com dados da planilha
+      if (CONFIG.endereco || CONFIG.enderecoRetirada) {
+        document.getElementById('footerAddress').textContent = CONFIG.endereco || CONFIG.enderecoRetirada;
+      }
       
-      // CONVERSOR INTELIGENTE DE CORES (Lê nomes da planilha e converte para código real)
+      if (CONFIG.email || CONFIG.emailContato) {
+        const emailVal = CONFIG.email || CONFIG.emailContato;
+        document.getElementById('footerEmail').innerHTML = `<a href="mailto:${emailVal}">${emailVal}</a>`;
+      }
+
+      // Redes Sociais no Rodapé
+      let socialsHtml = '';
+      if (CONFIG.whatsapp || CONFIG.telefone) {
+        let phone = (CONFIG.whatsapp || CONFIG.telefone).replace(/\D/g, '');
+        socialsHtml += `<a href="https://wa.me/55${phone}" target="_blank" title="WhatsApp">📱</a>`;
+      }
+      if (CONFIG.instagram) {
+        let ig = CONFIG.instagram.replace('@', '').trim();
+        socialsHtml += `<a href="https://instagram.com/${ig}" target="_blank" title="Instagram">📷</a>`;
+      }
+      if (CONFIG.facebook) {
+        socialsHtml += `<a href="${CONFIG.facebook}" target="_blank" title="Facebook">📘</a>`;
+      }
+      if (CONFIG.tiktok) {
+        socialsHtml += `<a href="${CONFIG.tiktok}" target="_blank" title="TikTok">🎵</a>`;
+      }
+      document.getElementById('footerSocials').innerHTML = socialsHtml;
+
+      // Cor Primária (Mapeamento inteligente)
       if (CONFIG.corPrimaria) {
         let cor = CONFIG.corPrimaria.trim();
         const mapaCores = {
@@ -388,7 +437,7 @@
         };
         
         let corHex = mapaCores[cor.toLowerCase()] || (cor.startsWith('#') ? cor : '#E55A1B');
-        let hoverHex = corHex === '#E55A1B' ? '#CC4B12' : corHex; // fallback hover
+        let hoverHex = corHex === '#E55A1B' ? '#CC4B12' : corHex;
         
         document.documentElement.style.setProperty('--primary', corHex);
         document.documentElement.style.setProperty('--primary-hover', hoverHex);
@@ -595,11 +644,6 @@
       updateCartUI();
     }
 
-    function removeFrom_Cart(idx) {
-      cart.splice(idx, 1);
-      updateCartUI();
-    }
-    
     function removeFromCart(idx) {
       cart.splice(idx, 1);
       updateCartUI();
