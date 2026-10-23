@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carregando... — Selbstor|Achadinhos</title>
+  <title>Carregando... — Achadinhos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
@@ -1334,7 +1334,7 @@
   <!-- Error -->
   <div class="error-screen" id="errorScreen">
     <h2>Ops! Não foi possível carregar a loja</h2>
-    <p>Verifique se a planilha está publicada corretamente e tente novamente.</p>
+    <p>Verifique se a planilha e a API do Apps Script estão publicadas corretamente e tente novamente.</p>
   </div>
 
   <div class='top-bar' id='topBar'></div>
@@ -1412,14 +1412,14 @@
 
   <!-- Footer -->
   <footer class="footer" style="display:none" id="siteFooter">
-  <div class="footer-name" id="footerName"></div>
-  <div class="footer-socials" id="footerSocials"></div>
-  <div class="footer-disclosure" id="footerDisclosure"></div>
-  <div class="footer-disclosure" id="footerAvisoPrecos"></div>
-  <div class="footer-credit">
-    Feito com <a href="https://selbstor.com/" target="_blank" rel="noopener noreferrer">Selbstor | Achadinhos</a>
-  </div>
-</footer>
+    <div class="footer-name" id="footerName"></div>
+    <div class="footer-socials" id="footerSocials"></div>
+    <div class="footer-disclosure" id="footerDisclosure"></div>
+    <div class="footer-disclosure" id="footerAvisoPrecos"></div>
+    <div class="footer-credit">
+      Feito com <a href="https://selbstor.com/" target="_blank" rel="noopener noreferrer">Selbstor | Achadinhos</a>
+    </div>
+  </footer>
 
   <button class='back-to-top' id='backToTop' onclick='window.scrollTo({top:0,behavior:"smooth"})'>
     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' d='M4.5 15.75l7.5-7.5 7.5 7.5'/></svg>
@@ -1436,13 +1436,13 @@
     </div>
   </div>
 
-  <!-- Config (external file) -->
-  <script>document.write('<script src="config.js?_t=' + Date.now() + '"><\/script>');</script>
-
   <script>
     // ============================================
-    // APP ENGINE — Planiloja Achadinhos
+    // APP ENGINE — Achadinhos (Sem config.js)
     // ============================================
+
+    // Cole abaixo a URL completa da Implantação (Web App) do seu code.gs
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbymYeLfSeIfuDNdA_29wngSa-90Usr8A5ZuzuNjfbcNzAFer-O2u_aF05rL99poIc1y_A/exec";
 
     // State
     let CONFIG = {};
@@ -1452,147 +1452,40 @@
     let currentProduct = null;
 
     // ============================================
-    // CSV PARSER
-    // ============================================
-    function parseCSV(text) {
-      const lines = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (ch === '"') {
-          if (inQuotes && text[i + 1] === '"') { current += '"'; i++; }
-          else { inQuotes = !inQuotes; }
-        } else if (ch === ',' && !inQuotes) {
-          lines.push(current); current = '';
-        } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
-          if (ch === '\r' && text[i + 1] === '\n') i++;
-          lines.push(current); current = ''; lines.push('\n');
-        } else { current += ch; }
-      }
-      if (current) lines.push(current);
-
-      const rows = [];
-      let row = [];
-      for (const token of lines) {
-        if (token === '\n') { if (row.length > 0) rows.push(row); row = []; }
-        else { row.push(token.trim()); }
-      }
-      if (row.length > 0) rows.push(row);
-      return rows;
-    }
-
-    // ============================================
-    // LOAD CONFIG FROM SHEETS
+    // LOAD CONFIG FROM APPS SCRIPT API
     // ============================================
     async function loadConfig() {
-      const res = await fetch(ACHADINHOS.planilha_configuracoes + '&_t=' + Date.now(), { cache: 'no-store' });
-      const text = await res.text();
-      const rows = parseCSV(text);
-
-      const cfg = {};
-
-      for (const row of rows) {
-        if (!row[0] && !row[1]) continue;
-        const field = (row[0] || '').replace(/[⚙️📋🎨🚚🏷️💳💡]/g, '').trim().toUpperCase();
-        const val = (row[1] || '').trim();
-
-        if (field === 'CAMPO' || field === 'VALOR' || field === 'INSTRUÇÕES' || field === '') continue;
-        if (field.includes('CONFIGURAÇÕES') || field.includes('PREENCHA')) continue;
-        if (field.includes('DADOS DA LOJA') || field.includes('PERSONALIZAÇÃO') || field.includes('CANAL DE OFERTAS') || field.includes('AVISOS')) continue;
-
-        if (field === 'NOME DA LOJA') cfg.storeName = val;
-        else if (field === 'LOGO (URL)') cfg.logo = val;
-        else if (field === 'INSTAGRAM') cfg.instagram = val;
-        else if (field === 'FACEBOOK') cfg.facebook = val;
-        else if (field === 'TIKTOK') cfg.tiktok = val;
-        else if (field === 'PIXEL FACEBOOK') cfg.pixelFacebook = val;
-        else if (field === 'GOOGLE ANALYTICS') cfg.googleAnalytics = val;
-        else if (field === 'GOOGLE ADS') cfg.googleAds = val;
-        else if (field === 'COR PRIMÁRIA' || field === 'COR PRIMARIA') cfg.corPrimaria = val;
-        else if (field === 'BANNER (URL)') cfg.bannerUrl = val;
-        else if (field === 'BANNER LINK') cfg.bannerLink = val;
-        else if (field === 'BANNER TAG') cfg.bannerTag = val;
-        else if (field === 'BANNER TÍTULO' || field === 'BANNER TITULO') cfg.bannerTitulo = val;
-        else if (field === 'BANNER SUBTÍTULO' || field === 'BANNER SUBTITULO') cfg.bannerSubtitulo = val;
-        else if (field === 'TITULO DO SITE' || field === 'TÍTULO DO SITE' || field === 'TITULO DA PAGINA') cfg.tituloSite = val;
-        else if (field === 'DESCRICAO DO SITE' || field === 'DESCRIÇÃO DO SITE' || field === 'META DESCRICAO' || field === 'META DESCRIÇÃO') cfg.descricaoSite = val;
-        else if (field === 'LOJA ATIVA') cfg.lojaAtiva = val.toUpperCase() !== 'NÃO' && val.toUpperCase() !== 'NAO';
-        else if (field === 'MENSAGEM MANUTENCAO' || field === 'MENSAGEM MANUTENÇÃO' || field === 'MENSAGEM MANUTENÇAO') cfg.msgManutencao = val;
-        else if (field === 'MENSAGEM TOPO' || field === 'BARRA TOPO') cfg.mensagemTopo = val;
-        else if (field === 'COR BARRA TOPO' || field === 'COR MENSAGEM TOPO') cfg.corBarraTopo = val;
-        else if (field === 'CNPJ') cfg.cnpj = val;
-        else if (field === 'ENDERECO' || field === 'ENDEREÇO' || field === 'ENDERECO DA LOJA' || field === 'ENDEREÇO DA LOJA') cfg.endereco = val;
-        else if (field === 'EMAIL' || field === 'EMAIL DE CONTATO') cfg.email = val;
-        else if (field === 'CANAL WHATSAPP') cfg.canalWhatsapp = val;
-        else if (field === 'CANAL TELEGRAM') cfg.canalTelegram = val;
-        else if (field === 'BOTÃO CANAL FLUTUANTE' || field === 'BOTAO CANAL FLUTUANTE') cfg.botaoCanalFlutuante = val.toUpperCase() === 'SIM';
-        else if (field === 'TEXTO DISCLOSURE') cfg.textoDisclosure = val;
-        else if (field === 'AVISO PREÇOS' || field === 'AVISO PRECOS') cfg.avisoPrecos = val;
-      }
-
-      if (!cfg.textoDisclosure) cfg.textoDisclosure = 'Este site participa de programas de afiliados e pode receber comissão pelas compras realizadas nos links, sem custo adicional para você.';
-      if (!cfg.avisoPrecos) cfg.avisoPrecos = 'Preços e disponibilidade sujeitos a alteração. Confirme na loja parceira.';
-      CONFIG = cfg;
+      const res = await fetch(WEB_APP_URL + '?action=config&_t=' + Date.now(), { cache: 'no-store' });
+      CONFIG = await res.json();
     }
 
     // ============================================
-    // LOAD CATÁLOGO FROM SHEETS
+    // LOAD CATÁLOGO FROM APPS SCRIPT API
     // ============================================
     async function loadCatalogo() {
-      const res = await fetch(ACHADINHOS.planilha_catalogo + '&_t=' + Date.now(), { cache: 'no-store' });
-      const text = await res.text();
-      const rows = parseCSV(text);
-
-      const products = [];
-      for (const row of rows) {
-        const first = (row[0] || '').trim().toUpperCase();
-        if (!first || first === 'ATIVO' || first === 'ATIVO *' || first === 'SIM OU NÃO' || first.includes('CATÁLOGO') || first.includes('CATALOGO') || first.includes('CADA LINHA') || first.includes('DICAS')) continue;
-        if (first !== 'SIM') continue;
-
-        products.push({
-          ativo: true,
-          tipo: ((row[1] || '').trim().toUpperCase() === 'DIGITAL') ? 'DIGITAL' : 'FISICO',
-          plataforma: (row[2] || '').trim(),
-          categoria: (row[3] || '').trim(),
-          subcategoria: (row[4] || '').trim(),
-          nome: (row[5] || '').trim(),
-          descricao: (row[6] || '').trim(),
-          preco: parsePrecoBR(row[7]),
-          precoPromo: row[8] ? (parsePrecoBR(row[8]) || null) : null,
-          cupom: (row[9] || '').trim(),
-          validade: parseDataBR(row[10]),
-          linkAfiliado: (row[11] || '').trim(),
-          textoBotao: (row[12] || '').trim(),
-          video: (row[13] || '').trim(),
-          img1: fixImg((row[14] || '').trim()),
-          img2: fixImg((row[15] || '').trim()),
-          img3: fixImg((row[16] || '').trim()),
-          img4: fixImg((row[17] || '').trim()),
-          ordem: parseInt(row[18]) || 9999,
-          destaque: row.length > 19 && (row[19] || '').trim().toUpperCase() === 'SIM',
-        });
-      }
-      PRODUCTS = products.filter(p => p.nome && p.linkAfiliado && ofertaValida(p));
+      const res = await fetch(WEB_APP_URL + '?action=catalogo&_t=' + Date.now(), { cache: 'no-store' });
+      const products = await res.json();
+      PRODUCTS = (products || []).filter(p => p.nome && p.linkAfiliado && ofertaValida(p));
     }
 
     function parseDataBR(val) {
-      var s = (val || '').trim();
-      if (!s) return null;
-      var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (!m) return null;
-      var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10), 23, 59, 59);
+      if (!val) return null;
+      var d = new Date(val);
       return isNaN(d.getTime()) ? null : d;
     }
 
     function ofertaValida(p) {
       if (!p.validade) return true;
-      return new Date() <= p.validade;
+      var dataVal = parseDataBR(p.validade);
+      if (!dataVal) return true;
+      return new Date() <= dataVal;
     }
 
     function ofertaExpiraEmBreve(p) {
       if (!p.validade) return false;
-      var diff = p.validade.getTime() - Date.now();
+      var dataVal = parseDataBR(p.validade);
+      if (!dataVal) return false;
+      var diff = dataVal.getTime() - Date.now();
       return diff > 0 && diff <= 48 * 60 * 60 * 1000;
     }
 
@@ -1817,7 +1710,6 @@
         '<div class="product-cat">' + p.categoria + (p.subcategoria ? ' · ' + p.subcategoria : '') + '</div>' +
         '<div class="product-name">' + p.nome + '</div>' +
         priceHTML +
-        // 🔥 ALTERAÇÃO AQUI: Botão transformado em link direto para o link de afiliado
         '<a href="' + p.linkAfiliado + '" target="_blank" rel="noopener noreferrer" class="btn-details" style="display:flex;align-items:center;justify-content:center;text-decoration:none;" onclick="event.stopPropagation(); registrarClique(PRODUCTS[' + idx + ']);">COMPRAR</a>' +
         '</div></div>';
     }
@@ -1949,7 +1841,7 @@
     }
 
     function registrarClique(p) {
-      if (typeof ACHADINHOS === 'undefined' || !ACHADINHOS.registrar_cliques) return;
+      if (!WEB_APP_URL) return;
       try {
         var utms = [];
         var params = new URLSearchParams(window.location.search);
@@ -1963,7 +1855,7 @@
           categoria: p.categoria,
           origem: origem
         };
-        var url = ACHADINHOS.registrar_cliques + '?data=' + encodeURIComponent(JSON.stringify(dados));
+        var url = WEB_APP_URL + '?data=' + encodeURIComponent(JSON.stringify(dados));
         fetch(url, { mode: 'no-cors' });
       } catch (err) {
         console.log('Erro ao registrar clique:', err);
@@ -2000,7 +1892,7 @@
     // HELPERS
     // ============================================
     function salvarClique(produto, categoria, plataforma) {
-      if (!ACHADINHOS.registrar_cliques) return;
+      if (!WEB_APP_URL) return;
 
       if (!window._cliquesRegistrados) window._cliquesRegistrados = {};
       var chave = produto + '_' + plataforma;
@@ -2018,7 +1910,7 @@
           plataforma: plataforma
         };
         var img = new Image();
-        img.src = ACHADINHOS.registrar_cliques + '?data=' + encodeURIComponent(JSON.stringify(dados));
+        img.src = WEB_APP_URL + '?data=' + encodeURIComponent(JSON.stringify(dados));
       } catch (err) {}
     }
     function clearSearch() {
@@ -2187,12 +2079,7 @@
       return url;
     }
     function fp(v) { return v.toFixed(2).replace(".", ","); }
-    function parsePrecoBR(val) {
-      var s = (val || '').trim();
-      if (!s) return 0;
-      if (s.indexOf(',') !== -1) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-      return parseFloat(s) || 0;
-    }
+
     function showToast(text, priority) {
       var el = document.getElementById('toast');
       document.getElementById('toastImg').style.display = 'none';
