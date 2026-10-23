@@ -1,18 +1,14 @@
 // Centralizador da URL da API do Apps Script e cadastro de Lojas.
 // ATENÇÃO: se você criar uma nova implantação do Apps Script com URL diferente, atualize API_URL abaixo.
-// A lista USUARIOS precisa ser a MESMA do arquivo Code.gs (a loja é identificada pela URL da página).
+// O ID da planilha fica SOMENTE no Code.gs (servidor). Aqui ficam apenas a URL, o nome e a validade.
+// Ao cadastrar uma loja nova, cadastre a mesma URL também na lista USUARIOS do Code.gs (com o ID da planilha).
 const API_URL = 'https://script.google.com/macros/s/AKfycbwCnCd5Mspd5KkcTAlAb3HfjEpsHyzvBFDo09bXJDfXK3dOfiFSkGQkWWSLluSFcWtY/exec';
 
-// 'URL da loja': ['Nome', 'ID ou link da planilha', 'validade (dd/mm/aaaa, vazio = sem limite)']
+// 'URL da loja': ['Nome', 'validade (dd/mm/aaaa, vazio = sem limite)']
 const USUARIOS = {
-    'https://selbstor.github.io/1': ['Sebastião Torquato', '1jIz1s9hys3y8tTSGNmtM0nuBcllUkaL1t-i9ERUnhQw', ''],
+    'https://selbstor.github.io/1': ['Sebastião Torquato', ''],
+    'https://selbstor.github.io/2': ['selbstor', '']
 };
-
-function selbstorExtrairId(valor) {
-    const texto = String(valor || '').trim();
-    const m = texto.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    return m ? m[1] : texto;
-}
 
 function selbstorNormalizarUrl(url) {
     let t = String(url || '').trim().toLowerCase();
@@ -68,12 +64,11 @@ function selbstorBuscarUsuario(urlLoja) {
     if (melhor === null) return null;
 
     const dados = USUARIOS[melhor] || [];
-    const validade = String(dados[2] || '').trim();
+    const validade = String(dados[1] || '').trim();
     return {
         url: selbstorNormalizarUrl(melhor),
         nome: String(dados[0] || '').trim() || melhor,
         apiUrl: API_URL,
-        planilha: selbstorExtrairId(dados[1]),
         validade: validade,
         vencida: selbstorLicencaVencida(validade)
     };
