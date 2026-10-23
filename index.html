@@ -66,29 +66,27 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR NOS CARDS (Muda para Laranja no Hover) */
+    /* BOTÃO COMPRAR NOS CARDS (Sempre visível, muda para Laranja no Hover) */
     .btn-buy-card { 
-      width: 100% !important; 
-      padding: 10px !important; 
-      background: #F4F4F1 !important; 
-      color: #1B1B1B !important; 
-      border: none !important; 
-      border-radius: 8px !important; 
-      font-weight: 700 !important; 
-      cursor: pointer !important; 
-      text-transform: uppercase !important; 
-      font-size: 0.82rem !important; 
-      letter-spacing: 0.03em !important; 
-      display: block !important; 
-      opacity: 1 !important; 
-      visibility: visible !important; 
-      margin-top: auto !important;
-      transition: background 0.2s ease, color 0.2s ease !important;
+      width: 100%; 
+      padding: 10px; 
+      background-color: #f2f2ef; 
+      color: #1b1b1b; 
+      border: 1px solid #e0ded9; 
+      border-radius: 8px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      text-transform: uppercase; 
+      font-size: 0.82rem; 
+      letter-spacing: 0.03em; 
+      display: block; 
+      margin-top: auto;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
-    .product-card:hover .btn-buy-card,
-    .btn-buy-card:hover { 
-      background: var(--primary) !important; 
-      color: #ffffff !important; 
+    .product-card:hover .btn-buy-card { 
+      background-color: var(--primary); 
+      color: #ffffff; 
+      border-color: var(--primary);
     }
 
     /* MODAL DE PRODUTO */
@@ -116,26 +114,26 @@
     .qty-btn { width: 36px; height: 36px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1.1rem; }
     .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; background: transparent; font-size: 0.95rem; }
 
-    /* BOTÃO ADICIONAR AO CARRINHO (LARANJA SÓLIDO NO MODAL)[cite: 26] */
+    /* BOTÃO ADICIONAR AO CARRINHO (LARANJA SÓLIDO NO MODAL) */
     .btn-add-modal {
-      width: 100% !important;
-      padding: 14px !important;
-      background: var(--primary) !important;
-      color: #ffffff !important;
-      border: none !important;
-      border-radius: 10px !important;
-      font-weight: 700 !important;
-      font-size: 0.95rem !important;
-      cursor: pointer !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 8px !important;
-      transition: background 0.2s ease !important;
-      box-shadow: 0 4px 12px rgba(229, 90, 27, 0.2) !important;
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s ease;
+      box-shadow: 0 4px 12px rgba(229, 90, 27, 0.2);
     }
     .btn-add-modal:hover {
-      background: var(--primary-hover) !important;
+      background-color: var(--primary-hover);
     }
 
     /* TOAST / NOTIFICAÇÃO FLUTUANTE */
@@ -276,7 +274,7 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION FLUTUANTE[cite: 27] -->
+  <!-- TOAST NOTIFICATION FLUTUANTE -->
   <div class="toast-notification" id="toastNotification">
     <img id="toastImg" src="" class="toast-img">
     <div class="toast-info">
