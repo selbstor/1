@@ -1,10 +1,12 @@
 // Centralizador da URL da API do Apps Script e cadastro de Lojas.
+// ATENÇÃO: se você criar uma nova implantação do Apps Script com URL diferente, atualize API_URL abaixo.
+// A lista USUARIOS precisa ser a MESMA do arquivo Code.gs (a loja é identificada pela URL da página).
 const API_URL = 'https://script.google.com/macros/s/AKfycbwCnCd5Mspd5KkcTAlAb3HfjEpsHyzvBFDo09bXJDfXK3dOfiFSkGQkWWSLluSFcWtY/exec';
-                 
 
+// 'URL da loja': ['Nome', 'ID ou link da planilha', 'validade (dd/mm/aaaa, vazio = sem limite)']
 const USUARIOS = {
     'https://selbstor.github.io/1': ['Sebastião Torquato', '1jIz1s9hys3y8tTSGNmtM0nuBcllUkaL1t-i9ERUnhQw', ''],
-    'https://selbstor.github.io/2': ['selbstor',          '1HKbQz105L6ohhZtzpNmuuIPMYc172V_ekaKoFmekWrM', '']
+    'https://selbstor.github.io/2': ['selbstor',            '1HKbQz105L6ohhZtzpNmuuIPMYc172V_ekaKoFmekWrM', '']
 };
 
 function selbstorExtrairId(valor) {
