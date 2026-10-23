@@ -42,7 +42,26 @@
 
     .cart-trigger { background: var(--white); border: 1.5px solid var(--gray-200); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
     .cart-trigger svg { width: 20px; height: 20px; }
-    .cart-badge { position: absolute; top: -4px; right: -4px; background: var(--primary); color: white; font-size: 0.7rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    
+    /* BADGE DO CARRINHO FORÇADO A APARECER QUANDO > 0 */
+    .cart-badge { 
+      position: absolute; 
+      top: -4px; 
+      right: -4px; 
+      background: var(--primary); 
+      color: white; 
+      font-size: 0.72rem; 
+      font-weight: 700; 
+      min-width: 20px; 
+      height: 20px; 
+      padding: 0 4px;
+      border-radius: 50%; 
+      display: none; 
+      align-items: center; 
+      justify-content: center; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .cart-badge.active { display: flex; }
 
     /* CATEGORIAS */
     .cat-nav { background: var(--white); border-bottom: 1px solid var(--gray-100); overflow-x: auto; }
@@ -66,27 +85,25 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR NOS CARDS (Sempre visível, muda para Laranja no Hover) */
+    /* BOTÃO COMPRAR NOS CARDS (Sempre Laranja Sólido e em Destaque) */
     .btn-buy-card { 
-      width: 100%; 
-      padding: 10px; 
-      background-color: #f2f2ef; 
-      color: #1b1b1b; 
-      border: 1px solid #e0ded9; 
-      border-radius: 8px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      text-transform: uppercase; 
-      font-size: 0.82rem; 
-      letter-spacing: 0.03em; 
-      display: block; 
-      margin-top: auto;
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      width: 100% !important; 
+      padding: 10px !important; 
+      background-color: var(--primary) !important; 
+      color: #ffffff !important; 
+      border: none !important; 
+      border-radius: 8px !important; 
+      font-weight: 700 !important; 
+      cursor: pointer !important; 
+      text-transform: uppercase !important; 
+      font-size: 0.82rem !important; 
+      letter-spacing: 0.03em !important; 
+      display: block !important; 
+      margin-top: auto !important;
+      transition: background-color 0.2s ease !important;
     }
-    .product-card:hover .btn-buy-card { 
-      background-color: var(--primary); 
-      color: #ffffff; 
-      border-color: var(--primary);
+    .btn-buy-card:hover { 
+      background-color: var(--primary-hover) !important; 
     }
 
     /* MODAL DE PRODUTO */
@@ -510,7 +527,16 @@
 
     function updateCartUI() {
       const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
-      document.getElementById("cartBadge").textContent = totalCount;
+      
+      // ATUALIZAÇÃO CORRIGIDA DO BADGE DO CARRINHO
+      const badge = document.getElementById("cartBadge");
+      badge.textContent = totalCount;
+      if (totalCount > 0) {
+        badge.classList.add("active");
+      } else {
+        badge.classList.remove("active");
+      }
+
       document.getElementById("btnFinalizar").textContent = `Finalizar Pedido (${totalCount} ${totalCount === 1 ? 'item' : 'itens'})`;
 
       const body = document.getElementById("drawerBody");
