@@ -1248,7 +1248,6 @@
       border-top: 1px solid var(--gray-100);
       background: var(--gray-50);
       flex-shrink: 0;
-      z-index: 10;
     }
 
     .cart-totals {
@@ -2089,7 +2088,7 @@
   <!-- Error -->
   <div class="error-screen" id="errorScreen">
     <h2>Ops! Não foi possível carregar a loja</h2>
-    <p>Verifique se a planilha está publicada corretamente e tente novamente.</p>
+    <p id="errorScreenMsg">Verifique sua conexão e tente novamente.</p>
   </div>
 
   <div class='top-bar' id='topBar'></div>
@@ -2121,7 +2120,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
             stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+              d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
           <span class="cart-badge" id="cartBadge">0</span>
         </button>
@@ -2325,8 +2324,8 @@
     <button class="toast-btn" onclick="openCart()">Ver Carrinho</button>
   </div>
 
-  <!-- Config (external file) -->
-  <script src="config.js"></script>
+  <!-- Cadastro de lojas + URL da API (Apps Script) -->
+  <script src="usuarios.js"></script>
 
   <script>
     // ============================================
@@ -2345,6 +2344,42 @@
     let activeSubcategory = null;
     let currentProduct = null;
     let selectedVariation = null;
+
+    // ============================================
+    // API (Google Apps Script) — substitui o antigo config.js / CSVs publicados
+    // ============================================
+    let _dadosLojaPromise = null;
+
+    // Busca de uma vez só as abas da planilha da loja (configurações, produtos, clientes, delivery).
+    // A loja é identificada pela URL da página (cadastrada em usuarios.js e no Code.gs).
+    function carregarDadosLoja() {
+      if (_dadosLojaPromise) return _dadosLojaPromise;
+      _dadosLojaPromise = (async function () {
+        if (typeof selbstorBuscarUsuario !== 'function' || typeof API_URL === 'undefined') {
+          throw new Error('Arquivo usuarios.js não carregado.');
+        }
+        const usuario = selbstorBuscarUsuario();
+        if (!usuario) throw new Error('Loja não cadastrada para esta URL: ' + selbstorUrlAtual());
+        if (usuario.vencida) throw new Error('Licença vencida para a loja: ' + usuario.nome);
+
+        const url = API_URL + '?action=dados&url=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&_t=' + Date.now();
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Falha HTTP ' + res.status + ' ao consultar a API.');
+        const json = await res.json();
+        if (!json || json.status !== 'ok') throw new Error((json && json.mensagem) || 'Resposta inválida da API.');
+        return json;
+      })();
+      // se falhar, permite nova tentativa na próxima chamada
+      _dadosLojaPromise.catch(function () { _dadosLojaPromise = null; });
+      return _dadosLojaPromise;
+    }
+
+    // Converte as linhas devolvidas pela API no mesmo formato que o parseCSV() devolvia
+    function normalizarLinhas(lista) {
+      return (lista || []).map(function (r) {
+        return (r || []).map(function (c) { return String(c == null ? '' : c).trim(); });
+      }).filter(function (r) { return r.length > 0; });
+    }
 
     // ============================================
     // CSV PARSER
@@ -2381,9 +2416,8 @@
     // LOAD CONFIG FROM SHEETS
     // ============================================
     async function loadConfig() {
-      const res = await fetch(LOJAFACIL.planilha_configuracoes + '&_t=' + Date.now(), { cache: 'no-store' });
-      const text = await res.text();
-      const rows = parseCSV(text);
+      const dados = await carregarDadosLoja();
+      const rows = normalizarLinhas(dados.configuracoes);
 
       const cfg = {};
       cfg.faixasEntrega = [];
@@ -2488,9 +2522,8 @@
     // LOAD PRODUCTS FROM SHEETS
     // ============================================
     async function loadProducts() {
-      const res = await fetch(LOJAFACIL.planilha_produtos + '&_t=' + Date.now(), { cache: 'no-store' });
-      const text = await res.text();
-      const rows = parseCSV(text);
+      const dados = await carregarDadosLoja();
+      const rows = normalizarLinhas(dados.produtos);
 
       const products = [];
       for (const row of rows) {
@@ -2527,12 +2560,9 @@
     // ============================================
     async function loadClientes() {
       try {
-        if (!LOJAFACIL.planilha_clientes) return; // aba não configurada, ignora silenciosamente
-
-        const res = await fetch(LOJAFACIL.planilha_clientes + '&_t=' + Date.now(), { cache: 'no-store' });
-        const text = await res.text();
-        const rows = parseCSV(text);
-        if (!rows.length) return;
+        const dados = await carregarDadosLoja();
+        const rows = normalizarLinhas(dados.clientes);
+        if (!rows.length) return; // aba vazia ou inexistente, ignora silenciosamente
 
         // Localiza a linha de cabeçalho procurando a coluna "TELEFONE"
         let headerIdx = -1;
@@ -2583,12 +2613,9 @@
     // ============================================
     async function loadDeliveryAreas() {
       try {
-        if (!LOJAFACIL.planilha_delivery) return; // aba não configurada, ignora silenciosamente
-
-        const res = await fetch(LOJAFACIL.planilha_delivery + '&_t=' + Date.now(), { cache: 'no-store' });
-        const text = await res.text();
-        const rows = parseCSV(text);
-        if (!rows.length) return;
+        const dados = await carregarDadosLoja();
+        const rows = normalizarLinhas(dados.delivery);
+        if (!rows.length) return; // aba vazia ou inexistente, ignora silenciosamente
 
         // Localiza a linha de cabeçalho procurando a coluna "BAIRRO" ou "CIDADE"
         // (o CEP não é mais usado para identificar a área de entrega)
@@ -3560,7 +3587,7 @@
     // Detecta iOS/iPadOS de forma geral (qualquer navegador — Safari, Chrome, Firefox...).
     // A Apple exige que todo navegador no iOS use o motor do Safari (WebKit) por baixo dos
     // panos, então o mesmo problema de "aba pré-aberta fica bloqueada" do Safari também
-    // acontece no Chrome/Firefox/Edge quando rodando no iPhone/iPad.
+    // acontece no Chrome/Firefox/Edge quando rodam no iPhone/iPad.
     function detectarIOS() {
       var ua = navigator.userAgent || '';
       if (/iPhone|iPad|iPod/i.test(ua)) return true;
@@ -3858,4 +3885,730 @@
       // window.open() parece ficar marcada como "aberta por script" e, depois de um tempo
       // (principalmente no iOS, que é mais rígido nisso por usar o motor do Safari), o
       // navegador bloqueia silenciosamente qualquer tentativa de navegá-la mais tarde. Por
-      // isso
+      // isso, nessas plataformas navegamos direto na aba atual mais adiante, sem pré-abrir
+      // nada aqui.
+      var waWindow = (!CONFIG.enviarWhatsapp || detectarAndroid() || detectarIOS()) ? null : window.open('', '_blank');
+
+      // Em vez de deixar a aba em branco (about:blank) enquanto aguardamos a confirmação
+      // do pedido, escrevemos uma pequena página avisando o que está acontecendo.
+      if (waWindow) {
+        try {
+          waWindow.document.open();
+          waWindow.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecionando para o WhatsApp...</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px;box-sizing:border-box}
+  .box{max-width:420px;text-align:center}
+  .spinner{width:48px;height:48px;border:5px solid rgba(42,92,63,0.15);border-top-color:#2A5C3F;border-radius:50%;margin:0 auto 24px;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h1{font-size:1.5rem;color:#1B1B1B;margin:0 0 16px;line-height:1.3}
+  p{font-size:1.15rem;color:#4A4A47;line-height:1.55;margin:0 0 12px}
+  strong{color:#2A5C3F}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="spinner"></div>
+    <h1>Enviando seu pedido para o WhatsApp...</h1>
+    <p>Se o navegador pedir uma confirmação de segurança, toque em <strong>Permitir</strong> (ou "Abrir") para continuar.</p>
+    <p>Essa janela vai atualizar sozinha em instantes.</p>
+  </div>
+</body>
+</html>`);
+          waWindow.document.close();
+        } catch (err) {
+          // se falhar por algum motivo, a aba só fica em branco até ser redirecionada — sem problema
+        }
+      }
+
+      // Trava o botão para evitar cliques duplicados enquanto aguarda o servidor
+      var btnEnviar = document.getElementById('btnEnviarPedido');
+      var btnEnviarTexto = document.getElementById('btnEnviarPedidoTexto');
+      var textoOriginalBtn = btnEnviarTexto ? btnEnviarTexto.textContent : '';
+      if (btnEnviar) btnEnviar.disabled = true;
+      if (btnEnviarTexto) btnEnviarTexto.textContent = 'Enviando pedido...';
+
+      const sub = cart.reduce((s, i) => s + i.preco * i.qty, 0);
+      let disc = 0;
+      if (currentCoupon) { disc = currentCoupon.tipo === "percentual" ? sub * (currentCoupon.valor / 100) : currentCoupon.valor; if (disc > sub) disc = sub; }
+      const fee = getDeliveryFee(); const total = sub - disc + fee;
+
+      // Gera um número de pedido provisório (usado apenas se o servidor não responder a tempo)
+      // (o sufixo evita duplicidade caso dois pedidos sejam feitos no mesmo segundo)
+      var agora = new Date();
+      var pad = function(n) { return String(n).padStart(2, '0'); };
+      var sufixo = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      var numeroPedido = String(agora.getFullYear()).slice(-2) + pad(agora.getMonth() + 1) + pad(agora.getDate()) + '-' + pad(agora.getHours()) + pad(agora.getMinutes()) + pad(agora.getSeconds()) + '-' + sufixo;
+
+      trackEvent('Purchase', { value: total });
+      var itensList = cart.map(function(i) { return i.qty + 'x ' + i.nome + (i.variacao ? ' (' + i.variacao + ')' : '') + ' - R$ ' + fp(i.preco * i.qty); }).join(' | ');
+      var dadosPedido = {
+        urlLoja: window.location.origin + window.location.pathname,
+        numeroPedido: numeroPedido,
+        dataHora: new Date().toLocaleString('pt-BR'),
+        nome: name,
+        telefone: phoneApenasNumeros,
+        cep: typeof cep !== 'undefined' ? cep.replace(/\D/g, '') : '',
+        endereco: typeof endereco !== 'undefined' ? endereco : '',
+        bairro: typeof bairro !== 'undefined' ? bairro : '',
+        cidade: typeof cidade !== 'undefined' ? cidade : '',
+        complemento: typeof complemento !== 'undefined' ? complemento : '',
+        entrega: getDeliveryLabel(),
+        pagamento: pay,
+        itens: itensList,
+        subtotal: 'R$ ' + fp(sub),
+        desconto: disc > 0 ? 'R$ ' + fp(disc) : '',
+        frete: fee > 0 ? 'R$ ' + fp(fee) : 'Grátis',
+        total: 'R$ ' + fp(total),
+        cupom: currentCoupon ? currentCoupon.codigo : '',
+        observacoes: obs
+      };
+
+      // Converte a mensagem (formatada estilo WhatsApp, com *negrito* e quebras de linha)
+      // para HTML, pra poder exibi-la diretamente na tela de confirmação do site.
+      function converterMensagemParaHtml(texto) {
+        var escapado = (texto || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        escapado = escapado.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+        escapado = escapado.replace(/\n/g, '<br>');
+        return escapado;
+      }
+
+      function montarMensagem(numeroParaMensagem, incluirNumeroPedido) {
+        let m = "*" + (CONFIG.msgPedido || "Olá! Segue meu pedido:") + "*\n━━━━━━━━━━━━━━━\n";
+        if (incluirNumeroPedido) m += `Nº do Pedido: #${numeroParaMensagem}\n`;
+        m += `Data/Hora: ${dadosPedido.dataHora.replace(',', ' -')}\n`;
+        m += "*DADOS DO CLIENTE:*\n";
+        m += `Nome: ${name}\nTel: ${phoneComDDD}\n`;
+        if (del.value !== 'retirada') {
+          m += 'Endereço:\n';
+          if (cep) m += 'CEP: ' + cep + '\n';
+          m += endereco + '\n';
+          if (complemento) m += complemento + '\n';
+          m += bairro + ' - ' + cidade + '\n';
+        }
+        m += `Entrega: ${getDeliveryLabel()}\nPagamento: ${pay}\n`;
+        if (obs) m += `Obs: ${obs}\n`;
+        m += "━━━━━━━━━━━━━━━\n";
+        m += "*ITENS DO PEDIDO:*\n";
+        cart.forEach(i => { m += `${i.qty}x ${i.nome}${i.variacao ? ' (' + i.variacao + ')' : ''} — R$ ${fp(i.preco * i.qty)}\n`; });
+        m += "━━━━━━━━━━━━━━━\n";
+        m += `Subtotal: R$ ${fp(sub)}\n`;
+        if (disc > 0) m += `Cupom ${currentCoupon.codigo}: -R$ ${fp(disc)}\n`;
+        if (getDeliveryLabel()) m += `${getDeliveryLabel()}: ${fee > 0 ? 'R$ ' + fp(fee) : 'Grátis'}\n`;
+        m += `*TOTAL: R$ ${fp(total)}*\n`;
+        return m;
+      }
+
+      function mostrarConfirmacao(numeroParaExibir, incluirNumero) {
+        // Monta a mensagem completa ANTES de esvaziar o carrinho — a função usa o
+        // carrinho atual pra listar os itens do pedido.
+        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroParaExibir, incluirNumero));
+
+        closeCheckout();
+        cart = [];
+        currentCoupon = null;
+        renderCart();
+        var orderConfirmedTitle = document.getElementById('orderConfirmedTitle');
+        if (orderConfirmedTitle) {
+          orderConfirmedTitle.innerHTML = 'Pedido Recebido!';
+        }
+        var orderConfirmedText = document.getElementById('orderConfirmedText');
+        if (orderConfirmedText) {
+          orderConfirmedText.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Verifique a mensagem no seu WhatsApp, clique em <strong>Enviar</strong> para concluir ou mais informações através do telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
+        }
+        document.getElementById('orderConfirmed').classList.add('open');
+      }
+
+      // Se a loja tiver desativado o envio pro WhatsApp (campo "Enviar Whatsapp" vazio ou
+      // "Não" na aba Configurações), só salva o pedido na planilha e mostra uma confirmação
+      // simples — sem tentar abrir o WhatsApp de forma alguma.
+      if (!CONFIG.enviarWhatsapp) {
+        var resultadoSemWhats = await salvarPedidoEObterNumero(dadosPedido).catch(function () { return null; });
+
+        // Sem WhatsApp, o pedido SÓ existe se foi gravado na planilha. Se falhou, avisa o cliente
+        // (mantendo o carrinho) em vez de mostrar uma confirmação falsa.
+        if (!resultadoSemWhats) {
+          if (btnEnviar) btnEnviar.disabled = false;
+          if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
+          showToast('Não foi possível enviar o pedido. Verifique a conexão e tente novamente.', true);
+          return;
+        }
+        var numeroPedidoFinalSemWhats = resultadoSemWhats.numeroPedido ? resultadoSemWhats.numeroPedido : numeroPedido;
+
+        // Monta a mensagem ANTES de esvaziar o carrinho — a função usa o carrinho atual
+        // pra listar os itens, então precisa rodar antes do "cart = []" abaixo.
+        var mensagemCompletaHtml = converterMensagemParaHtml(montarMensagem(numeroPedidoFinalSemWhats, true));
+
+        closeCheckout();
+        cart = [];
+        currentCoupon = null;
+        renderCart();
+
+        var orderConfirmedTitleSemWhats = document.getElementById('orderConfirmedTitle');
+        if (orderConfirmedTitleSemWhats) orderConfirmedTitleSemWhats.innerHTML = 'Pedido Recebido!';
+        var orderConfirmedTextSemWhats = document.getElementById('orderConfirmedText');
+        if (orderConfirmedTextSemWhats) {
+          orderConfirmedTextSemWhats.innerHTML = `<div style="text-align:left;font-size:0.85rem;margin-bottom:14px">${mensagemCompletaHtml}</div>Maiores informações pelo telefone:<br><strong style="white-space:nowrap">${formatarTelefoneExibicao(CONFIG.whatsapp)}</strong>.`;
+        }
+        document.getElementById('orderConfirmed').classList.add('open');
+
+        if (btnEnviar) btnEnviar.disabled = false;
+        if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
+        var btnFecharXSemWhats = document.getElementById('orderConfirmedCloseX');
+        var btnFecharOkSemWhats = document.getElementById('orderConfirmedOk');
+        if (btnFecharXSemWhats) { btnFecharXSemWhats.disabled = false; btnFecharXSemWhats.style.opacity = ''; btnFecharXSemWhats.style.cursor = ''; }
+        if (btnFecharOkSemWhats) { btnFecharOkSemWhats.disabled = false; btnFecharOkSemWhats.style.opacity = ''; btnFecharOkSemWhats.style.cursor = ''; btnFecharOkSemWhats.textContent = 'OK'; }
+        return;
+      }
+
+      // Detecta o Safari de verdade (app da Apple) o quanto antes — nele, precisamos abrir
+      // o WhatsApp IMEDIATAMENTE (antes de esperar a resposta do servidor), porque qualquer
+      // espera faz o Safari ignorar silenciosamente a tentativa de abrir o app. Nesse caso
+      // específico, usamos o número provisório na mensagem (pode divergir do número
+      // sequencial da planilha) — é a única forma de garantir que o WhatsApp abra sozinho.
+      // Testamos e confirmamos que Brave, Chrome e Edge no iPhone NÃO têm esse problema
+      // (mostram sua própria tela de confirmação), então só o Safari precisa desse atalho.
+      var ehSafariReal = detectarIOS() && !(await detectarBrave()) &&
+        /Safari/i.test(navigator.userAgent || '') && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent || '');
+
+      if (ehSafariReal) {
+        var msgSafari = montarMensagem(numeroPedido, false);
+        var textoCodificadoSafari = encodeURIComponent(msgSafari);
+        var urlWebSafari = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + textoCodificadoSafari;
+        var urlAppSafari = 'whatsapp://send?phone=' + CONFIG.whatsapp + '&text=' + textoCodificadoSafari;
+
+        var appAssumiuControleSafariDireto = false;
+        function marcarAppAssumiuControleSafariDireto() { appAssumiuControleSafariDireto = true; }
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) marcarAppAssumiuControleSafariDireto();
+        });
+        window.addEventListener('pagehide', marcarAppAssumiuControleSafariDireto);
+        window.addEventListener('blur', marcarAppAssumiuControleSafariDireto);
+
+        // Dispara a abertura do WhatsApp JÁ, sem esperar nada — é a única forma confiável
+        // de abrir o app no Safari, já que qualquer atraso faz ele ignorar a tentativa.
+        try {
+          window.location.href = urlAppSafari;
+        } catch (err) {
+          window.location.href = urlWebSafari;
+        }
+        setTimeout(function () {
+          if (appAssumiuControleSafariDireto) return;
+          window.location.href = urlWebSafari;
+        }, 1200);
+
+        mostrarConfirmacao(numeroPedido, false);
+
+        var btnFecharX = document.getElementById('orderConfirmedCloseX');
+        var btnFecharOk = document.getElementById('orderConfirmedOk');
+        if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
+        if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
+        if (btnEnviar) btnEnviar.disabled = false;
+        if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
+
+        // Salva o pedido na planilha em segundo plano — sem bloquear o redirecionamento.
+        // Nesse caso o número que aparece no WhatsApp pode não bater com o "Nº Pedido"
+        // sequencial da planilha (é a troca aceita para garantir a abertura automática).
+        salvarPedidoEObterNumero(dadosPedido).catch(function () {});
+        return;
+      }
+
+      // Demais navegadores (Brave, Chrome, Edge no iOS; Android; Desktop): mantém o fluxo
+      // que espera a confirmação do servidor, garantindo que o número bata com a planilha.
+
+      // Salva na planilha e tenta obter o número OFICIAL do pedido (o mesmo que vai na coluna "Nº Pedido").
+      // Se o servidor não responder a tempo (ou der erro), usamos o número provisório para não travar o pedido.
+      var resultado = await salvarPedidoEObterNumero(dadosPedido);
+      var numeroPedidoFinal = (resultado && resultado.numeroPedido) ? resultado.numeroPedido : numeroPedido;
+      let msg = montarMensagem(numeroPedidoFinal, true);
+
+      // Mostra a confirmação ANTES de abrir o WhatsApp — em alguns celulares/navegadores
+      // a página pode navegar direto para o app ou para o wa.me logo em seguida, então é
+      // importante que o cliente já veja o aviso antes disso acontecer.
+      mostrarConfirmacao(numeroPedidoFinal, true);
+
+      // Trava os botões de fechar (X e OK) enquanto o redirecionamento pro WhatsApp ainda
+      // não aconteceu — se o cliente fechar essa tela antes da hora, o redirecionamento
+      // pode não chegar a ocorrer. Só libera depois que o processo realmente for disparado.
+      var btnFecharX = document.getElementById('orderConfirmedCloseX');
+      var btnFecharOk = document.getElementById('orderConfirmedOk');
+      if (btnFecharX) { btnFecharX.disabled = true; btnFecharX.style.opacity = '0.3'; btnFecharX.style.cursor = 'not-allowed'; }
+      if (btnFecharOk) { btnFecharOk.disabled = true; btnFecharOk.style.opacity = '0.6'; btnFecharOk.style.cursor = 'not-allowed'; btnFecharOk.textContent = 'Aguarde...'; }
+
+      if (btnEnviar) btnEnviar.disabled = false;
+      if (btnEnviarTexto) btnEnviarTexto.textContent = textoOriginalBtn || 'Enviar Pedido';
+
+      // Dá um tempinho pro cliente realmente ver a mensagem completa do pedido antes da
+      // tela trocar pro WhatsApp (o app costuma abrir muito rápido, sem esse atraso a
+      // confirmação mal aparece na tela). O Safari de verdade já foi tratado à parte acima
+      // (ele precisa de abertura imediata), então aqui sempre é seguro usar o tempo maior.
+      await new Promise(function (resolve) { setTimeout(resolve, 7000); });
+
+      // Tenta abrir direto no aplicativo do WhatsApp (celular ou desktop, se instalado);
+      // se o app não abrir em pouco tempo, cai automaticamente no WhatsApp Web/wa.me
+      await abrirWhatsApp(waWindow, CONFIG.whatsapp, msg);
+
+      // Redirecionamento já disparado — libera os botões de fechar
+      if (btnFecharX) { btnFecharX.disabled = false; btnFecharX.style.opacity = ''; btnFecharX.style.cursor = ''; }
+      if (btnFecharOk) { btnFecharOk.disabled = false; btnFecharOk.style.opacity = ''; btnFecharOk.style.cursor = ''; btnFecharOk.textContent = 'OK'; }
+    }
+
+    // ============================================
+    // HELPERS
+    // ============================================
+    document.addEventListener('focusout', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        setTimeout(function() {
+          var checkoutBody = document.querySelector('.checkout-body');
+          var cartItems = document.querySelector('.cart-items');
+          if (checkoutBody) {
+            checkoutBody.style.overflow = '';
+            checkoutBody.style.overflowY = 'auto';
+          }
+          if (cartItems) {
+            cartItems.style.overflow = '';
+            cartItems.style.overflowY = 'auto';
+          }
+
+          // Corrige um bug conhecido do teclado no iOS Safari (a página/formulário pode
+          // ficar "desajustado" visualmente depois que o teclado fecha) forçando um
+          // recálculo leve do layout — sem mexer na posição de rolagem nem travar o
+          // overflow do body, que era o que causava o desajuste no formulário de checkout.
+          requestAnimationFrame(function () {
+            window.dispatchEvent(new Event('resize'));
+          });
+        }, 100);
+      }
+    });
+    function clearSearch() {
+      var input = document.getElementById('searchInput');
+      input.value = '';
+      filterProducts();
+      document.getElementById('searchClear').classList.remove('show');
+      input.focus();
+    }
+    document.addEventListener('click', function(e) {
+      var searchBar = document.getElementById('searchBar');
+      var searchToggle = document.querySelector('.search-toggle');
+      if (searchBar && searchBar.classList.contains('mobile-open')) {
+        if (!searchBar.contains(e.target) && !searchToggle.contains(e.target)) {
+          searchBar.classList.remove('mobile-open');
+        }
+      }
+    });
+    function nameToHex(name) {
+      var paletas = {
+        'azul': '#2563EB',
+        'verde': '#2A5C3F',
+        'vermelho': '#DC2626',
+        'roxo': '#7C3AED',
+        'rosa': '#DB2777',
+        'laranja': '#EA580C',
+        'dourado': '#B8860B',
+        'preto': '#1B1B1B',
+        'marrom': '#78350F',
+        'turquesa': '#0D9488'
+      };
+      return paletas[name.toLowerCase().trim()] || null;
+    }
+    function darkenColor(hex, factor) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      var r = Math.round(parseInt(hex.substr(0, 2), 16) * factor);
+      var g = Math.round(parseInt(hex.substr(2, 2), 16) * factor);
+      var b = Math.round(parseInt(hex.substr(4, 2), 16) * factor);
+      return '#' + ('0'+r.toString(16)).slice(-2) + ('0'+g.toString(16)).slice(-2) + ('0'+b.toString(16)).slice(-2);
+    }
+    function isLightColor(hex) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      var r = parseInt(hex.substr(0, 2), 16);
+      var g = parseInt(hex.substr(2, 2), 16);
+      var b = parseInt(hex.substr(4, 2), 16);
+      var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.55;
+    }
+    async function salvarPedidoEObterNumero(dadosPedido) {
+      if (typeof API_URL === 'undefined' || !API_URL) {
+        console.warn('API_URL não está configurada em usuarios.js — usando número provisório.');
+        return null;
+      }
+      var timeoutId = null;
+      try {
+        var controller = new AbortController();
+        // Timeout de segurança: o Apps Script pode levar alguns segundos (partida a frio + LockService)
+        timeoutId = setTimeout(function() { controller.abort(); }, 25000);
+
+        var response = await fetch(API_URL, {
+          method: 'POST',
+          // IMPORTANTE: usar text/plain (não application/json) evita o preflight CORS (OPTIONS),
+          // que o Apps Script não trata. O doPost já faz JSON.parse(e.postData.contents) normalmente.
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(dadosPedido),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        var data = await response.json();
+        if (!data || data.status !== 'ok') {
+          console.error('A API recusou o pedido:', data && data.mensagem ? data.mensagem : data);
+          return null;
+        }
+        return data; // { status: 'ok', numeroPedido: N, ... }
+      } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
+        console.error('Erro ao salvar pedido / obter número oficial:', err);
+        return null;
+      }
+    }
+    function closeOrderConfirmed() {
+      document.getElementById('orderConfirmed').classList.remove('open');
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+    }
+    // Formata o telefone da loja (guardado com código do país, ex: 5582999999999)
+    // para exibição legível, ex: (82) 99999-9999
+    function formatarTelefoneExibicao(numero) {
+      var v = (numero || '').replace(/\D/g, '');
+      if (v.length > 11 && v.indexOf('55') === 0) v = v.substring(2); // remove o código do país (55)
+      if (v.length === 11) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 5) + '-' + v.substr(7);
+      if (v.length === 10) return '(' + v.substr(0, 2) + ') ' + v.substr(2, 4) + '-' + v.substr(6);
+      return numero || '';
+    }
+
+    // Retorna o DDD detectado a partir do CEP digitado (via ViaCEP). Se o cliente ainda não
+    // informou CEP (ex: retirada, sem endereço) ou a busca falhar, usa o DDD do WhatsApp da
+    // loja como alternativa, pra sempre ter algum DDD disponível.
+    function obterDDDDetectado() {
+      if (window._dddDetectadoPorCep) return window._dddDetectadoPorCep;
+      var v = (CONFIG.whatsapp || '').replace(/\D/g, '');
+      if (v.length > 11 && v.indexOf('55') === 0) v = v.substring(2); // remove o código do país (55)
+      return v.substring(0, 2);
+    }
+
+    function maskPhone(input) {
+      var v = input.value.replace(/\D/g, '');
+      if (v.length > 9) v = v.substr(0, 9);
+      if (v.length > 4) {
+        var corte = v.length > 8 ? 5 : 4; // 9 dígitos (celular) corta em 5, 8 dígitos (fixo) corta em 4
+        v = v.substr(0, corte) + '-' + v.substr(corte);
+      }
+      input.value = v;
+    }
+    function handleImgError(img) {
+      var parent = img.parentElement;
+      var div = document.createElement('div');
+      div.style.cssText = 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f0eeea;color:#a8a49c;gap:8px';
+      div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M6.75 7.5a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg><span style="font-size:0.75rem;font-weight:500">Sem foto</span>';
+      parent.replaceChild(div, img);
+    }
+
+    function toSlug(text) {
+      return text.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+    function copyProductLink() {
+      if (!currentProduct) return;
+      var slug = toSlug(currentProduct.nome);
+      var url = window.location.origin + window.location.pathname + '?produto=' + slug;
+      navigator.clipboard.writeText(url).then(function() {
+        var btn = document.getElementById('btnCopyLink');
+        var txt = document.getElementById('copyLinkText');
+        btn.classList.add('copied');
+        txt.textContent = 'Link Copiado!';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          txt.textContent = 'Copiar Link do Produto';
+        }, 2500);
+      }).catch(function() {
+        var textarea = document.createElement('textarea');
+        textarea.value = window.location.origin + window.location.pathname + '?produto=' + toSlug(currentProduct.nome);
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        var btn = document.getElementById('btnCopyLink');
+        var txt = document.getElementById('copyLinkText');
+        btn.classList.add('copied');
+        txt.textContent = 'Link Copiado!';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          txt.textContent = 'Copiar Link do Produto';
+        }, 2500);
+      });
+    }
+    function installPixels() {
+      // Facebook Pixel
+      if (CONFIG.pixelFacebook) {
+        const fb = document.createElement('script');
+        fb.textContent = "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','" + CONFIG.pixelFacebook + "');fbq('track','PageView');";
+        document.head.appendChild(fb);
+      }
+      // Google Analytics
+      if (CONFIG.googleAnalytics) {
+        const gaScript = document.createElement('script');
+        gaScript.async = true;
+        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + CONFIG.googleAnalytics;
+        document.head.appendChild(gaScript);
+        const gaInit = document.createElement('script');
+        gaInit.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + CONFIG.googleAnalytics + "');";
+        document.head.appendChild(gaInit);
+      }
+      // Google Ads
+      if (CONFIG.googleAds) {
+        if (!CONFIG.googleAnalytics) {
+          const adsScript = document.createElement('script');
+          adsScript.async = true;
+          adsScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + CONFIG.googleAds;
+          document.head.appendChild(adsScript);
+          const adsInit = document.createElement('script');
+          adsInit.textContent = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','" + CONFIG.googleAds + "');";
+          document.head.appendChild(adsInit);
+        } else {
+          const adsConfig = document.createElement('script');
+          adsConfig.textContent = "gtag('config','" + CONFIG.googleAds + "');";
+          document.head.appendChild(adsConfig);
+        }
+      }
+    }
+
+    function trackEvent(eventName, data) {
+      // Facebook
+      if (CONFIG.pixelFacebook && typeof fbq !== 'undefined') {
+        if (eventName === 'ViewContent') fbq('track', 'ViewContent', { content_name: data.name, value: data.value, currency: 'BRL' });
+        else if (eventName === 'AddToCart') fbq('track', 'AddToCart', { content_name: data.name, value: data.value, currency: 'BRL' });
+        else if (eventName === 'InitiateCheckout') fbq('track', 'InitiateCheckout', { value: data.value, currency: 'BRL' });
+        else if (eventName === 'Purchase') fbq('track', 'Purchase', { value: data.value, currency: 'BRL' });
+      }
+      // Google Analytics
+      if (CONFIG.googleAnalytics && typeof gtag !== 'undefined') {
+        if (eventName === 'ViewContent') gtag('event', 'view_item', { currency: 'BRL', value: data.value });
+        else if (eventName === 'AddToCart') gtag('event', 'add_to_cart', { currency: 'BRL', value: data.value });
+        else if (eventName === 'InitiateCheckout') gtag('event', 'begin_checkout', { currency: 'BRL', value: data.value });
+        else if (eventName === 'Purchase') gtag('event', 'purchase', { currency: 'BRL', value: data.value, transaction_id: Date.now().toString() });
+      }
+      // Google Ads
+      if (CONFIG.googleAds && typeof gtag !== 'undefined') {
+        if (eventName === 'Purchase') gtag('event', 'conversion', { send_to: CONFIG.googleAds, value: data.value, currency: 'BRL' });
+      }
+    }
+
+    function bannerFilter(value) {
+      let categoria, subcategoria = null;
+      if (value.includes('>')) {
+        const parts = value.split('>');
+        categoria = parts[0].trim();
+        subcategoria = parts[1].trim();
+      } else {
+        categoria = value.trim();
+      }
+      selectCategory(categoria);
+      if (subcategoria) {
+        activeSubcategory = subcategoria;
+        buildSubcategoryBar();
+      }
+    }
+    function fixImg(url) {
+      if (!url) return '';
+      // https://drive.google.com/file/d/XXXXX/view... → direct link
+      let m = url.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
+      if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+      // https://drive.google.com/open?id=XXXXX → direct link
+      m = url.match(/drive\.google\.com\/open\?id=([^&]+)/);
+      if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+      // https://drive.google.com/uc?id=XXXXX → direct link
+      m = url.match(/drive\.google\.com\/uc\?.*id=([^&]+)/);
+      if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+      return url;
+    }
+    function fp(v) { return v.toFixed(2).replace(".", ","); }
+    function parsePrecoBR(val) {
+      var s = String(val == null ? '' : val).replace(/[^\d.,\-]/g, '').trim();
+      if (!s) return 0;
+      // Se tem vírgula: formato BR (ex: 1.299,90 ou 146,90)
+      if (s.indexOf(',') !== -1) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+      // Sem vírgula: ponto é decimal (ex: 146.90) ou inteiro (ex: 146)
+      return parseFloat(s) || 0;
+    }
+    function showToast(text, priority) {
+      var el = document.getElementById('toast');
+      document.getElementById('toastImg').style.display = 'none';
+      document.getElementById('toastTitle').textContent = text;
+      document.getElementById('toastSubtitle').textContent = '';
+      document.querySelector('.toast-btn').style.display = 'none';
+      if (priority) {
+        el.style.zIndex = '600';
+      } else {
+        el.style.zIndex = '';
+      }
+      el.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(function() { el.classList.remove('show'); el.style.zIndex = ''; }, 3000);
+    }
+    function showCartToast(name, img, price) {
+      var el = document.getElementById('toast');
+      var toastImg = document.getElementById('toastImg');
+      if (img) { toastImg.src = img; toastImg.style.display = 'block'; }
+      else { toastImg.style.display = 'none'; }
+      document.getElementById('toastTitle').textContent = name;
+      document.getElementById('toastSubtitle').textContent = 'Adicionado ao carrinho · R$ ' + fp(price);
+      document.querySelector('.toast-btn').style.display = 'block';
+      el.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(function() { el.classList.remove('show'); }, 4000);
+    }
+    function toggleMobileSearch() { document.getElementById("searchBar").classList.toggle("mobile-open"); }
+
+    window.addEventListener('scroll', function() {
+      var btn = document.getElementById('backToTop');
+      if (btn) {
+        if (window.scrollY > 400) { btn.classList.add('show'); }
+        else { btn.classList.remove('show'); }
+      }
+    });
+
+    window.addEventListener('resize', function() { checkCatNavOverflow(); });
+    (function() {
+      var catNav = document.getElementById('catNav');
+      if (catNav) catNav.addEventListener('scroll', checkCatNavOverflow);
+    })();
+
+    // ============================================
+    // INIT
+    // ============================================
+    // Calcula a altura real da área visível da tela (via visualViewport quando disponível),
+    // que é mais confiável que "100vh"/"100dvh" em navegadores como o Chrome no iPhone —
+    // onde a barra de endereço/menu pode deixar parte do conteúdo (como o botão de enviar
+    // pedido) escondida abaixo da área realmente visível.
+    // Nota: chegamos a usar uma variável CSS calculada via JS (--vh-real) pra controlar a
+    // altura do checkout e do modal de produto no mobile, mas isso conflitava com o teclado
+    // virtual do Safari (e a barra de "Preencher Automaticamente"), deixando parte do fundo
+    // da página visível atrás do formulário. Trocamos por uma abordagem mais simples e
+    // robusta: os overlays já usam "position:fixed; inset:0" (cobrem a tela toda de forma
+    // confiável, sem cálculo nenhum), e os modais internos usam "height:100%" pra preencher
+    // esse espaço — o próprio navegador cuida de ajustar isso quando o teclado abre/fecha.
+
+    async function init() {
+      try {
+        await Promise.all([loadConfig(), loadProducts(), loadClientes(), loadDeliveryAreas()]);
+        if (CONFIG.lojaAtiva === false) {
+          document.getElementById('loadingScreen').classList.add('hidden');
+          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px"><div style="text-align:center;max-width:480px"><div style="width:64px;height:64px;background:rgba(42,92,63,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' fill=\'none\' viewBox=\'0 0 24 24\' stroke-width=\'1.5\' stroke=\'#2A5C3F\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg></div><h1 style="font-family:var(--font);font-size:1.5rem;font-weight:700;color:#1B1B1B;margin-bottom:8px">' + (CONFIG.storeName || 'Nossa Loja') + '</h1><p style="font-family:var(--font);font-size:1rem;color:#6B6760;line-height:1.6;margin-bottom:24px">' + (CONFIG.msgManutencao || 'Estamos temporariamente fechados. Volte em breve!') + '</p>' + (CONFIG.whatsapp ? '<a href="https://wa.me/' + CONFIG.whatsapp + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25D366;color:white;border-radius:8px;font-family:var(--font);font-size:0.9rem;font-weight:600;text-decoration:none"><svg viewBox=\'0 0 24 24\' width=\'20\' height=\'20\' fill=\'currentColor\'><path d=\'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\'/></svg>Fale Conosco</a>' : '') + '</div></div>';
+          return;
+        }
+        applyConfig();
+        buildCategoryNav();
+        renderProducts();
+        renderCart();
+        // Check for direct product link
+        var urlParams = new URLSearchParams(window.location.search);
+        var productSlug = urlParams.get('produto');
+        if (productSlug) {
+          var foundIndex = PRODUCTS.findIndex(function(p) {
+            return p.ativo && toSlug(p.nome) === productSlug;
+          });
+          if (foundIndex !== -1) {
+            setTimeout(function() { openProductModal(foundIndex); }, 300);
+          }
+        }
+        document.getElementById("loadingScreen").classList.add("hidden");
+        setTimeout(() => document.getElementById("loadingScreen").remove(), 500);
+      } catch (err) {
+        console.error("LojaFácil Error:", err);
+        var errMsgEl = document.getElementById("errorScreenMsg");
+        if (errMsgEl && err && err.message) errMsgEl.textContent = err.message;
+        document.getElementById("loadingScreen").style.display = "none";
+        document.getElementById("errorScreen").classList.add("show");
+      }
+    }
+
+    init();
+
+// ============================================
+// MÁSCARA DO CEP (autopreenchimento por CEP desativado)
+// ============================================
+
+// Aplica a máscara 00000-000 no input de CEP
+function maskCep(input) {
+  var v = input.value.replace(/\D/g, '');
+  if (v.length > 8) v = v.substr(0, 8);
+  if (v.length > 5) v = v.substr(0, 5) + '-' + v.substr(5);
+  input.value = v;
+}
+
+// ============================================
+// BUSCA DE CLIENTE PELO TELEFONE (aba "Clientes")
+// ============================================
+
+// Evita repetir a mesma busca para o mesmo telefone (só limpa campos quando incompleto)
+var _ultimoTelBuscado = '';
+
+// Quando o telefone é apagado/fica incompleto, limpa os demais campos preenchidos
+// automaticamente (nome, endereço...), pra não deixar dados de um cliente anterior.
+function limparCamposSeTelefoneIncompleto(valor) {
+  var telLocal = (valor || '').replace(/\D/g, '');
+  if (telLocal.length >= 8) return; // telefone completo, não mexe em nada
+
+  _ultimoTelBuscado = '';
+  var nomeInput = document.getElementById('custName');
+  if (nomeInput) nomeInput.value = '';
+}
+
+// Busca o cliente pelo telefone completo (DDD detectado + número local digitado). Usar o
+// DDD garante uma correspondência exata — evita confundir clientes de regiões diferentes
+// que, por coincidência, tenham o mesmo número local.
+function buscarClientePorTelefone(valor) {
+  var telLocal = (valor || '').replace(/\D/g, '');
+  if (telLocal.length < 8) return; // ainda incompleto, a limpeza já foi tratada acima
+
+  var telCompleto = obterDDDDetectado() + telLocal;
+  if (telCompleto === _ultimoTelBuscado) return;
+  _ultimoTelBuscado = telCompleto;
+
+  var cliente = CLIENTES && CLIENTES[telCompleto];
+  if (!cliente) return; // cliente novo (ou DDD ainda não detectado corretamente), não faz nada
+
+  var nomeInput = document.getElementById('custName');
+  var enderecoInput = document.getElementById('custEndereco');
+  var complementoInput = document.getElementById('custComplemento');
+  var cidadeInput = document.getElementById('custCidade');
+  var cepInput = document.getElementById('custCep');
+
+  if (nomeInput && cliente.nome) nomeInput.value = cliente.nome;
+  if (cepInput && !cepInput.value && cliente.cep) {
+    cepInput.value = cliente.cep;
+    maskCep(cepInput);
+  }
+  if (enderecoInput && !enderecoInput.value && cliente.endereco) enderecoInput.value = cliente.endereco;
+  if (complementoInput && !complementoInput.value && cliente.complemento) complementoInput.value = cliente.complemento;
+  // Cidade e Bairro não são preenchidos automaticamente — o usuário sempre escolhe
+  // manualmente, primeiro a Cidade e depois o Bairro (carregado a partir dela).
+
+  [enderecoInput, cidadeInput].forEach(function(el) {
+    if (el) el.classList.remove('field-error');
+  });
+
+  if (typeof showToast === 'function') showToast('Dados do cliente preenchidos automaticamente ✓');
+}
+
+// Extrai só o número local (sem DDD) de um telefone salvo com DDD (10 ou 11 dígitos)
+function extrairTelefoneLocal(numero) {
+  var v = (numero || '').replace(/\D/g, '');
+  if (v.length === 11) return v.slice(-9);
+  if (v.length === 10) return v.slice(-8);
+  return v;
+}
+  </script>
+</body>
+
+</html>
