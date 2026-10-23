@@ -43,7 +43,7 @@
     .cart-trigger { background: var(--white); border: 1.5px solid var(--gray-200); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
     .cart-trigger svg { width: 20px; height: 20px; }
     
-    /* BADGE DO CARRINHO FORÇADO A APARECER QUANDO > 0 */
+    /* BADGE DO CARRINHO NA BARRA SUPERIOR */
     .cart-badge { 
       position: absolute; 
       top: -4px; 
@@ -52,16 +52,14 @@
       color: white; 
       font-size: 0.72rem; 
       font-weight: 700; 
-      min-width: 20px; 
-      height: 20px; 
+      min-width: 18px; 
+      height: 18px; 
       padding: 0 4px;
       border-radius: 50%; 
-      display: none; 
+      display: flex; 
       align-items: center; 
       justify-content: center; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    .cart-badge.active { display: flex; }
 
     /* CATEGORIAS */
     .cat-nav { background: var(--white); border-bottom: 1px solid var(--gray-100); overflow-x: auto; }
@@ -85,25 +83,28 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR NOS CARDS (Sempre Laranja Sólido e em Destaque) */
+    /* BOTÃO COMPRAR NOS CARDS (Garante visibilidade universal e efeito hover) */
     .btn-buy-card { 
-      width: 100% !important; 
-      padding: 10px !important; 
+      width: 100%; 
+      padding: 10px; 
+      background-color: #F4F4F1; 
+      color: #1B1B1B; 
+      border: 1px solid var(--gray-200); 
+      border-radius: 8px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      text-transform: uppercase; 
+      font-size: 0.82rem; 
+      letter-spacing: 0.03em; 
+      display: block; 
+      margin-top: auto;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .product-card:hover .btn-buy-card,
+    .btn-buy-card:hover { 
       background-color: var(--primary) !important; 
       color: #ffffff !important; 
-      border: none !important; 
-      border-radius: 8px !important; 
-      font-weight: 700 !important; 
-      cursor: pointer !important; 
-      text-transform: uppercase !important; 
-      font-size: 0.82rem !important; 
-      letter-spacing: 0.03em !important; 
-      display: block !important; 
-      margin-top: auto !important;
-      transition: background-color 0.2s ease !important;
-    }
-    .btn-buy-card:hover { 
-      background-color: var(--primary-hover) !important; 
+      border-color: var(--primary) !important;
     }
 
     /* MODAL DE PRODUTO */
@@ -131,7 +132,7 @@
     .qty-btn { width: 36px; height: 36px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1.1rem; }
     .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; background: transparent; font-size: 0.95rem; }
 
-    /* BOTÃO ADICIONAR AO CARRINHO (LARANJA SÓLIDO NO MODAL) */
+    /* BOTÃO ADICIONAR AO CARRINHO NO MODAL */
     .btn-add-modal {
       width: 100%;
       padding: 14px;
@@ -162,11 +163,11 @@
       border: 1px solid var(--gray-200);
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       border-radius: 12px;
-      padding: 14px 18px;
+      padding: 12px 16px;
       z-index: 400;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -175,11 +176,11 @@
       transform: translateY(0);
       opacity: 1;
     }
-    .toast-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+    .toast-img { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; }
     .toast-info { display: flex; flex-direction: column; }
-    .toast-title { font-weight: 600; font-size: 0.85rem; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .toast-title { font-weight: 700; font-size: 0.85rem; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .toast-sub { font-size: 0.75rem; color: var(--gray-600); }
-    .toast-btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; margin-left: 10px; }
+    .toast-btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; margin-left: 8px; }
     .toast-btn:hover { background: var(--primary-hover); }
 
     /* DRAWER DO CARRINHO */
@@ -234,7 +235,7 @@
       </div>
       <div class="cart-trigger" onclick="toggleCartDrawer(true)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span class="cart-badge" id="cartBadge">0</span>
+        <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
       </div>
     </div>
   </header>
@@ -296,7 +297,7 @@
     <img id="toastImg" src="" class="toast-img">
     <div class="toast-info">
       <div id="toastTitle" class="toast-title">Produto</div>
-      <div class="toast-sub">Adicionado ao carrinho</div>
+      <div class="toast-sub" id="toastPrice">Adicionado ao carrinho</div>
     </div>
     <button class="toast-btn" onclick="toggleCartDrawer(true); hideToast();">Ver Carrinho</button>
   </div>
@@ -513,6 +514,7 @@
       const toast = document.getElementById("toastNotification");
       document.getElementById("toastImg").src = product.img1;
       document.getElementById("toastTitle").textContent = product.nome;
+      document.getElementById("toastPrice").textContent = `Adicionado ao carrinho - R$ ${product.preco.toFixed(2).replace('.', ',')}`;
       
       toast.classList.add("show");
       if (toastTimer) clearTimeout(toastTimer);
@@ -528,13 +530,12 @@
     function updateCartUI() {
       const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
       
-      // ATUALIZAÇÃO CORRIGIDA DO BADGE DO CARRINHO
       const badge = document.getElementById("cartBadge");
       badge.textContent = totalCount;
       if (totalCount > 0) {
-        badge.classList.add("active");
+        badge.style.display = "flex";
       } else {
-        badge.classList.remove("active");
+        badge.style.display = "none";
       }
 
       document.getElementById("btnFinalizar").textContent = `Finalizar Pedido (${totalCount} ${totalCount === 1 ? 'item' : 'itens'})`;
