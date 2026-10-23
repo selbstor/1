@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carregando... — SELBSTOR | ACHADINHOS</title>
+  <title>SELBSTOR | ACHADINHOS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -66,9 +66,27 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR SEMPRE VISÍVEL E SÓLIDO */
-    .btn-buy-card { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.03em; transition: 0.2s; display: block !important; opacity: 1 !important; visibility: visible !important; }
-    .btn-buy-card:hover { background: var(--primary-hover); }
+    /* BOTÃO COMPRAR - FORÇADO A APARECER SEMPRE */
+    .btn-buy-card { 
+      width: 100% !important; 
+      padding: 10px !important; 
+      background: var(--primary) !important; 
+      color: #ffffff !important; 
+      border: none !important; 
+      border-radius: 8px !important; 
+      font-weight: 700 !important; 
+      cursor: pointer !important; 
+      text-transform: uppercase !important; 
+      font-size: 0.82rem !important; 
+      letter-spacing: 0.03em !important; 
+      display: block !important; 
+      opacity: 1 !important; 
+      visibility: visible !important; 
+      margin-top: auto !important;
+      position: static !important;
+      transform: none !important;
+    }
+    .btn-buy-card:hover { background: var(--primary-hover) !important; }
 
     /* MODAL DE PRODUTO */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -82,15 +100,16 @@
     .modal-thumb.active { border-color: var(--primary); }
     .modal-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .modal-details { padding: 28px; display: flex; flex-direction: column; overflow-y: auto; }
+    .modal-cat { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
     .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
     .modal-price { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
-    .modal-desc { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 20px; line-height: 1.5; }
+    .modal-desc { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 20px; line-height: 1.5; white-space: pre-line; }
     .option-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--text); }
     .options-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .option-btn { padding: 6px 14px; border: 1px solid var(--gray-200); border-radius: 6px; background: white; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
     .option-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(229, 90, 27, 0.08); }
     .qty-selector { display: flex; align-items: center; border: 1px solid var(--gray-200); border-radius: 6px; width: fit-content; margin-bottom: 20px; }
-    .qty-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; font-weight: 700; }
+    .qty-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 1rem; }
     .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; }
 
     /* DRAWER DO CARRINHO */
@@ -173,6 +192,7 @@
         <div class="modal-thumbs" id="modalThumbs"></div>
       </div>
       <div class="modal-details">
+        <div class="modal-cat" id="modalCat"></div>
         <div class="modal-title" id="modalTitle"></div>
         <div class="modal-price" id="modalPrice"></div>
         <div class="modal-desc" id="modalDesc"></div>
@@ -187,6 +207,9 @@
         </div>
 
         <button class="btn-buy-card" onclick="addCurrentToCart()" style="padding:14px; font-size:0.9rem;">🛒 Adicionar ao Carrinho</button>
+        <div style="text-align:center; margin-top:12px;">
+          <button onclick="shareProduct()" style="background:none; border:none; color:var(--gray-600); cursor:pointer; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px;">🔗 Compartilhar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -260,7 +283,6 @@
         const logo = document.getElementById('headerLogo');
         logo.src = CONFIG.logo;
         logo.style.display = 'block';
-        // Se a logo carregar com sucesso, podemos ocultar o texto alternativo ou mantê-lo ao lado
       }
       if (CONFIG.corPrimaria) {
         document.documentElement.style.setProperty('--primary', CONFIG.corPrimaria);
@@ -310,17 +332,10 @@
             <div class="product-cat">${p.categoria}</div>
             <div class="product-name">${p.nome}</div>
             <div class="product-price">R$ ${p.preco.toFixed(2).replace('.', ',')}</div>
-            <button class="btn-buy-card" onclick="event.stopPropagation(); quickAdd(${p.id})">COMPRAR</button>
+            <button class="btn-buy-card" onclick="event.stopPropagation(); openProductModal(${p.id})">COMPRAR</button>
           </div>
         </div>
       `).join('');
-    }
-
-    function quickAdd(id) {
-      const prod = PRODUCTS.find(p => p.id === id);
-      if (!prod) return;
-      addToCart(prod, prod.variacoes && prod.variacoes[0] ? prod.variacoes[0] : "", 1);
-      toggleCartDrawer(true);
     }
 
     function openProductModal(id) {
@@ -328,6 +343,7 @@
       if (!selectedProduct) return;
 
       document.getElementById("modalMainImg").src = selectedProduct.img1;
+      document.getElementById("modalCat").textContent = selectedProduct.categoria;
       document.getElementById("modalTitle").textContent = selectedProduct.nome;
       document.getElementById("modalPrice").textContent = `R$ ${selectedProduct.preco.toFixed(2).replace('.', ',')}`;
       document.getElementById("modalDesc").textContent = selectedProduct.descricao;
@@ -454,6 +470,14 @@
 
     function toggleCartDrawer(open) {
       document.getElementById("cartDrawer").classList.toggle("open", open);
+    }
+
+    function shareProduct() {
+      if (navigator.share && selectedProduct) {
+        navigator.share({ title: selectedProduct.nome, url: window.location.href }).catch(() => {});
+      } else {
+        alert("Link copiado para a área de transferência!");
+      }
     }
 
     function openCheckoutModal() {
