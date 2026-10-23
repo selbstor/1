@@ -6,7 +6,6 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwCnCd5Mspd5KkcTAlAb3Hf
 // 'URL da loja': ['Nome', 'ID ou link da planilha', 'validade (dd/mm/aaaa, vazio = sem limite)']
 const USUARIOS = {
     'https://selbstor.github.io/1': ['Sebastião Torquato', '1jIz1s9hys3y8tTSGNmtM0nuBcllUkaL1t-i9ERUnhQw', ''],
-    'https://selbstor.github.io/2': ['selbstor',            '1HKbQz105L6ohhZtzpNmuuIPMYc172V_ekaKoFmekWrM', '']
 };
 
 function selbstorExtrairId(valor) {
