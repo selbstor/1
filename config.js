@@ -11,7 +11,7 @@ const LOJAFACIL = {
   planilha_configuracoes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbcOCbWT91wgXhKdgoZcxoFeartiLRXRzw-XFHdEXVT2gJ3LjCiS85WJzEweZAN8aUQI_10lZjl1Pe/pub?gid=480609827&single=true&output=csv",
 
   planilha_produtos: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbcOCbWT91wgXhKdgoZcxoFeartiLRXRzw-XFHdEXVT2gJ3LjCiS85WJzEweZAN8aUQI_10lZjl1Pe/pub?gid=952991100&single=true&output=csv",
-  salvar_pedidos: "https://script.google.com/macros/s/AKfycbxY_41-I6EZ3ttXYu6djJOHXGsCXaHYAZ4PDbXTNwUtnXdFTw23AvTtDu3jtLmkiyhh3Q/exec",
+  salvar_pedidos: "https://script.google.com/macros/s/AKfycbymYeLfSeIfuDNdA_29wngSa-90Usr8A5ZuzuNjfbcNzAFer-O2u_aF05rL99poIc1y_A/execc",
 
   // Aba "Clientes" — publique essa aba como CSV (mesmo processo das outras)
   // e cole aqui a URL gerada (troque SUBSTITUA_PELO_GID_DA_ABA_CLIENTES pelo gid dela).
