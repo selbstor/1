@@ -83,28 +83,25 @@
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
     
-    /* BOTÃO COMPRAR NOS CARDS (Garante visibilidade universal e efeito hover) */
+    /* BOTÃO COMPRAR NOS CARDS (Sempre Laranja Sólido) */
     .btn-buy-card { 
-      width: 100%; 
-      padding: 10px; 
-      background-color: #F4F4F1; 
-      color: #1B1B1B; 
-      border: 1px solid var(--gray-200); 
-      border-radius: 8px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      text-transform: uppercase; 
-      font-size: 0.82rem; 
-      letter-spacing: 0.03em; 
-      display: block; 
-      margin-top: auto;
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
-    .product-card:hover .btn-buy-card,
-    .btn-buy-card:hover { 
+      width: 100% !important; 
+      padding: 10px !important; 
       background-color: var(--primary) !important; 
       color: #ffffff !important; 
-      border-color: var(--primary) !important;
+      border: none !important; 
+      border-radius: 8px !important; 
+      font-weight: 700 !important; 
+      cursor: pointer !important; 
+      text-transform: uppercase !important; 
+      font-size: 0.82rem !important; 
+      letter-spacing: 0.03em !important; 
+      display: block !important; 
+      margin-top: auto !important;
+      transition: background-color 0.2s ease !important;
+    }
+    .btn-buy-card:hover { 
+      background-color: var(--primary-hover) !important; 
     }
 
     /* MODAL DE PRODUTO */
@@ -373,8 +370,28 @@
         logo.src = CONFIG.logo;
         logo.style.display = 'block';
       }
+      
+      // CONVERSOR INTELIGENTE DE CORES (Lê nomes da planilha e converte para código real)
       if (CONFIG.corPrimaria) {
-        document.documentElement.style.setProperty('--primary', CONFIG.corPrimaria);
+        let cor = CONFIG.corPrimaria.trim();
+        const mapaCores = {
+          "laranja": "#E55A1B",
+          "azul": "#2563EB",
+          "verde": "#16A34A",
+          "vermelho": "#DC2626",
+          "roxo": "#9333EA",
+          "rosa": "#DB2777",
+          "dourado": "#D97706",
+          "preto": "#1B1B1B",
+          "marrom": "#78350F",
+          "turquesa": "#0D9488"
+        };
+        
+        let corHex = mapaCores[cor.toLowerCase()] || (cor.startsWith('#') ? cor : '#E55A1B');
+        let hoverHex = corHex === '#E55A1B' ? '#CC4B12' : corHex; // fallback hover
+        
+        document.documentElement.style.setProperty('--primary', corHex);
+        document.documentElement.style.setProperty('--primary-hover', hoverHex);
       }
     }
 
@@ -578,6 +595,11 @@
       updateCartUI();
     }
 
+    function removeFrom_Cart(idx) {
+      cart.splice(idx, 1);
+      updateCartUI();
+    }
+    
     function removeFromCart(idx) {
       cart.splice(idx, 1);
       updateCartUI();
