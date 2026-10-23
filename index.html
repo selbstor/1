@@ -207,14 +207,40 @@
     .total-final { font-weight: 700; font-size: 1.1rem; margin-top: 4px; }
     .btn-checkout { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 12px; }
 
-    /* MODAL CHECKOUT */
-    .checkout-modal { padding: 24px; max-width: 480px; width: 100%; background: white; border-radius: var(--radius); }
-    .checkout-modal input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--gray-200); border-radius: 6px; }
+    /* MODAL CHECKOUT ESTILO REFERÊNCIA */
+    .checkout-modal { padding: 28px; max-width: 500px; width: 100%; background: white; border-radius: var(--radius); max-height: 90vh; overflow-y: auto; }
+    .checkout-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text); letter-spacing: 0.03em; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 0.9rem; outline: none; background: white; font-family: inherit; transition: border-color 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    /* CARDS DE OPÇÃO DE ENTREGA */
+    .delivery-option-card { border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 14px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: 0.2s; background: white; }
+    .delivery-option-card:hover { border-color: var(--primary); }
+    .delivery-option-card input[type="radio"] { margin-top: 3px; accent-color: var(--primary); width: 16px; height: 16px; }
+    .delivery-info { display: flex; flex-direction: column; }
+    .delivery-name { font-weight: 700; font-size: 0.88rem; text-transform: uppercase; margin-bottom: 2px; }
+    .delivery-desc { font-size: 0.78rem; color: var(--gray-600); line-height: 1.4; }
+
+    /* RESUMO DO PEDIDO NO CHECKOUT */
+    .checkout-summary { background: var(--gray-50); border-radius: 8px; padding: 16px; margin: 20px 0; border: 1px solid var(--gray-200); }
+    .summary-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; }
+    .summary-line { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--gray-600); margin-bottom: 8px; }
+    .summary-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; color: var(--text); border-top: 1px solid var(--gray-200); padding-top: 10px; margin-top: 8px; }
+
+    /* BOTÃO ENVIAR PEDIDO (VERDE OU PRIMÁRIO) */
+    .btn-submit-order { width: 100%; padding: 14px; background: #22C55E; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; text-transform: uppercase; transition: background 0.2s; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); }
+    .btn-submit-order:hover { background: #16A34A; }
+    .btn-back-cart { width: 100%; margin-top: 8px; background: none; border: none; color: var(--gray-600); cursor: pointer; font-size: 0.82rem; font-weight: 600; }
 
     @media (max-width: 768px) {
       .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .modal-product { grid-template-columns: 1fr; max-height: 95vh; }
       .cart-drawer { max-width: 100%; }
+      .form-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -261,9 +287,7 @@
   <!-- RODAPÉ DINÂMICO -->
   <footer class="footer">
     <div class="footer-title" id="footerStoreName">SELBSTOR | ACHADINHOS</div>
-    <div class="footer-socials" id="footerSocials">
-      <!-- Ícones sociais injetados via script se preenchidos -->
-    </div>
+    <div class="footer-socials" id="footerSocials"></div>
     <div class="footer-info" id="footerAddress"></div>
     <div class="footer-info" id="footerEmail"></div>
     <div class="footer-copy">Feito com Planiloja</div>
@@ -335,18 +359,75 @@
     </div>
   </div>
 
-  <!-- MODAL CHECKOUT -->
+  <!-- MODAL CHECKOUT ESTILO REFERÊNCIA -->
   <div class="modal-overlay" id="checkoutModal" onclick="if(event.target===this)closeCheckoutModal()">
     <div class="checkout-modal">
-      <h3 style="margin-bottom:16px;">Dados para Entrega</h3>
-      <input type="text" id="cName" placeholder="Seu Nome Completo *">
-      <input type="text" id="cPhone" placeholder="WhatsApp / Telefone *">
-      <input type="text" id="cCep" placeholder="CEP">
-      <input type="text" id="cAddress" placeholder="Endereço e Número">
-      <input type="text" id="cBairro" placeholder="Bairro">
-      <input type="text" id="cCity" placeholder="Cidade / UF">
-      <button class="btn-checkout" onclick="enviarPedidoFinal()">Confirmar e Enviar Pedido</button>
-      <button onclick="closeCheckoutModal()" style="width:100%; margin-top:8px; background:none; border:none; color:var(--gray-600); cursor:pointer;">Voltar ao Carrinho</button>
+      <div class="checkout-title">Finalizar Pedido</div>
+      
+      <div class="form-group">
+        <label class="form-label">Telefone *</label>
+        <input type="text" class="form-input" id="cPhone" placeholder="99999-9999">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nome *</label>
+        <input type="text" class="form-input" id="cName" placeholder="Seu nome completo">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Endereço/Número *</label>
+        <input type="text" class="form-input" id="cAddress" placeholder="Rua, Ex: Av. Galba Novaes de Castro, 881">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Complemento</label>
+        <input type="text" class="form-input" id="cComplemento" placeholder="Apto, Bloco, Referência">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Cidade *</label>
+          <input type="text" class="form-input" id="cCity" placeholder="Sua Cidade">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bairro *</label>
+          <input type="text" class="form-input" id="cBairro" placeholder="Seu Bairro">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Forma de Pagamento *</label>
+        <select class="form-select" id="cPagamento">
+          <option value="Pix">Pix</option>
+          <option value="Cartão de Crédito">Cartão de Crédito</option>
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="A Combinar">A Combinar</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Opção de Entrega *</label>
+        <div id="deliveryOptionsContainer">
+          <!-- Preenchido dinamicamente via script com base na planilha -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Observações</label>
+        <textarea class="form-textarea" id="cObs" placeholder="Observações sobre o pedido ou entrega..."></textarea>
+      </div>
+
+      <div class="checkout-summary" id="checkoutSummary">
+        <div class="summary-title">Resumo do Pedido</div>
+        <div id="summaryItemsList"></div>
+        <div class="summary-total">
+          <span>Total</span>
+          <span id="summaryTotalPrice" style="color:var(--primary);">R$ 0,00</span>
+        </div>
+      </div>
+
+      <button class="btn-submit-order" onclick="enviarPedidoFinal()">Enviar Pedido</button>
+      <button class="btn-back-cart" onclick="closeCheckoutModal(); toggleCartDrawer(true);">Voltar ao Carrinho</button>
     </div>
   </div>
 
@@ -360,6 +441,8 @@
     let selectedProduct = null;
     let selectedVariation = "";
     let toastTimer = null;
+    let selectedDeliveryFee = 0;
+    let selectedDeliveryName = "Retirada no Local";
 
     async function init() {
       try {
@@ -392,7 +475,6 @@
         logo.style.display = 'block';
       }
 
-      // Preencher Rodapé dinamicamente com dados da planilha
       if (CONFIG.endereco || CONFIG.enderecoRetirada) {
         document.getElementById('footerAddress').textContent = CONFIG.endereco || CONFIG.enderecoRetirada;
       }
@@ -402,7 +484,6 @@
         document.getElementById('footerEmail').innerHTML = `<a href="mailto:${emailVal}">${emailVal}</a>`;
       }
 
-      // Redes Sociais no Rodapé
       let socialsHtml = '';
       if (CONFIG.whatsapp || CONFIG.telefone) {
         let phone = (CONFIG.whatsapp || CONFIG.telefone).replace(/\D/g, '');
@@ -420,7 +501,6 @@
       }
       document.getElementById('footerSocials').innerHTML = socialsHtml;
 
-      // Cor Primária (Mapeamento inteligente)
       if (CONFIG.corPrimaria) {
         let cor = CONFIG.corPrimaria.trim();
         const mapaCores = {
@@ -442,6 +522,52 @@
         document.documentElement.style.setProperty('--primary', corHex);
         document.documentElement.style.setProperty('--primary-hover', hoverHex);
       }
+
+      buildDeliveryOptions();
+    }
+
+    function buildDeliveryOptions() {
+      let html = '';
+      const isRetirada = (CONFIG.retiradaNoLocal || "Sim").toLowerCase() === "sim";
+      const enderecoRetirada = CONFIG.enderecoRetirada || "Endereço não informado";
+      
+      if (isRetirada) {
+        html += `
+          <label class="delivery-option-card">
+            <input type="radio" name="deliveryOption" value="Retirada no Local" checked onchange="updateDelivery('Retirada no Local', 0)">
+            <div class="delivery-info">
+              <div class="delivery-name">Retirada no Local</div>
+              <div class="delivery-desc">${enderecoRetirada}<br><b>Grátis</b></div>
+            </div>
+          </label>
+        `;
+      }
+
+      const isDelivery = (CONFIG.delivery || "Sim").toLowerCase() === "sim";
+      if (isDelivery) {
+        let taxa = parseFloat(CONFIG.taxaDelivery || 0);
+        html += `
+          <label class="delivery-option-card">
+            <input type="radio" name="deliveryOption" value="Delivery" ${!isRetirada ? 'checked' : ''} onchange="updateDelivery('Delivery', ${taxa})">
+            <div class="delivery-info">
+              <div class="delivery-name">Delivery</div>
+              <div class="delivery-desc">Entrega ao domicílio<br>${taxa === 0 ? 'Grátis' : 'R$ ' + taxa.toFixed(2).replace('.', ',')}</div>
+            </div>
+          </label>
+        `;
+        if (!isRetirada) {
+          selectedDeliveryFee = taxa;
+          selectedDeliveryName = "Delivery";
+        }
+      }
+
+      document.getElementById("deliveryOptionsContainer").innerHTML = html;
+    }
+
+    function updateDelivery(name, fee) {
+      selectedDeliveryName = name;
+      selectedDeliveryFee = fee;
+      updateCheckoutSummary();
     }
 
     function getCategories() {
@@ -665,6 +791,7 @@
     function openCheckoutModal() {
       if (!cart.length) { alert("Carrinho vazio!"); return; }
       toggleCartDrawer(false);
+      updateCheckoutSummary();
       document.getElementById("checkoutModal").classList.add("open");
     }
 
@@ -672,28 +799,56 @@
       document.getElementById("checkoutModal").classList.remove("open");
     }
 
-    async function enviarPedidoFinal() {
-      const nome = document.getElementById("cName").value.trim();
-      const telefone = document.getElementById("cPhone").value.trim();
+    function updateCheckoutSummary() {
+      const listEl = document.getElementById("summaryItemsList");
+      listEl.innerHTML = cart.map(i => `
+        <div class="summary-line">
+          <span>${i.qty}x ${i.nome}${i.variation ? ' (' + i.variation + ')' : ''}</span>
+          <span>R$ ${(i.preco * i.qty).toFixed(2).replace('.', ',')}</span>
+        </div>
+      `).join('');
 
-      if (!nome || !telefone) {
-        alert("Preencha Nome e Telefone para continuar.");
+      const subtotal = cart.reduce((sum, i) => sum + (i.preco * i.qty), 0);
+      if (selectedDeliveryFee > 0) {
+        listEl.innerHTML += `
+          <div class="summary-line">
+            <span>Taxa de Entrega (${selectedDeliveryName})</span>
+            <span>R$ ${selectedDeliveryFee.toFixed(2).replace('.', ',')}</span>
+          </div>
+        `;
+      }
+
+      const totalFinal = subtotal + selectedDeliveryFee;
+      document.getElementById("summaryTotalPrice").textContent = `R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+    }
+
+    async function enviarPedidoFinal() {
+      const telefone = document.getElementById("cPhone").value.trim();
+      const nome = document.getElementById("cName").value.trim();
+      const endereco = document.getElementById("cAddress").value.trim();
+      const cidade = document.getElementById("cCity").value.trim();
+      const bairro = document.getElementById("cBairro").value.trim();
+
+      if (!telefone || !nome || !endereco || !cidade || !bairro) {
+        alert("Por favor, preencha todos os campos obrigatórios (*).");
         return;
       }
 
-      const total = cart.reduce((sum, i) => sum + (i.preco * i.qty), 0);
+      const subtotal = cart.reduce((sum, i) => sum + (i.preco * i.qty), 0);
+      const total = subtotal + selectedDeliveryFee;
+
       const dados = {
         nome: nome,
         telefone: telefone,
-        cep: document.getElementById("cCep").value,
-        endereco: document.getElementById("cAddress").value,
-        bairro: document.getElementById("cBairro").value,
-        cidade: document.getElementById("cCity").value,
+        endereco: endereco + (document.getElementById("cComplemento").value ? " - " + document.getElementById("cComplemento").value : ""),
+        bairro: bairro,
+        cidade: cidade,
+        pagamento: document.getElementById("cPagamento").value,
+        entrega: selectedDeliveryName,
+        observacao: document.getElementById("cObs").value,
         itens: JSON.stringify(cart),
-        subtotal: total,
-        total: total,
-        pagamento: "A Combinar",
-        entrega: "Entrega Padrão"
+        subtotal: subtotal,
+        total: total
       };
 
       try {
