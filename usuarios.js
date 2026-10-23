@@ -7,7 +7,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwCnCd5Mspd5KkcTAlAb3Hf
 // 'URL da loja': ['Nome', 'validade (dd/mm/aaaa, vazio = sem limite)']
 const USUARIOS = {
     'https://selbstor.github.io/1': ['Sebastião Torquato', ''],
-    'https://selbstor.github.io/2': ['selbstor', '']
+   
 };
 
 function selbstorNormalizarUrl(url) {
