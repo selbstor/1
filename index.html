@@ -24,7 +24,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 
-    /* LOADING & ERROR */
+    /* LOADING */
     .loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -65,7 +65,9 @@
     .product-cat { font-size: 0.72rem; text-transform: uppercase; color: var(--gray-600); font-weight: 600; margin-bottom: 4px; }
     .product-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; flex: 1; }
     .product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
-    .btn-buy-card { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.03em; transition: 0.2s; }
+    
+    /* BOTÃO COMPRAR SEMPRE VISÍVEL E SÓLIDO */
+    .btn-buy-card { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.03em; transition: 0.2s; display: block !important; opacity: 1 !important; visibility: visible !important; }
     .btn-buy-card:hover { background: var(--primary-hover); }
 
     /* MODAL DE PRODUTO */
@@ -91,7 +93,7 @@
     .qty-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; font-weight: 700; }
     .qty-input { width: 40px; text-align: center; border: none; font-weight: 600; outline: none; }
 
-    /* DRAWER DO CARRINHO (DIREITA) */
+    /* DRAWER DO CARRINHO */
     .cart-drawer { position: fixed; top: 0; right: -420px; width: 100%; max-width: 400px; height: 100vh; background: white; z-index: 300; box-shadow: -4px 0 24px rgba(0,0,0,0.15); transition: right 0.3s ease; display: flex; flex-direction: column; }
     .cart-drawer.open { right: 0; }
     .drawer-header { padding: 20px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
@@ -111,7 +113,7 @@
     .total-final { font-weight: 700; font-size: 1.1rem; margin-top: 4px; }
     .btn-checkout { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 12px; }
 
-    /* CHECKOUT FORM */
+    /* MODAL CHECKOUT */
     .checkout-modal { padding: 24px; max-width: 480px; width: 100%; background: white; border-radius: var(--radius); }
     .checkout-modal input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--gray-200); border-radius: 6px; }
 
@@ -162,7 +164,7 @@
     <div class="products-grid" id="productsGrid"></div>
   </main>
 
-  <!-- MODAL DE PRODUTO (DETALHES) -->
+  <!-- MODAL DE PRODUTO -->
   <div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeProductModal()">
     <div class="modal-product">
       <button class="modal-close" onclick="closeProductModal()">✕</button>
@@ -189,7 +191,7 @@
     </div>
   </div>
 
-  <!-- DRAWER DO CARRINHO (GAVETA À DIREITA) -->
+  <!-- DRAWER DO CARRINHO -->
   <div class="cart-drawer" id="cartDrawer">
     <div class="drawer-header">
       <div class="drawer-title">Carrinho</div>
@@ -258,6 +260,7 @@
         const logo = document.getElementById('headerLogo');
         logo.src = CONFIG.logo;
         logo.style.display = 'block';
+        // Se a logo carregar com sucesso, podemos ocultar o texto alternativo ou mantê-lo ao lado
       }
       if (CONFIG.corPrimaria) {
         document.documentElement.style.setProperty('--primary', CONFIG.corPrimaria);
@@ -330,13 +333,11 @@
       document.getElementById("modalDesc").textContent = selectedProduct.descricao;
       document.getElementById("modalQty").value = 1;
 
-      // Thumbs
       const imgs = [selectedProduct.img1, selectedProduct.img2, selectedProduct.img3, selectedProduct.img4].filter(Boolean);
       document.getElementById("modalThumbs").innerHTML = imgs.length > 1 ? imgs.map((img, i) => `
         <div class="modal-thumb ${i === 0 ? 'active' : ''}" onclick="changeModalImg('${img}', this)"><img src="${img}"></div>
       `).join('') : '';
 
-      // Varições
       const varBlock = document.getElementById("variationsBlock");
       if (selectedProduct.variacoes && selectedProduct.variacoes.length > 0) {
         selectedVariation = selectedProduct.variacoes[0];
